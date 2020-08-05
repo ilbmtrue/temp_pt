@@ -1,0 +1,10 @@
+RewriteEngine on 
+Options -Indexes
+RewriteCond %{REQUEST_FILENAME} !-f 
+RewriteCond %{REQUEST_FILENAME} !-d 
+
+<IfModule dir_module>
+    DirectoryIndex adminPage.html index.php index.html index.htm index.pl
+</IfModule>
+
+#RewriteRule . /admin/adminPage.html [L]

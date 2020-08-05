@@ -1,0 +1,46 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ADMIN PIXEL</title>
+    <link rel="stylesheet" href="normalize.css">
+    <script src="jquery.min.js"></script>
+</head>
+<body>
+    <style>
+        .holder{
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .info__rooms{
+            min-width: 200px;
+            max-width: 800px;
+            overflow-x: hidden;
+            background-color: antiquewhite;
+        }
+        .player{
+            background-color: azure;
+            margin-left: 10px;
+        }
+        
+        .rooms-list .player-list{
+            display: flex;
+            flex-direction: column;
+        }
+
+    </style>
+
+    <div class="holder">
+        <div class="info__rooms">
+            rooms:
+            <div id="rooms-list"></div>
+        </div>
+        <div class="info__unplayed-players">Unknown players:</div>
+    </div>
+    
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="adminPage.js"></script>
+</body>
+</html>
