@@ -221,7 +221,7 @@ function handleSocket(socket) {
   var user = null;
   var room = null;
 
-  socket.on('join', onJoin);
+  // socket.on('join', onJoin);
   // socket.on('disconnect', onLeave);
 
   socket.on('disconnect', function () { 
@@ -230,6 +230,10 @@ function handleSocket(socket) {
   });
   socket.on('ready to game', function (roomName = 'waiting room') {
     socket.join(roomName);
+    var clients = io.nsps["/"].adapter.rooms[roomName];
+    console.log('in room# ' + roomName + ' sits: ' + Object.keys(clients).length);
+    
+
     io_adm.to("Admin room").emit('someone ready', {room: roomName, user: socket.id});
   });
 
