@@ -9,7 +9,7 @@
         <script defer src="./jquery.min.js" type="text/javascript"></script> -->
         <!-- <link rel="stylesheet" type="text/css" href="./modal/component.css"> -->
         <script type="text/javascript">
-            let userName = Math.random().toString(36).substring(7);
+            // let userName = Math.random().toString(36).substring(7);
             
             // if (!window.location.search) {
             //     var userName = prompt('name?');
@@ -32,45 +32,55 @@
             <div class="js-ready-game btn-ready"><h1>READY</h1></div>
             
             <div class="game-table">
-                <div id="enemy-player" class="player">
-                    <div class="rear">
-                        <div class="card-wave rear-wave"></div>
-                        <div class="card rear__left"></div>
-                        <div class="card rear__middle"></div>
-                        <div class="card rear__right"></div>
-                    </div>
-                    <div class="flank">
-                        <div class="card-wave flank-wave"></div>
-                        <div class="card flank__left"></div>
-                        <div class="card flank__middle"></div>
-                        <div class="card flank__right"></div>
-                    </div>
-                    <div class="vanguard">
-                        <div class="card-wave vanguard-wave"></div>
-                        <div class="card vanguard__left"></div>
-                        <div class="card vanguard__middle"></div>
-                        <div class="card vanguard__right"></div>
-                    </div>
-                </div>
+
                 <div id="player" class="player">
-                    <div class="vanguard">
-                        <div class="card-wave vanguard-wave"></div>
-                        <div class="card vanguard__left"></div>
-                        <div class="card vanguard__middle"></div>
-                        <div class="card vanguard__right"></div>
+                    <div class="user-name"></div>
+                    <div class="user-field">
+                        <div class="rear">
+                            <div class="card-wave rear-wave"></div>
+                            <div class="card rear__left"></div>
+                            <div class="card rear__middle"></div>
+                            <div class="card rear__right"></div>
+                        </div>
+                        <div class="flank">
+                            <div class="card-wave flank-wave"></div>
+                            <div class="card flank__left"></div>
+                            <div class="card flank__middle"></div>
+                            <div class="card flank__right"></div>
+                        </div>
+                        <div class="vanguard">
+                            <div class="card-wave vanguard-wave"></div>
+                            <div class="card vanguard__left"></div>
+                            <div class="card vanguard__middle"></div>
+                            <div class="card vanguard__right"></div>
+                        </div>
                     </div>
-                    <div class="flank">
-                        <div class="card-wave flank-wave"></div>
-                        <div class="card flank__left"></div>
-                        <div class="card flank__middle"></div>
-                        <div class="card flank__right"></div>
+                    
+
+                </div>
+                <div id="enemy-player" class="player">
+                    <div class="user-name"></div>
+                    <div class="user-field">
+                        <div class="vanguard">
+                            <div class="card-wave vanguard-wave"></div>
+                            <div class="card vanguard__left"></div>
+                            <div class="card vanguard__middle"></div>
+                            <div class="card vanguard__right"></div>
+                        </div>
+                        <div class="flank">
+                            <div class="card-wave flank-wave"></div>
+                            <div class="card flank__left"></div>
+                            <div class="card flank__middle"></div>
+                            <div class="card flank__right"></div>
+                        </div>
+                        <div class="rear">
+                            <div class="card-wave rear-wave"></div>
+                            <div class="card rear__left"></div>
+                            <div class="card rear__middle"></div>
+                            <div class="card rear__right"></div>
+                        </div>
                     </div>
-                    <div class="rear">
-                        <div class="card-wave rear-wave"></div>
-                        <div class="card rear__left"></div>
-                        <div class="card rear__middle"></div>
-                        <div class="card rear__right"></div>
-                    </div>
+                    
                 </div>
             </div>
             

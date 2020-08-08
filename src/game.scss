@@ -4,6 +4,7 @@
     height: 400px;
 } */
 .control-panel{
+    visibility: hidden;
     display: flex;
     flex-direction: column;
     left: 0;
@@ -63,29 +64,40 @@ $imgpath: 'img/icon';
     align-items: center;
     background-color: #e2f7f0;
 }
-.pl-h{
+.hand-card{
     width: 70px;
     height: 100px;
     background-color: green;
     background-position: center;
     background-repeat: no-repeat;
-    background-size: cover;
+    background-size: contain;
     margin: 0 10px;
 }
-.pl-h:hover{
+.hand-card:hover{
     box-shadow: 0 -5px 4px 5px rgba(0,0,0,0.2);
     cursor: pointer;
 }
 #player{
-    flex-direction: row;
+    flex-direction: column;
     display: flex;
     margin: 0 50px;
 }
 #enemy-player{
-    flex-direction: row;
+    flex-direction: column;
     display: flex;
     margin: 0 50px;
 }
+.user-field{
+    display: flex;
+    flex-direction: row;
+}
+.user-name{
+    border: 1px solid black;
+    display: inline-block;
+    text-align: center;
+    height: 20px;
+}
+
 .game-table{
     width: 100%;
     display: flex;

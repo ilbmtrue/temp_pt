@@ -27,8 +27,7 @@ socket.on('reconnect_error', function(){
 });
 
 
-socket.on('someone ready', function(data){
-    // console.log(data);
+socket.on('someone ready', function(data){  // {room: roomName, user: userName, s: socket.id}
     var r = document.querySelectorAll("[data-room='"+ data["room"] +"']");
 
     if(r.length === 0){
@@ -44,7 +43,7 @@ socket.on('someone ready', function(data){
 
     var newPlayer = document.createElement('div');  
     newPlayer.className = 'player';
-    newPlayer.innerHTML = data["user"];
+    newPlayer.innerHTML = data["user"] + '  : ' + data["s"] ;
     r[0].append(newPlayer);
       
     

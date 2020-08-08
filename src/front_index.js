@@ -1,4 +1,7 @@
 console.log('LALALALALALLALALALALALALLAA');
+let cardsImage = [];
+// random user name
+let userName = Math.random().toString(36).substring(7);
 
 var cards_images = new Map();
 var joinroom;
@@ -9,11 +12,37 @@ const socket = io({
     autoConnect: false
 });
 socket.on('join', function(){});
+
 socket.on('user_join', function(roomInfo) {
     console.log('user ' + roomInfo.userId + ' ' + roomInfo.userName + ' join, [' + roomInfo.users + ']');
 });
+
+socket.on('selfJoin', function(data) { // data.myname data.cards
+    const fieldPlayer = document.getElementById('player');
+    let fieldPlayerName = fieldPlayer.getElementsByClassName("user-name")[0];
+    fieldPlayerName.innerHTML = data.myname;
+    cardsImage = data.cards;
+});
+
 socket.on('serverHello', function(data) {
    console.log('server: hello ' + data);
+});
+socket.on('prepare new battle', function(data) { // { cards: this.player hand });
+    let container = document.getElementById('player-hand');    
+    for (let i = 0; i < data.cards.length; i++) {
+        var new_card = document.createElement('div');
+        new_card.className = 'hand-card';
+        new_card.setAttribute('data-hand-card', data.cards[i]);
+        new_card.style['background-image'] = 'url(\'./img/cards/'+ cardsImage[data.cards[i]] +'.jpg\')';
+        new_card.classList.add('rotate-card');
+        new_card.addEventListener('click', function(e){
+            e.preventDefault()
+            let card = e.currentTarget.getAttribute('data-hand-card');
+            socket.emit('choosen leader', card);
+        });
+        container.append(new_card);
+    } 
+
 });
     
 
@@ -23,7 +52,8 @@ $(document).ready(function () {
     $(document).on('click', '.js-ready-game', function(event){      
         socket.open();
         setTimeout(() => {
-            socket.emit('ready to game', joinroom);    
+                // send server request to join with user & room names data
+                socket.emit('ready to game', {userName: userName, room: joinroom});    
         }, 1000);
         
         event.currentTarget.style.display = 'none';

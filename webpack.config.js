@@ -45,7 +45,7 @@ module.exports = {
         new CopyWebpackPlugin({
             patterns: [
                 { from: './src/img', to: './img' },
-                { from: './src/modal', to: './modal' },
+                { from: './src/img/cards', to: './img/cards' },
                 { from: './src/admin/', to: './admin' },
                 { from: 'node_modules/jquery/dist/jquery.min.js', to: './admin' },
             ],
