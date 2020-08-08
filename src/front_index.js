@@ -24,8 +24,10 @@ socket.on('selfJoin', function(data) { // data.myname data.cards
     cardsImage = data.cards;
 });
 
-socket.on('serverHello', function(data) {
-   console.log('server: hello ' + data);
+socket.on('enemyJoin', function(data) { 
+    const fieldPlayer = document.getElementById('enemy-player');
+    let fieldPlayerName = fieldPlayer.getElementsByClassName("user-name")[0];
+    fieldPlayerName.innerHTML = data.enemy;
 });
 socket.on('prepare new battle', function(data) { // { cards: this.player hand });
     let container = document.getElementById('player-hand');    

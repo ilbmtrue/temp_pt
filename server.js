@@ -106,13 +106,15 @@ Game.prototype = {
 
   },
   battlePrepare: function(){
-    // first cards issued
+    let playerNames = [];
     let room = this.room_name;
     Array.prototype.forEach.call(this.players, function(player) {
       player.table.hand = player.table.deck.splice(0, 5);
       rooms[room].sendTo(player, 'prepare new battle', { cards: player.table.hand });  
+      // rooms[room].sendTo(player, 'enemyJoin', { enemy: player.table.hand });
     });
-
+    
+    
   },
   hireLeader: function(playerId, cardId){
     let playerTable = this.players.find(player => player.socket === playerId).table;
@@ -122,6 +124,9 @@ Game.prototype = {
     if (this.prepeare == 2) {this.battlebegin();}  
   },
   battlebegin: function(){
+
+    
+
     console.log(this.players);
     console.log('battlebegin');
   }
@@ -156,7 +161,7 @@ Room.prototype = {
   getUserNames: function () {
     var usersName = '';
     for (var u in this.users) {
-      usersName += this.users[u].userName + ' ';
+      usersName += this.users[u].name + ' ';
     }
     return usersName.trim();
   },
@@ -223,17 +228,20 @@ function handleSocket(socket) {
 
     socket.join(roomName);
     io.to(roomName).emit("someone join", {user: userName});
-    io_adm.to("Admin room").emit('someone ready', {room: roomName, user: userName, s: socket.id});
-    
+    io_adm.to("Admin room").emit('someone ready', {room: roomName, user: userName, s: socket.id});  
     socket.emit('selfJoin', {myname: userName, cards: cardsImgArray});
-
+    socket.broadcast.emit('enemyJoin', {enemy: userName});
     var clients = io.nsps["/"].adapter.rooms[roomName];
     console.log('line~252| in room# ' + roomName + ' sits: ' + clients.length);
-
-    if (room.numUsers() == 2) {
+    
+    if (room.numUsers() == 2) {    
       room.game = new Game(room.getUsers(), room.getName(), numGame++);
-      game = getOrCreateRoom(data.room);
       game = room.game;
+      room.getUserNames();
+      
+      enemy = room.getUserNames().replace(userName, '').trim();
+      socket.emit('enemyJoin', {enemy: enemy}); 
+
       console.log('|||||||||||||||||||||| players ready ||||||||||||||||||||||||||||||');
       room.game.battlePrepare();
     }
