@@ -111,7 +111,7 @@ $imgpath: 'img/icon';
 .card{
     width: 50px;
     height: 70px;
-    box-shadow: 0 5px 4px 5px rgba(0,0,0,0.2);
+    box-shadow: 0 0 2px 2px rgba(0, 0, 0, 0.2);
     border: 1px solid;
     margin: 10px;
     background-size: contain;
@@ -160,13 +160,13 @@ $imgpath: 'img/icon';
     background-color: rgb(255, 255, 255);
 }
 
-.rear__left, .rear__middle, .rear__right, 
-.flank__left, .flank__right,
-.vanguard__left, .vanguard__middle, .vanguard__right{ 
+.rear__l, .rear__m, .rear__r, 
+.flank__l, .flank__r,
+.vanguard__l, .vanguard__m, .vanguard__r{ 
     font-size: inherit;
 }
 
-.flank__middle{
+.flank__m{
     // transform: rotate(180deg);
     background-color: bisque;
 }

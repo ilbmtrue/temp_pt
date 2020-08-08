@@ -1,15 +1,3 @@
-
-/*
-
-ОШИБКА
-
-
-*/
-
-
-
-
-
 const Cards = require('./cards_data_2013.js');
 Object.freeze( Cards ); 
 
@@ -54,17 +42,22 @@ function shuffle(array) {
   return array;
 }
 
-
 function PlayerTable() 
 {
   this.hand = '';
   this.drop = '';
   this.field = { c: '', n: '', ne: '', e: '', se: '', s: '', sw: '', w: '', nw: '' };
+  this.unit = { //alternative option
+    vanguard: {l: '', m: '', r: ''},
+    flank: {l: '', m: '', r: ''},
+    rear: {l: '', m: '', r: ''}
+  }
   this.shuffleStartDeck = function() {
     // return shuffled out cards ID
     return shuffle(Array(Cards.length).fill().map((e, i) => i + 1));
   }
-  this.deck = this.shuffleStartDeck(); // what cards will be used
+  // what cards will be used
+  this.deck = this.shuffleStartDeck(); 
 }
 
 
@@ -88,7 +81,6 @@ User.prototype = {
   }
 }
 
-// new Game(room.getUsers(), room.getName(), numGame++);
 function Game(players, room, numGame) 
 {
   this.numGame = numGame;
@@ -105,29 +97,42 @@ Game.prototype = {
   getCardFrom: function(arrayCards, cardId){
 
   },
+  getTable: function(){
+    let gameTable = [];
+    Array.prototype.forEach.call(this.players, function(player) {
+      gameTable.push({name: player.name, table: player.table.unit});
+    });
+    return gameTable;
+  },
   battlePrepare: function(){
-    let playerNames = [];
     let room = this.room_name;
+    
+    // first cards issued
     Array.prototype.forEach.call(this.players, function(player) {
       player.table.hand = player.table.deck.splice(0, 5);
       rooms[room].sendTo(player, 'prepare new battle', { cards: player.table.hand });  
-      // rooms[room].sendTo(player, 'enemyJoin', { enemy: player.table.hand });
     });
-    
-    
   },
   hireLeader: function(playerId, cardId){
     let playerTable = this.players.find(player => player.socket === playerId).table;
     playerTable.field.c = cardId;
+    playerTable.unit.flank.m = cardId; //alternative option
     playerTable.hand.splice(playerTable.hand.indexOf(Number(cardId)), 1);
     this.prepeare++;
     if (this.prepeare == 2) {this.battlebegin();}  
   },
   battlebegin: function(){
 
+  [this.cardFirstPlayer, this.cardSecondPlayer] = shuffle(rooms[this.room_name].getUserNamesArray());
     
-
-    console.log(this.players);
+    let gameTable = this.getTable();
+    io.in(this.room_name).emit('battle begin', {
+      firstPlayer: this.cardFirstPlayer, 
+      secondPlayer: this.cardSecondPlayer,
+      gameTable: gameTable
+    });
+    // console.log(this.players);
+    
     console.log('battlebegin');
   }
   // battlebegin: function () {
@@ -164,6 +169,13 @@ Room.prototype = {
       usersName += this.users[u].name + ' ';
     }
     return usersName.trim();
+  },
+  getUserNamesArray: function () {
+    let usersName = [];
+    for (let u in this.users) {
+      usersName.push(this.users[u].name);
+    }
+    return usersName;
   },
   numUsers: function () { return this.users.length; },
   isEmpty: function () { return this.users.length === 0; },
