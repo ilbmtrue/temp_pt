@@ -1,12 +1,12 @@
 import React from "react";
+import ReactDOM from "react-dom";
 
-function App(){
-    console.log('App.JS is here!!!');
- return(
-  <div>
-     <b>Hello world!</b>
-  </div>
- )
-}
+import Table from "./components/Table";
+import ControlPanel from "./components/ControlPanel";
 
-export default App;
+
+
+
+ReactDOM.render(<Table />, document.querySelector("#gameTable"));
+ReactDOM.render(<ControlPanel />, document.querySelector("#controlPanel"));
+

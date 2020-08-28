@@ -1,6 +1,6 @@
 import * as $ from 'jquery';
-import './normalize.scss';
-import './game.scss';
+import './scss/normalize.scss';
+import './scss/game.scss';
 
 import './front_index.js';
 

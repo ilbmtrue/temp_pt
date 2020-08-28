@@ -1,4 +1,5 @@
 console.log('LALALALALALLALALALALALALLAA');
+const controlPanel = document.getElementById("control-panel");
 let cardsImage = [];
 // random user name
 let userName = Math.random().toString(36).substring(7);
@@ -48,9 +49,6 @@ socket.on('battle begin', function(data) {
             }
         }
         
-        // [].forEach.call(c, el => {
-
-        // });
 
     });
 
@@ -59,7 +57,7 @@ socket.on('battle begin', function(data) {
     [].forEach.call(rotatedCards, el => {
         el.classList.remove('rotate-card');
     });
-
+    controlPanel.style.visibility = "visible";
     // if(data.gameTable.find(user => user.name === userName)){ 
     console.log(data.gameTable);
 

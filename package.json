@@ -33,8 +33,7 @@
     "dev": "webpack --mode development",
     "start": "node server.js",
     "inst": "node server.js --inspect"
-
   },
   "author": "",
-  "license": "ISC"  
+  "license": "ISC"
 }

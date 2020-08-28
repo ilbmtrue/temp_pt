@@ -11,6 +11,7 @@ module.exports = {
     entry: {
         index: './src/index.js',
         'join-page': './src/joinpage.js',
+        reactApp: './src/App.js',
     },
     output:{
         // path: path.join(__dirname, '/dist'),
@@ -54,12 +55,20 @@ module.exports = {
     module:{
         rules: [
             {
-                test:/\.js$/,
-                exclude: /node_modules/,
-                use: {
-                    loader: 'babel-loader'
-                },
+                test: /\.js|jsx?$/, // определяем тип файлов
+                exclude: /(node_modules)/,  // исключаем из обработки папку node_modules
+                loader: "babel-loader",   // определяем загрузчик
+                options:{
+                    presets:["@babel/preset-env", "@babel/preset-react"]    // используемые плагины
+                }
             },
+            // {
+            //     test:/\.(js|jsx)$/,
+            //     exclude: /node_modules/,
+            //     use: {
+            //         loader: 'babel-loader'
+            //     },
+            // },
             {
                 test: /\.(png|jpe?g|gif|svg)$/i,
                 use: [

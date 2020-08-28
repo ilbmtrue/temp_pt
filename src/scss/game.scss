@@ -3,7 +3,7 @@
     width: 500px;
     height: 400px;
 } */
-.control-panel{
+#control-panel{
     visibility: hidden;
     display: flex;
     flex-direction: column;
@@ -42,7 +42,7 @@
    }
    
 //    client\img\icon\attack.jpg
-$imgpath: 'img/icon';
+$imgpath: '../img/icon';
 .ico__pick-card{background-image: url($imgpath + "/pick-card.jpg");}
 .ico__hire-hero{background-image: url($imgpath + "/hire-hero.jpg");}
 .ico__attack{background-image: url($imgpath + "/attack.jpg");}
