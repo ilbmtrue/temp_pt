@@ -28,15 +28,20 @@ module.exports = {
             $: 'jquery',
             jQuery: 'jquery'
           }),
-        new HTMLWebpackPlugin({
-            filename: 'game.html',
-            template: './src/game.html',
-            chunks: ["index"]
-        }),
+        // new HTMLWebpackPlugin({
+        //     filename: 'game.html',
+        //     template: './src/game.html',
+        //     chunks: ["index"]
+        // }),
         new HTMLWebpackPlugin({
             filename: 'join-page.html',
             template: './src/join-page.html',
             chunks: ["join-page"]
+        }),
+        new HTMLWebpackPlugin({
+            filename: 'battle.html',
+            template: './src/battle.html',
+            chunks: ["reactApp"]
         }),
         
         new CleanWebpackPlugin(),
@@ -54,21 +59,35 @@ module.exports = {
     ],
     module:{
         rules: [
-            {
-                test: /\.js|jsx?$/, // определяем тип файлов
-                exclude: /(node_modules)/,  // исключаем из обработки папку node_modules
-                loader: "babel-loader",   // определяем загрузчик
-                options:{
-                    presets:["@babel/preset-env", "@babel/preset-react"]    // используемые плагины
-                }
-            },
             // {
-            //     test:/\.(js|jsx)$/,
+            //     test: /\.(js|jsx)$/, // определяем тип файлов
+            //     exclude: /(node_modules)/,  // исключаем из обработки папку node_modules
+            //     loader: "babel-loader",   // определяем загрузчик
+            //     options:{
+            //         presets:["@babel/preset-env", "@babel/preset-react"]    // используемые плагины
+            //     }
+            // },
+            // {
+            //     test:/\.jsx?$/,
             //     exclude: /node_modules/,
             //     use: {
             //         loader: 'babel-loader'
             //     },
             // },
+            {
+                test: /\.(js|jsx)$/,
+                exclude: /node_modules/,
+                resolve: {
+                  extensions: [".js", ".jsx"]
+                },
+                use: {
+                  loader: "babel-loader",
+                  options:{
+                    presets:["@babel/preset-env", "@babel/preset-react"]    // используемые плагины
+                  }
+                },
+                
+              },
             {
                 test: /\.(png|jpe?g|gif|svg)$/i,
                 use: [
@@ -101,5 +120,6 @@ module.exports = {
                 use: ['style-loader', 'css-loader']
             },
         ]
-    }
+    },
+    
 };
