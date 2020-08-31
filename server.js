@@ -16,6 +16,7 @@ var io = require('socket.io')(http);
 
 
 var rooms = {};
+var games = {};
 var lastUserId = 0;
 var lastRoomId = 0;
 var numGame = 0;
@@ -68,6 +69,7 @@ function User(name = 'anonymous', socket)
   this.name = name;
   this.socket = socket;
   this.table = new PlayerTable();
+  this.actionPoint = 0;
 }
 User.prototype = {
   getId: function () {
@@ -86,17 +88,15 @@ function Game(players, room, numGame)
   this.numGame = numGame;
   this.room_name = room;
   this.players = [players[0], players[1]];
-  this.player_one = [players[0], new PlayerTable()];
-  this.player_two = [players[1], new PlayerTable()];
+  // this.player_one = [players[0], new PlayerTable()];
+  // this.player_two = [players[1], new PlayerTable()];
   this.cardFirstPlayer = 0;
   this.cardSecondPlayer = 0;
   this.prepeare = 0;
 }
 Game.prototype = {
-  getGameId: function(){},
-  getCardFrom: function(arrayCards, cardId){
-
-  },
+  // getGameId: function(){},
+  getCardFrom: function(arrayCards, cardId){},
   getTable: function(){
     let gameTable = [];
     Array.prototype.forEach.call(this.players, function(player) {
@@ -135,21 +135,6 @@ Game.prototype = {
     
     console.log('battlebegin');
   }
-  // battlebegin: function () {
-  //   var diceD2 = Math.floor(Math.random() * 2) + 1;
-  //   if (diceD2 == 1) {
-  //     this.cardFirstPlayer = 1;
-  //     this.cardSecondPlayer = 2;
-  //   } else {
-  //     this.cardFirstPlayer = 2;
-  //     this.cardSecondPlayer = 1;
-  //   }
-
-  //   console.log('leaders in battle!');
-  //   rooms[this.room_name].sendTo(this.player_one, 'leadersingame', { diced2: this.cardFirstPlayer, my: this.player_one_table['c'], enemy: this.player_two_table['c'] });
-  //   rooms[this.room_name].sendTo(this.player_two, 'leadersingame', { diced2: this.cardSecondPlayer, my: this.player_two_table['c'], enemy: this.player_one_table['c'] });
-  // }
-
 }
 
 
@@ -229,7 +214,14 @@ function handleSocket(socket) {
   socket.on('ready to game', function (data) { // user name, room name
     let userName = data.userName || 'undefined user';
     let roomName = data.room || 'waiting room';
-
+    // if(rooms[roomName]){
+    //   console.log('room ' + roomName + 'is exist');
+    //   // if user exist
+    //   if(0){
+    //     // socket.emit to user (socket) game data
+    //   }
+      
+    // }
     room = getOrCreateRoom(data.room);
 
     if(room.getUsers().find(user => user.name === data.userName)){
@@ -248,7 +240,10 @@ function handleSocket(socket) {
     
     if (room.numUsers() == 2) {    
       room.game = new Game(room.getUsers(), room.getName(), numGame++);
+      
       game = room.game;
+      games[game];
+
       room.getUserNames();
       
       enemy = room.getUserNames().replace(userName, '').trim();
@@ -295,7 +290,6 @@ function handleSocket(socket) {
     room.broadcastFrom(user, 'user_leave', user.getName());
   }
   function pickLeader(card){ // socket.emit('choosen leader', card);
-
     room.game.hireLeader(socket.id, card);
   }
   

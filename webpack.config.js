@@ -12,6 +12,7 @@ module.exports = {
         index: './src/index.js',
         'join-page': './src/joinpage.js',
         reactApp: './src/App.js',
+        reactAppJoin: './src/AppJoin.js',
     },
     output:{
         // path: path.join(__dirname, '/dist'),
@@ -36,8 +37,13 @@ module.exports = {
         new HTMLWebpackPlugin({
             filename: 'join-page.html',
             template: './src/join-page.html',
-            chunks: ["join-page"]
+            chunks: ["reactAppJoin"]
         }),
+        // new HTMLWebpackPlugin({
+        //     filename: 'join-page.html',
+        //     template: './src/join-page.html',
+        //     chunks: ["join-page"]
+        // }),
         new HTMLWebpackPlugin({
             filename: 'battle.html',
             template: './src/battle.html',

@@ -2,7 +2,9 @@ console.log('LALALALALALLALALALALALALLAA');
 const controlPanel = document.getElementById("control-panel");
 let cardsImage = [];
 // random user name
-let userName = Math.random().toString(36).substring(7);
+// let userName = Math.random().toString(36).substring(7); //
+let userName = localStorage.getItem('user') ? localStorage.getItem('user') : 'anon' ;
+
 let enemyName = "";
 
 // var cards_images = new Map();
@@ -104,6 +106,7 @@ socket.on('prepare new battle', function(data) { // { cards: this.player hand })
 $(document).ready(function () {
     joinroom = window.location.pathname.slice(1);
 
+    
     $(document).on('click', '.js-ready-game', function(event){      
         socket.open();
         setTimeout(() => {

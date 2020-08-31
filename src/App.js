@@ -12,6 +12,5 @@ import './front_index.js';
 
 
 ReactDOM.render(<Table />, document.querySelector("#gameTable"));
-console.log("controlPanel")
 ReactDOM.render(<ControlPanel />, document.querySelector("#control-panel"));
 

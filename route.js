@@ -13,7 +13,7 @@ module.exports = function(app) {
             let roomnum = req.body.room;
             game_token = crypto.createHmac('sha256', roomnum).update('salty').digest('hex').slice(55);          
             app.get('/'+game_token, (req,res) => {
-                console.log('route.js | http connect to room: ' + game_token);
+                console.log('route.js | http connect to room: ' + game_token + ' room#' + roomnum + ' user: ' + username);
                 res.sendFile(__dirname + '/dist/battle.html');
                 // res.sendFile(__dirname + '/dist/game.html');
             });
