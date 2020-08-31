@@ -1,6 +1,6 @@
 module.exports = [
     {
-        num: 1,
+        id: 1,
         name: 'Cursed Knight',
         img: 'img-1-1_01',
         atk: 3,
@@ -17,7 +17,7 @@ module.exports = [
         leader_special: 'At the end of each round, place a Curse Counter on this leader. Once per wave as a free action, you can discard a Curse Counter to give heroes you control +2 Attack Strength and to skip casuality checks for that wave.',
     },
     {
-        num: 2,
+        id: 2,
         name: 'Diabolist',
         img: 'img-1-1_02',
         atk: 1,
@@ -33,7 +33,7 @@ module.exports = [
         leader_special: 'Opposing heroes have -1 attack strength for each corpse in their unit. You heroes have +1 Attack Strength for each corpse in ther wave of your unit.',
     },
     {
-        num: 3,
+        id: 3,
         name: 'Divinity',
         img: 'img-1-1_03',
         atk: 2,
@@ -49,7 +49,7 @@ module.exports = [
         leader_special: 'At the end of each complete round, you may restore a corpse in your unit to full life.',
     },
     {
-        num: 4,
+        id: 4,
         name: 'Druid',
         img: 'img-1-1_04',
         atk: 2,
@@ -65,7 +65,7 @@ module.exports = [
         leader_special: 'Orient your hero cards however you like when they come in play. The orientation alters the hero`s abilities, ignoring actual position in your unit, Normal: Vanguard; Sideways: Flank; Upside-down: Rear.',
     },
     {
-        num: 5,
+        id: 5,
         name: 'Chronicler',
         img: 'img-1-1_05',
         atk: 1,
@@ -81,7 +81,7 @@ module.exports = [
         leader_special: 'At the end of each wave, you may move one damage from any hero or leader to any other hero or leader.',
     },
     {
-        num: 6,
+        id: 6,
         name: 'Immortal',
         img: 'img-1-1_06',
         atk: 3,
@@ -97,7 +97,7 @@ module.exports = [
         leader_special: 'Heroes in this unit have exactly 2 life. Any time damage would be applied to a hero or leader in this unit, that damage is reduced to 1.',
     },
     {
-        num: 7,
+        id: 7,
         name: 'Inventor',
         img: 'img-1-1_07',
         atk: 1,
@@ -113,7 +113,7 @@ module.exports = [
         leader_special: 'At the start of each round, reveal the top card of your deck and set is aside out of play. Every hero in your unit has the powers of that hero in addition to their own. Discard it at the end of the round.',
     },
     {
-        num: 8,
+        id: 8,
         name: 'Lorekeeper',
         img: 'img-1-1_08',
         atk: 2,
@@ -129,7 +129,7 @@ module.exports = [
         leader_special: 'At the end of each wave, if you fewer than 4 cards in hand, draw a card.',
     },
     {
-        num: 9,
+        id: 9,
         name: 'Magical Knight',
         img: 'img-1-1_09',
         atk: 2,
@@ -145,7 +145,7 @@ module.exports = [
         leader_special: 'Each time a hero in this unit is defeated, this leader gains +1 Attack Strength permanently, and removes 3 points of damage from itself.',
     },
     {
-        num: 10,
+        id: 10,
         name: 'Puppeteer',
         img: 'img-2-2_01',
         atk: 2,
@@ -161,7 +161,7 @@ module.exports = [
         leader_special: 'You can give attack actions to enemy heroes in melee as though you controlled those heroes and the were standing in your unit. These attacks do count towards the one action per turn limit.',
     },
     {
-        num: 11,
+        id: 11,
         name: 'Relic Hunter',
         img: 'img-2-2_02',
         atk: 3,
@@ -177,7 +177,7 @@ module.exports = [
         leader_special: 'After each round, place a Threat Counter on this leader. All heroes and leaders in this unit have +2 Attack Strength per Threat Counter on this leader. When you Recruit or play an Order, discard all Threat Counters.',
     },
     {
-        num: 12,
+        id: 12,
         name: 'Sage',
         img: 'img-2-2_03',
         atk: 0,
@@ -193,7 +193,7 @@ module.exports = [
         leader_special: 'Whenever a player plays an Order, he adds that card to the hand of the opponent whose turn comes next instead of discarding it. Heroes in this unit have +2 life.',
     },
     {
-        num: 13,
+        id: 13,
         name: 'Plaguebearer',
         img: 'img-2-2_04',
         atk: 3,
@@ -209,7 +209,7 @@ module.exports = [
         leader_special: 'At the end of each wave, you may move 1 damage from this leader and from each of your heroes in that wave onto another hero (a;; of this damage mmust move to the same hero).',
     },
     {
-        num: 14,
+        id: 14,
         name: 'Monster Hunter',
         img: 'img-2-2_05',
         atk: 3,
@@ -225,7 +225,7 @@ module.exports = [
         leader_special: 'While you hand is larger than any opponent`s hand, your heroes and leader have +3 Attack Strength. While it is smaller than any opponent`s hand, your heroes and leader take 1 less damage from attacks.',
     },
     {
-        num: 15,
+        id: 15,
         name: 'Mastermind',
         img: 'img-2-2_06',
         atk: 3,
@@ -241,7 +241,7 @@ module.exports = [
         leader_special: 'When any other player plays an Order, you may discard a card. If you do, cancel the order. Otherwise, you draw a card.',
     },
     {
-        num: 16,
+        id: 16,
         name: 'Planebinder',
         img: 'img-2-2_07',
         atk: 2,
@@ -257,7 +257,7 @@ module.exports = [
         leader_special: 'You can use Restructure actions to affect you opponent`s unit. It takes two actions to restructure enemy heroes with the Intercept ability.',
     },
     {
-        num: 17,
+        id: 17,
         name: 'Operative',
         img: 'img-2-2_08',
         atk: 2,
@@ -273,7 +273,7 @@ module.exports = [
         leader_special: 'Twice per wave, you may discard a card from your hand to take an extra action.',
     },
     {
-        num: 18,
+        id: 18,
         name: 'Necromancer',
         img: 'img-2-2_09',
         atk: 2,
@@ -288,7 +288,7 @@ module.exports = [
         leader_def: 21,
         leader_special: 'A corpse in your unit is considered to be a hero with 1 life and 2 attacks strength that blocks melee. When a corpse in your unit has lethal damage, it is cleared instantly.',
     },{
-        num: 19,
+        id: 19,
         name: 'Warmage',
         img: 'img-8-8_01',
         atk: 4,
@@ -304,7 +304,7 @@ module.exports = [
         leader_special: 'Heroes in this unit can use any their Attack Powers (those that say `Attack:`), regardless of position.',
     },
     {
-        num: 20,
+        id: 20,
         name: 'Tactician',
         img: 'img-8-8_02',
         atk: 0,
@@ -320,7 +320,7 @@ module.exports = [
         leader_special: 'All of your heroes have the Attack Power: `Attack: Remove 4 damage from this hero and 1 damage from your leader.',
     },
     {
-        num: 21,
+        id: 21,
         name: 'Supervillain',
         img: 'img-8-8_03',
         atk: 0,
@@ -336,7 +336,7 @@ module.exports = [
         leader_special: 'This leader cannot gain or lose damage except by its own effect. Each time a hero in this unit is defeated during a casualty check, this leader takes 1 damage. At the end of a round, if this unit has no heroes, it is routed.',
     },
     {
-        num: 22,
+        id: 22,
         name: 'Warlock',
         img: 'img-8-8_04',
         atk: 2,
@@ -352,7 +352,7 @@ module.exports = [
         leader_special: 'As an action, you can defeat one of your heroes to defeat an opposing hero with remaining life less than or equal to your hero`s Attack Strength.',
     },
     {
-        num: 23,
+        id: 23,
         name: 'Technologist',
         img: 'img-8-8_05',
         atk: 3,
@@ -368,7 +368,7 @@ module.exports = [
         leader_special: 'Whenever an opponent would choose a target for an order or attack power, you may choose that target insteadfrom among legal targets within the unit of his choice.',
     },
     {
-        num: 24,
+        id: 24,
         name: 'Sniper',
         img: 'img-8-8_06',
         atk: 6,
@@ -384,7 +384,7 @@ module.exports = [
         leader_special: 'This leader`s attack is ranged. You may use two actions to discard a card from your and defeat any hero.',
     },
     {
-        num: 25,
+        id: 25,
         name: 'Werewolf',
         img: 'img-8-8_07',
         atk: 3,

@@ -16,8 +16,6 @@ export default class Table extends Component{
         let j = 1;
         return(
             <div>
-                <div id="console"></div>
-                <div className="js-ready-game btn-ready"><h1>READY</h1></div>
                 <div className="game-table">
                     <div id="player" className="player">
                         <div className="user-name"></div>

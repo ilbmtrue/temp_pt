@@ -3,7 +3,7 @@ Object.freeze( Cards );
 
 const cardsImgArray = [];
 for (let i = 0; i < Cards.length; i++) {
-  cardsImgArray[Cards[i]['num']] = Cards[i]['img'];
+  cardsImgArray[Cards[i]['id']] = Cards[i]['img'];
 }
 
 var crypto = require('crypto');
@@ -121,10 +121,35 @@ Game.prototype = {
     this.prepeare++;
     if (this.prepeare == 2) {this.battlebegin();}  
   },
-  battlebegin: function(){
 
-  [this.cardFirstPlayer, this.cardSecondPlayer] = shuffle(rooms[this.room_name].getUserNamesArray());
+  // get card from players deck and push it to players hand
+  requestCard: function(playerId){
     
+    let getRndCard, answerMsg, answerData;
+    let player = this.players.find(player => player.socket === playerId);
+    let playerDeckCount = player.table.deck.length;
+    console.log('player ' + playerId + ' want card he have: ' + playerDeckCount + 'cards');
+    if(playerDeckCount > 0){
+      getRndCard = Math.floor(Math.random() * playerDeckCount) + 1;
+      player.table.deck.splice(player.table.deck.indexOf(getRndCard), 1);
+      player.table.hand.push(getRndCard);
+      
+      answerMsg = 'giveCard';
+      answerData = Cards.find(card => card.id === getRndCard);
+      console.log('player get rnd num: ' + getRndCard + ' card, balance: ' + player.table.deck.length);
+    } else {
+      answerMsg = 'flash msg';
+      answerData = {msgText: 'No more cards in your deck!'};
+    }
+    // cvar socket = this.sockets[user.getId()];
+    rooms[this.room_name].sendTo(player, answerMsg, answerData);
+    // socket.emit(answerMsg, {answerData});
+    
+    // io.in(this.room_name).emit(answerMsg, answerData);
+    
+  },
+  battlebegin: function(){
+    [this.cardFirstPlayer, this.cardSecondPlayer] = shuffle(rooms[this.room_name].getUserNamesArray());
     let gameTable = this.getTable();
     io.in(this.room_name).emit('battle begin', {
       firstPlayer: this.cardFirstPlayer, 
@@ -205,6 +230,7 @@ function handleSocket(socket) {
   // socket.on('join', onJoin);
   // socket.on('disconnect', onLeave);
   socket.on('choosen leader', pickLeader);
+  socket.on('requestCard', playerRequestCard);
 
 
   socket.on('disconnect', function (data) { 
@@ -292,7 +318,9 @@ function handleSocket(socket) {
   function pickLeader(card){ // socket.emit('choosen leader', card);
     room.game.hireLeader(socket.id, card);
   }
-  
+  function playerRequestCard(){
+    room.game.requestCard(socket.id);
+  }
 }
 
 
