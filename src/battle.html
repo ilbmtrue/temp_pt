@@ -5,12 +5,40 @@
         <meta http-equiv="cache-control" content="no-cache">        
     </head>
     <body>       
-        <div id="console"> 
+        
+        <div id="messageBoard" class="flash--active"> 
             <div class="js-ready-game btn-ready"><h1>READY</h1></div>
         </div>
-        <div id="gameTable" style="margin-bottom: 400px; display: flex;flex-direction: column;align-items: center;"></div>
-        <div id="player-hand"></div>
+        <div id="gameTable" style="display: flex;flex-direction: column;align-items: center;"></div>
+        <div id="infoBoard"></div>
+        <div class="hand">
+            <div id="player-hand"></div>
+        </div>
         <div id="control-panel"></div>
+        <div id="card-info">
+            <div style="display: flex;justify-content: space-around;">
+                <span class="card-info__name"></span>
+                <span class="card-info__atk"></span>
+                <span class="card-info__def"></span>
+            </div>
+            <div style="display: flex;flex-direction: column;">
+                <span class="card-info__vanguard"></span>
+                <span class="card-info__flank"></span>
+                <span class="card-info__rear"></span>
+                <span class="card-info__special"></span>
+            </div>
+        </div>
+
+        <div class="modal">
+            <div class="card-review">
+                <div class="review-img --rotate"></div>
+                <div class="review-action">
+                    <div class="action action__hire">hire!</div>
+                    <div class="action action__hireLeader --show">hire leader!</div>
+                    <div class="action action__order">order!</div>
+                </div>
+            </div>
+        </div>
         <script src="/socket.io/socket.io.js"></script>
     </body>
 </html> 
