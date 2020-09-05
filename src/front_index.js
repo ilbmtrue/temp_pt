@@ -1,20 +1,71 @@
 console.log('LALALALALALLALALALALALALLAA');
 
 class PlayerAction 
-{
-    // constructor() {  }
-    hireHero(cardId, fieldBlock, choosenCardDOM){
+{   
+    constructor() { 
+        this.target = null;
+        this.chosen = null;
+        this.chosenDOM = null;
+        this.possibleTarget = null;
+    }
+    hireHero(tableField){
         if(playerTurn){
-            socket.emit('hireHero', {cardId: cardId, field: fieldBlock.classList[1]});
+            socket.emit('hireHero', {cardId: this.chosen, field: tableField.classList[1]});
+            [].forEach.call(this.possibleTarget, el => {
+                el.classList.remove('card_posable-target');
+            });
         } else {
             messageBoard.innerText = 'Not your turn!';
             messageBoardAnimation();
-        }
-        
-        
+        }          
     }
+    hireLeader(){
+        socket.emit('chosen leader', this.chosen);
+        let card = cardsCollection.find(c => c.id == this.chosen);
+        let a = document.querySelector('#player').querySelector('.flank__m');
+        a.style['background-image'] = 'url(\'./img/cards/s-'+ card.img +'.jpg\')';
+        this.chosenDOM.remove();
+        document.querySelector('.modal').classList.remove("modal__show");
+        gameTable.style.opacity = 1;
+        modalShow = false;
+        rotatedCards = document.getElementsByClassName('hand-card');
+        [].forEach.call(rotatedCards, el => {
+            el.classList.remove('rotate-card');
+        });
+    }
+    selectField(){
+        if(!playerTurn){
+            this.chosen = "";
+            this.chosenDOM = null;
+            messageBoard.innerText = 'Not your turn!';                
+            messageBoardAnimation();
+        } else {
+            document.querySelector('body').style.cursor = "crosshair";         
+            switch (wave) {
+                case 1:
+                    this.possibleTarget = gameTable.querySelector('.vanguard').querySelectorAll('.card-holder');
+                    break;
+                case 2:
+                    this.possibleTarget = gameTable.querySelector('.flank').querySelectorAll('.card-holder');
+                    break;
+                case 3:
+                    this.possibleTarget = gameTable.querySelector('.rear').querySelectorAll('.card-holder');
+                    break;
+                default:break;
+            }
+            [].forEach.call(this.possibleTarget, el => {
+                el.classList.add('card_posable-target');
+            });
+        }               
+        document.querySelector('.modal').classList.remove("modal__show");
+        gameTable.style.opacity = 1;
+        modalShow = false;
+    }
+
 }
 let action = new PlayerAction();
+
+
 class PanelAction {
     constructor(elem) {
       this._elem = elem;
@@ -29,9 +80,7 @@ class PanelAction {
         }
         
     }
-    hireHero1() {
-      console.log('hire hero');
-    }
+
     attack() {
       console.log('attack');
     }
@@ -73,9 +122,9 @@ const infoBoard =  document.getElementById('infoBoard');
 const gameTable = document.getElementById('gameTable'); 
 
 let modalShow = false;
-let choosenCard = 0;
-let choosenCardDOM = {};
-let choosenField = "";
+let chosenCard = 0;
+let chosenCardDOM = {};
+let chosenField = "";
 
 let cardInfoBlock = false;
 let cardsImage = [];
@@ -97,6 +146,7 @@ const socket = io({
 });
 let wavePrefere = -1;
 let round = 0;
+let wave = 0;
 
 const gameTurnArr = [   ['#player .vanguard', '#player .flank', '#player .rear'],
                         ['#enemy-player .vanguard', '#enemy-player .flank', '#enemy-player .rear']];
@@ -141,7 +191,7 @@ socket.on('prepare new battle', function(data) { // { cards: this.player hand })
         // new_card.addEventListener('click', function(e){
         //     e.preventDefault()
         //     let card = e.currentTarget.getAttribute('data-card-id');
-        //     socket.emit('choosen leader', card);
+        //     socket.emit('chosen leader', card);
         //     e.currentTarget.style['margin-top'] = '-100px';
         //     pickLeader = e.currentTarget;
         // });
@@ -167,13 +217,15 @@ socket.on('table update', function(data){
                     // console.log(player_table[line][place]);
                 }
             }
-        }
-        
+        }   
         
     });
-    if(choosenCardDOM){
-        choosenCardDOM.remove();
+    if(action.chosenDOM){
+        action.chosenDOM.remove();
     }
+    // if(chosenCardDOM){
+    //     chosenCardDOM.remove();
+    // }
     
 });
 
@@ -207,17 +259,6 @@ socket.on('battle begin', function(data) {
 
     players.forEach(player => {
         let a = document.getElementsByClassName(player)[0];
-        // let b = a.getElementsByClassName("vanguard-wave")[0];
-        // if(data.firstPlayer === player){
-        //     b.style['background-image'] = 'url(./img/firstplayer.jpg)';
-        //     messageBoard.innerText += ". Your turn";
-        //     playerTurn = true;
-        //     wavePrefere = 1;
-        // } else {
-        //     b.style['background-image'] = 'url(./img/secondplayer.jpg)';
-        //     messageBoard.innerText += ". Enemy turn";
-        //     wavePrefere = 0;
-        // }
         let c = a.getElementsByClassName('card');
         
         // should reduce?
@@ -238,6 +279,7 @@ socket.on('battle begin', function(data) {
 
     controlPanel.style.visibility = "visible";
     new PanelAction(controlPanel);
+    wave = 1;
     document.querySelectorAll('.action').forEach(e => e.classList.toggle('--show'));
     newTurn(round, wavePrefere);
 });
@@ -257,9 +299,9 @@ socket.on('transfer turn', function(data){
     }
 
 });
-socket.on('next turn', function(data){
+// socket.on('next turn', function(data){
 
-});
+// });
 socket.on('flash msg', function(data){
     messageBoard.innerText = data.msgText;  
     messageBoardAnimation();
@@ -315,19 +357,31 @@ $(document).ready(function () {
         // console.log('event.currentTarget'); console.log(event.currentTarget);
         if(event.button == 0){
             let elem = event.target;
-            if(!modalShow && choosenCard && elem.classList.contains('card') ){
-                let elem = event.target;
-                elem = elem.closest('.card-holder');
-                document.querySelector('body').style.cursor = "inherit";
-                action.hireHero(choosenCard, event.target, choosenCardDOM);               
-                return
+
+
+            if(action.chosen){
+                if(!modalShow && elem.classList.contains('card') ){               
+                    let elem = event.target;
+                    elem = elem.closest('.card-holder');
+                    document.querySelector('body').style.cursor = "inherit";
+                    action.hireHero(event.target);               
+                    return
+                }
             }
+            // if(!modalShow && chosenCard && elem.classList.contains('card') ){
+            //     let elem = event.target;
+            //     elem = elem.closest('.card-holder');
+            //     document.querySelector('body').style.cursor = "inherit";
+            //     action.hireHero(chosenCard, event.target, chosenCardDOM);               
+            //     return
+            // }
 
 
             if(elem.classList.contains('hand-card') && !modalShow){
                 let card = cardsCollection.find(c => c.id == elem.dataset.cardId);
-                choosenCard = card.id;
-                choosenCardDOM = elem;
+                // chosenCard = card.id;
+                action.chosen = card.id;
+                action.chosenDOM = elem;
                 let img = document.querySelector('.review-img');                
                 img.style.backgroundImage = 'url(\'./img/cards/'+ card.img +'.jpg\')';
                 if(img.classList.contains('--rotate') && (wavePrefere !== -1)){ 
@@ -342,45 +396,19 @@ $(document).ready(function () {
             if(modalShow && elem.classList.contains('modal')){
                 document.querySelector('.modal').classList.remove("modal__show");
                 gameTable.style.opacity = 1;
-                choosenCard = 0;
+                // chosenCard = 0;
+                action.chosen = 0;
                 modalShow = false;
                 return
             }
-
+            
             if(elem.classList.contains('action__hireLeader')){
-                socket.emit('choosen leader', choosenCard);
-                // pickLeader = choosenCardDOM;
-                let card = cardsCollection.find(c => c.id == choosenCard);
-                let a = document.querySelector('#player').querySelector('.flank__m');
-                a.style['background-image'] = 'url(\'./img/cards/s-'+ card.img +'.jpg\')';
-                choosenCardDOM.remove();
-                document.querySelector('.modal').classList.remove("modal__show");
-                gameTable.style.opacity = 1;
-                modalShow = false;
-                rotatedCards = document.getElementsByClassName('hand-card');
-                [].forEach.call(rotatedCards, el => {
-                    el.classList.remove('rotate-card');
-                });
+                action.hireLeader();
                 return
             }
+            
             if(elem.classList.contains('action__hire')){
-                console.log(playerTurn);
-                if(!playerTurn){
-                    choosenCard = "";
-                    choosenCardDOM = null;
-
-                    messageBoard.innerText = 'Not your turn!';
-                    
-                    messageBoardAnimation();
-
-                } else {
-                    document.querySelector('body').style.cursor = "crosshair";
-                }
-                
-                document.querySelector('.modal').classList.remove("modal__show");
-                gameTable.style.opacity = 1;
-                modalShow = false;
-                return
+                action.selectField();
             }
 
             if(elem.classList.contains('review-img')){
@@ -415,13 +443,22 @@ $(document).ready(function () {
                 top = event.pageY - y + 10 + 'px';
             }
             if(card){
+                
+
                 let info = cardsCollection.find(c => c.id == card);
                 $('#card-info .card-info__name').text(info.name);
                 $('#card-info .card-info__atk').text(info.atk);
                 $('#card-info .card-info__def').text(info.def);
                 $('#card-info .card-info__vanguard').text(info.vanguard);
-                $('#card-info .card-info__flank').text(info.flank);
-                $('#card-info .card-info__rear').text(info.rear);
+                $('#card-info .card-info__flank').text(info.flank)
+                $('#card-info .card-info__rear').text(info.rear)
+                if(event.target.classList.value.indexOf('vanguard') !== -1){
+                    $('#card-info .card-info__vanguard').css('opacity', 1);
+                } else if(event.target.classList.value.indexOf('flank') !== -1){
+                    $('#card-info .card-info__flank').css('opacity', 1);
+                } else if(event.target.classList.value.indexOf('rear') !== -1){
+                    $('#card-info .card-info__rear').css('opacity', 1);
+                }
                 $('#card-info .card-info__special').text(info.special);
                 $('#card-info').css({
                     display:"flex",

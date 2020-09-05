@@ -279,7 +279,7 @@ function handleSocket(socket) {
   var firstPlayer = null;
   var secondPlayer = null;
 
-  socket.on('choosen leader', pickLeader);
+  socket.on('chosen leader', pickLeader);
   socket.on('requestCard', playerRequestCard);
   socket.on('hireHero', function(data){
     room.game.hireCard(socket.id, data.cardId, data.field);
