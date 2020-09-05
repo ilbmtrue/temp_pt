@@ -299,9 +299,17 @@ socket.on('transfer turn', function(data){
     }
 
 });
-// socket.on('next turn', function(data){
-
-// });
+socket.on('next turn', function(data){
+    if(data.player === userName){
+        messageBoard.innerText = "Your turn";
+        messageBoardAnimation();
+        playerTurn = true;
+    } else {
+        messageBoard.innerText = "Enemy turn";
+        messageBoardAnimation();
+        playerTurn = false;
+    }
+});
 socket.on('flash msg', function(data){
     messageBoard.innerText = data.msgText;  
     messageBoardAnimation();
@@ -443,8 +451,6 @@ $(document).ready(function () {
                 top = event.pageY - y + 10 + 'px';
             }
             if(card){
-                
-
                 let info = cardsCollection.find(c => c.id == card);
                 $('#card-info .card-info__name').text(info.name);
                 $('#card-info .card-info__atk').text(info.atk);
@@ -454,10 +460,18 @@ $(document).ready(function () {
                 $('#card-info .card-info__rear').text(info.rear)
                 if(event.target.classList.value.indexOf('vanguard') !== -1){
                     $('#card-info .card-info__vanguard').css('opacity', 1);
-                } else if(event.target.classList.value.indexOf('flank') !== -1){
+                } else {
+                    $('#card-info .card-info__vanguard').css('opacity', 0.2);
+                } 
+                if(event.target.classList.value.indexOf('flank') !== -1){
                     $('#card-info .card-info__flank').css('opacity', 1);
-                } else if(event.target.classList.value.indexOf('rear') !== -1){
+                } else {
+                    $('#card-info .card-info__flank').css('opacity', 0.2);
+                } 
+                if(event.target.classList.value.indexOf('rear') !== -1){
                     $('#card-info .card-info__rear').css('opacity', 1);
+                } else {
+                    $('#card-info .card-info__rear').css('opacity', 0.2);
                 }
                 $('#card-info .card-info__special').text(info.special);
                 $('#card-info').css({
@@ -474,155 +488,3 @@ $(document).ready(function () {
 
 
 });
-    // must delegate event 
-    // let handCard = $('.hand-card');
-    
-    // $('.card-holder').each(function (i, el) {    
-    //     $(el).mousedown(function(e){
-    //         e.preventDefault();
-    //         if(e.button == 2){
-    //             let card = el.firstChild.dataset.cardId;
-    //             let info = cardsCollection.find(c => c.id == card);
-    //             let left, top;
-    //             let x = (this.closest('.player').id === "player") ? 0 : 250;
-    //             let y = (this.closest('#player-hand')) ? 200 : 0;
-    //             left = e.pageX - x + 10 + 'px'; 
-    //             top = e.pageY + y + 10 + 'px';         
-    //             $('#card-info .card-info__name').text(info.name);
-    //             $('#card-info .card-info__atk').text(info.atk);
-    //             $('#card-info .card-info__def').text(info.def);
-    //             $('#card-info .card-info__vanguard').text(info.vanguard);
-    //             $('#card-info .card-info__flank').text(info.flank);
-    //             $('#card-info .card-info__rear').text(info.rear);
-    //             $('#card-info .card-info__special').text(info.special);
-    //             $('#card-info').css({
-    //                 display:"flex",
-    //                 top: top,
-    //                 left: left
-    //             });
-    //         }
-    //     }).contextmenu(function() {
-    //         return false;
-    //     });
-    //     $(el).mouseup(function(){
-    //         $('#card-info').css({
-    //             display:"none"
-    //         });
-    //     });
-    // });
-  /*  
-    socket.on('leadersingame', function(data){
-        $('#enemy-player').find('.flank__middle').css('background-image', 'url(\'./img/'+ cards_images[data.enemy] +'.jpg\')');
-        $('#player').find('.flank__middle').css('background-image', 'url(\'./img/'+ cards_images[data.my] +'.jpg\')');
-        if(data.diced2 == 1){ 
-            $('#enemy-player').find('.vanguard-wave').css('background-image', 'url(\'./img/firstplayer.jpg\')');
-            $('#player').find('.vanguard-wave').css('background-image', 'url(\'./img/secondplayer.jpg\')');
-        } else {
-            $('#player').find('.vanguard-wave').css('background-image', 'url(\'./img/firstplayer.jpg\')');
-            $('#enemy-player').find('.vanguard-wave').css('background-image', 'url(\'./img/secondplayer.jpg\')');
-        }
-        $('#player-hand').find('.pl-h').removeClass('rotate-card')
-    });
-    socket.on('add-card', function(data){
-        var container = document.getElementById('player-hand');
-        var new_card = document.createElement('div');
-        new_card.className = 'pl-h';
-        new_card.style['background-image'] = 'url(\'./img/'+ data.img +'.jpg\')';
-        new_card.addEventListener('click', function(){
-            console.log(this);
-        });
-        container.append(new_card);
-    });
-    socket.on('init_game', function(data){
-        console.log(data);
-        cards_images = data.cards_images;
-        var container = document.getElementById('player-hand');
-        for (let i = 0; i < data.cards.length; i++) {
-            var new_card = document.createElement('div');
-            new_card.className = 'pl-h md-trigger';
-            new_card.setAttribute('data-modal', "modal-16");
-            new_card.setAttribute('data-hand-card', data.cards[i]);
-            new_card.style['background-image'] = 'url(\'./img/'+ cards_images[data.cards[i]] +'.jpg\')';
-            new_card.classList.add('rotate-card');
-            new_card.addEventListener('click', function(){
-                document.getElementById('cardimgmodal').style['background-image'] = 'url(\'./img/'+ cards_images[data.cards[i]] +'.jpg\')';
-                document.getElementById('cardimgmodal').setAttribute('data-card', data.cards[i]);
-            });
-            container.append(new_card);
-        }
-        
-    });
-
-*/
-
-
-    // additional bloack width card info on hover
-    /*
-    $('.card-holder').each(function (i, el) {    
-        $(el).mousemove(function(e){
-            console.log('on move');
-            let left, top;
-            let parentOffset = $(this).parent().offset();
-            let X = e.pageX - parentOffset.left;
-            let Y = e.pageY - parentOffset.top;
-            left = e.pageX  + 10 + 'px'; 
-            top = e.pageY  + 10 + 'px'; 
-            // left = X  + 10 + 'px'; 
-            // top = Y  + 10 + 'px'; 
-            $('#card-info').css({
-                display:"flex",
-                top: top,
-                left: left
-            });
-        });
-        $(el).mouseout(function(){
-            console.log('move off');
-            $('#card-info').css({
-                display:"none"
-            });
-        });
-    });
-    */
-
-
-
-
-    /*
-    document.addEventListener("mousedown", function(e){
-        if( (e.button == 2) && 
-            (e.target.parentNode.classList.contains("card") || 
-            e.target.classList.contains("hand-card")) ){
-            e.preventDefault();
-            e.stopPropagation();
-
-            let card = el.firstChild.dataset.cardId;
-            let info = cardsCollection.find(c => c.id == card);
-            let left, top;
-            let x = (this.closest('.player').id === "player") ? 0 : 250;
-            left = e.pageX - x + 10 + 'px'; 
-            top = e.pageY  + 10 + 'px';
-            
-            $('#card-info .card-info__name').text(info.name);
-            $('#card-info .card-info__atk').text(info.atk);
-            $('#card-info .card-info__def').text(info.def);
-            $('#card-info .card-info__vanguard').text(info.vanguard);
-            $('#card-info .card-info__flank').text(info.flank);
-            $('#card-info .card-info__rear').text(info.rear);
-            $('#card-info .card-info__special').text(info.special);
-            $('#card-info').css({
-                display:"flex",
-                top: top,
-                left: left
-            });
-            cardInfoBlock = true;
-        }
-    });
-    document.addEventListener("mouseup", function(e){
-        if( (e.button == 2) && (cardInfoBlock) ){
-            $('#card-info').css({
-                display:"none"
-            });
-            cardInfoBlock = false;
-        }
-    });
-    */
