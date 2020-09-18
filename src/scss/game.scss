@@ -74,7 +74,7 @@ $imgpath: '../img/icon';
     background-color: green;
     background-position: center;
     background-repeat: no-repeat;
-    background-size: cover;
+    background-size: contain;
     opacity: 0.8;
     position: relative;
     transition-duration: .2s;
@@ -336,7 +336,7 @@ $imgpath: '../img/icon';
     height: 470px;
     background-position: center;
     background-repeat: no-repeat;
-    background-size: cover;
+    background-size: contain;
 
     border: 1px solid black;
     border-radius: 10px;

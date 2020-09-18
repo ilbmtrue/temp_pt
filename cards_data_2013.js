@@ -2,7 +2,7 @@ module.exports = [
     {
         id: 1,
         name: 'Cursed Knight',
-        img: 'img-1-1_01',
+        img: '1',
         atk: 3,
         def: 6,
         vanguard: 'Intercept. When this hero takes damage form an attack, he deals the same amount to the attacker.',
@@ -19,7 +19,7 @@ module.exports = [
     {
         id: 2,
         name: 'Diabolist',
-        img: 'img-1-1_02',
+        img: '2',
         atk: 1,
         def: 3,
         vanguard: 'Heroes attacking this unit in melee have -3 Attack Strength.',
@@ -35,7 +35,7 @@ module.exports = [
     {
         id: 3,
         name: 'Divinity',
-        img: 'img-1-1_03',
+        img: '3',
         atk: 2,
         def: 4,
         vanguard: 'Attack: Remove 4 damage from a hero.',
@@ -51,7 +51,7 @@ module.exports = [
     {
         id: 4,
         name: 'Druid',
-        img: 'img-1-1_04',
+        img: '4',
         atk: 2,
         def: 5,
         vanguard: 'Intercept. Casualties are not checked for this hero until the end of a round.',
@@ -67,7 +67,7 @@ module.exports = [
     {
         id: 5,
         name: 'Chronicler',
-        img: 'img-1-1_05',
+        img: '5',
         atk: 1,
         def: 4,
         vanguard: 'Attack: Move all damage from this hero to any other hero of your choice.',
@@ -83,7 +83,7 @@ module.exports = [
     {
         id: 6,
         name: 'Immortal',
-        img: 'img-1-1_06',
+        img: '6',
         atk: 3,
         def: 2,
         vanguard: 'Intercept. Damage taken by this hero from attacks is reduced to 1.',
@@ -99,7 +99,7 @@ module.exports = [
     {
         id: 7,
         name: 'Inventor',
-        img: 'img-1-1_07',
+        img: '7',
         atk: 1,
         def: 5,
         vanguard: 'Attack: Play an Order, then make a melee attack with this hero with +2 Attack Strength.',
@@ -115,7 +115,7 @@ module.exports = [
     {
         id: 8,
         name: 'Lorekeeper',
-        img: 'img-1-1_08',
+        img: '8',
         atk: 2,
         def: 4,
         vanguard: '+3 Attack Strength if you have 4 or more cards in hand.',
@@ -131,7 +131,7 @@ module.exports = [
     {
         id: 9,
         name: 'Magical Knight',
-        img: 'img-1-1_09',
+        img: '9',
         atk: 2,
         def: 4,
         vanguard: '+5 Attack Strength against heroes with 5 or more Attack Strength.',
@@ -147,7 +147,7 @@ module.exports = [
     {
         id: 10,
         name: 'Puppeteer',
-        img: 'img-2-2_01',
+        img: '10',
         atk: 2,
         def: 4,
         vanguard: 'Attack: Trade control and position of this hero and another hero in melee.',
@@ -163,7 +163,7 @@ module.exports = [
     {
         id: 11,
         name: 'Relic Hunter',
-        img: 'img-2-2_02',
+        img: '11',
         atk: 3,
         def: 7,
         vanguard: 'Intercept. Your Vanguard heroes are immune to `defeat` effects controlled by opponents.',
@@ -179,7 +179,7 @@ module.exports = [
     {
         id: 12,
         name: 'Sage',
-        img: 'img-2-2_03',
+        img: '12',
         atk: 0,
         def: 4,
         vanguard: 'Intercept. At the end of each wave, remove 1 damage from this hero before checking casualties.',
@@ -195,7 +195,7 @@ module.exports = [
     {
         id: 13,
         name: 'Plaguebearer',
-        img: 'img-2-2_04',
+        img: '13',
         atk: 3,
         def: 4,
         vanguard: 'Attack: Apply 2 damage to each hero in a column in the enemy unit.',
@@ -211,7 +211,7 @@ module.exports = [
     {
         id: 14,
         name: 'Monster Hunter',
-        img: 'img-2-2_05',
+        img: '14',
         atk: 3,
         def: 5,
         vanguard: 'Once per attack with this hero, you may discard one card for +3 Attack Strength.',
@@ -227,7 +227,7 @@ module.exports = [
     {
         id: 15,
         name: 'Mastermind',
-        img: 'img-2-2_06',
+        img: '15',
         atk: 3,
         def: 6,
         vanguard: '+3 Attack Strength if an Order was played durning this wave.',
@@ -243,7 +243,7 @@ module.exports = [
     {
         id: 16,
         name: 'Planebinder',
-        img: 'img-2-2_07',
+        img: '16',
         atk: 2,
         def: 5,
         vanguard: 'Attack: Move a hero in melee to any empty space in its unit and do 2 damage to it.',
@@ -259,7 +259,7 @@ module.exports = [
     {
         id: 17,
         name: 'Operative',
-        img: 'img-2-2_08',
+        img: '17',
         atk: 2,
         def: 5,
         vanguard: 'This hero cannot be targeret by an opponent`s orders or attack powers.',
@@ -275,7 +275,7 @@ module.exports = [
     {
         id: 18,
         name: 'Necromancer',
-        img: 'img-2-2_09',
+        img: '18',
         atk: 2,
         def: 6,
         vanguard: '+2 Attack Strength for each corpse in your Vanguard.',
@@ -290,7 +290,7 @@ module.exports = [
     },{
         id: 19,
         name: 'Warmage',
-        img: 'img-8-8_01',
+        img: '19',
         atk: 4,
         def: 3,
         vanguard: 'Attack: Do 3 damage to every opposing hero in melee.',
@@ -306,7 +306,7 @@ module.exports = [
     {
         id: 20,
         name: 'Tactician',
-        img: 'img-8-8_02',
+        img: '20',
         atk: 0,
         def: 4,
         vanguard: 'Intercept: This hero cannot take more than 2 damage from a single attack.',
@@ -322,7 +322,7 @@ module.exports = [
     {
         id: 21,
         name: 'Supervillain',
-        img: 'img-8-8_03',
+        img: '21',
         atk: 0,
         def: 3,
         vanguard: 'Attack: Draw 3 cards.',
@@ -338,7 +338,7 @@ module.exports = [
     {
         id: 22,
         name: 'Warlock',
-        img: 'img-8-8_04',
+        img: '22',
         atk: 2,
         def: 3,
         vanguard: 'When an opposing Vanguard hero is defeated, remove all damage from any hero with non-lethal damage.',
@@ -354,7 +354,7 @@ module.exports = [
     {
         id: 23,
         name: 'Technologist',
-        img: 'img-8-8_05',
+        img: '23',
         atk: 3,
         def: 3,
         vanguard: 'Opponent`s heroes cannot Intercept Ranged Attack.',
@@ -370,7 +370,7 @@ module.exports = [
     {
         id: 24,
         name: 'Sniper',
-        img: 'img-8-8_06',
+        img: '24',
         atk: 6,
         def: 3,
         vanguard: '+4 Attack Strength against heroes with Intercept.',
@@ -386,7 +386,7 @@ module.exports = [
     {
         id: 25,
         name: 'Werewolf',
-        img: 'img-8-8_07',
+        img: '25',
         atk: 3,
         def: 5,
         vanguard: 'Attack: make a melee attack, then take another action.',

@@ -6,7 +6,7 @@ import Card from "./Card";
 
 export default class Table extends Component{
     handleClick() {
-        console.log('значение this:', this);
+       // console.log('значение this:', this);
     }
     // press = (i) => {
     //     console.log('card#' + i);
