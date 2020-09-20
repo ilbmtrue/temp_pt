@@ -53,6 +53,13 @@ $imgpath: '../img/icon';
 .ico__move{background-image: url($imgpath + "/move.jpg");}
 .ico__castling{background-image: url($imgpath + "/castling.jpg");}
 
+
+.firstplayer{
+    background-image: url('../img/firstplayer.jpg');
+}
+.secondplayer{
+    background-image: url('../img/secondplayer.jpg');
+}
 .hand{
     bottom: 0;
     position: fixed; 

@@ -83,40 +83,21 @@ User.prototype = {
   }
 }
 
-// function Game(players, room, numGame) 
-// {
-//   this.numGame = numGame;
-//   this.room_name = room;
-//   this.players = [players[0], players[1]];
-//   this.cardFirstPlayer = 0;
-//   this.cardSecondPlayer = 0;
-//   this.prepeare = 0;
-//   this.wave = 0;
-//   this.round = 0;
-//   this.playerTurn = "";
-// }
-// Game.prototype = {
-
-// }
-
-
-
 function Room(room_name) {
-  this.roomName = room_name;
-  this.users = [];
-  this.sockets = {};
-  // this.game = {};
+  this.roomName = room_name
+  this.users = []
+  this.sockets = {}
+  this.numGame = numGame
 
-  this.numGame = numGame;
-  // this.room_name = room;
-  // this.players = [];
-  this.cardFirstPlayer = 0;
-  this.cardSecondPlayer = 0;
-  this.prepeare = 0;
-  this.wave = 1;
-  this.round = 0;
-  this.playerTurn = "";
-
+  
+  this.cardFirstPlayer = 0
+  this.cardSecondPlayer = 0
+  this.prepeare = 0
+  this.turn = 1
+  this.wave = 1
+  this.round = 1
+  this.playerTurn = ""
+  this.roundForPlayer = ""
 
 }
 Room.prototype = {
@@ -177,27 +158,35 @@ Room.prototype = {
       this.battlebegin();
     } else {
       playerName = this.users.find(player => player.socket === playerId).name;
-      io.in(this.roomName).emit('pick leader', { player: playerName});
+      io.in(this.roomName).emit('pick leader', {player: playerName});
     }  
   },
+  
+
   isPlayerTurnOver(user){
     if(user.actionPoint === 0){
       let anotherUser = this.users.filter( p => p.name !== user.name)[0];
-      if(anotherUser.actionPoint === 0){
-        // NEXT WAVE
-        this.users.forEach( player => player.actionPoint = 2);
-        this.wave++;
-        this.playerTurn = anotherUser.name;
-        io.in(this.roomName).emit('next wave', {player: this.playerTurn, wave: this.wave});
-        console.log('Next WAVE');
-        return
-      }
-      
+        if(anotherUser.actionPoint === 0){
+          // NEXT WAVE
+          this.users.forEach( player => player.actionPoint = 2);
+          if(this.wave === 3){
+            // NEXT ROUND
+            this.round++;
+            this.wave = 1;
+            this.roundForPlayer = user.name; 
+            io.in(this.roomName).emit("next round", {player: this.roundForPlayer , round: this.round, wave: this.wave});
+            return;
+          }
+          this.wave++;
+          this.playerTurn = anotherUser.name;
+          io.in(this.roomName).emit('next wave', {player: this.playerTurn, wave: this.wave});
+          console.log('Next WAVE');
+          return
+        }  
       this.playerTurn = anotherUser.name;
-      io.in(this.roomName).emit('next turn', { player: this.playerTurn});   
+      io.in(this.roomName).emit('next turn', {player: this.playerTurn});   
       console.log('Next player turn');
     }
-    
     
   },
 
@@ -205,14 +194,16 @@ Room.prototype = {
     [this.cardFirstPlayer, this.cardSecondPlayer] = shuffle(rooms[this.roomName].getUserNamesArray());
     let gameTable = this.getTable();
     this.playerTurn = this.cardFirstPlayer;
-    console.log('TURN for ' + this.playerTurn)
+    this.roundForPlayer = this.cardFirstPlayer;
+    console.log(this.roundForPlayer)
+    console.log(this.cardFirstPlayer)
+    console.log(this.cardSecondPlayer)
     io.in(this.roomName).emit('battle begin', {
       firstPlayer: this.cardFirstPlayer, 
       secondPlayer: this.cardSecondPlayer,
       gameTable: gameTable
     });
-    
-    console.log('battlebegin');
+
   },
   // handoverTurn: function(){
   //   this.playerTurn = this.users.filter( p => p.name !== this.users);
@@ -251,13 +242,12 @@ Room.prototype = {
     // first cards issued
     Array.prototype.forEach.call(this.users, function(player) {
       player.table.hand = player.table.deck.splice(0, 5);
-      rooms[room].sendTo(player, 'prepare new battle', { cards: player.table.hand });  
+      rooms[room].sendTo(player, 'prepare new battle', {cards: player.table.hand });  
     });
   },
   
   hireCard: function(playerId, cardId, field){
     let player = this.users.find(player => player.socket === playerId);
-
     if(player.actionPoint){
       let playerTable = this.users.find(player => player.socket === playerId).table;
       let f = field.split('__');
@@ -292,6 +282,7 @@ Room.prototype = {
         answerData = Cards.find(card => card.id === getRndCard);
         player.actionPoint--;
         answerData.actionPoint = player.actionPoint;
+        answerData.actionName = "giveCard";
         rooms[this.roomName].sendTo(player, 'giveCard', answerData);
       } else {
         rooms[this.roomName].sendTo(player, 'flash msg', {msgText: 'No more cards in your deck!'});
@@ -300,7 +291,7 @@ Room.prototype = {
     } else {
       rooms[this.roomName].sendTo(player, 'flash msg', {msgText: 'no action point!'});
     }
-        
+    this.isPlayerTurnOver(player);
   },
 }
 
