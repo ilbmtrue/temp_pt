@@ -8,6 +8,7 @@ for (let i = 0; i < Cards.length; i++) {
 
 var crypto = require('crypto');
 const express = require("express");
+const { map } = require('./cards_data_2012.js');
 const app = express();
 app.use(express.json()); // for parsing application/json
 // var path = require('path');
@@ -53,8 +54,8 @@ function PlayerTable()
     flank: {l: '', m: '', r: ''},
     rear: {l: '', m: '', r: ''}
   }
+  this.unit2 = new Map([[1, ""], [2, ""], [3, ""], [4, ""], [5, ""], [6, ""], [7, ""], [8, ""], [9, ""]]);
   this.shuffleStartDeck = function() {
-    // return shuffled out cards ID
     return shuffle(Array(Cards.length).fill().map((e, i) => i + 1));
   }
   // what cards will be used
@@ -159,6 +160,7 @@ Room.prototype = {
     let playerTable = this.users.find(player => player.socket === playerId).table;
     playerTable.field.c = cardId;
     playerTable.unit.flank.m = cardId; //alternative option
+    playerTable.unit2.set(5, Cards[cardId - 1]); //alternative option
     playerTable.hand.splice(playerTable.hand.indexOf(Number(cardId)), 1);
     this.prepeare++;
     if (this.prepeare == 2) {
@@ -169,7 +171,28 @@ Room.prototype = {
       io.in(this.roomName).emit('pick leader', {player: playerName});
     }  
   },
-  
+  hireCard: function(playerId, cardId, field, un = ""){
+    let player = this.users.find(player => player.socket === playerId);
+    if(player.actionPoint){
+      // let playerTable = this.users.find(player => player.socket === playerId).table;
+      let playerTable = player.table;
+      let f = field.split('__');
+      if(playerTable.unit[f[0]][f[1]] === ""){
+        playerTable.hand.splice(playerTable.hand.indexOf(Number(cardId)), 1);
+        playerTable.unit[f[0]][f[1]] = cardId;
+        player.table.unit2.set(un, Cards[cardId - 1]);
+        player.actionPoint--;
+        io.in(this.roomName).emit('table update', {
+          gameTable: this.getTable()
+        });
+      } else {
+        rooms[this.roomName].sendTo(player, 'flash msg', {msgText: 'Pick another field!'});
+      }
+    } else {
+      rooms[this.roomName].sendTo(player, 'flash msg', {msgText: 'no action point!'});
+    }
+    this.isPlayerTurnOver(player);
+  },
 
   isPlayerTurnOver(user){
     if(user.actionPoint === 0){
@@ -234,28 +257,7 @@ Room.prototype = {
     });
   },
   
-  hireCard: function(playerId, cardId, field){
-    let player = this.users.find(player => player.socket === playerId);
-    if(player.actionPoint){
-      // let playerTable = this.users.find(player => player.socket === playerId).table;
-      let playerTable = player.table;
-      let f = field.split('__');
-      if(playerTable.unit[f[0]][f[1]] === ""){
-        playerTable.hand.splice(playerTable.hand.indexOf(Number(cardId)), 1);
-        playerTable.unit[f[0]][f[1]] = cardId;
-        player.actionPoint--;
-        io.in(this.roomName).emit('table update', {
-          gameTable: this.getTable()
-        });
-      } else {
-        rooms[this.roomName].sendTo(player, 'flash msg', {msgText: 'Pick another field!'});
-      }
-    } else {
-      rooms[this.roomName].sendTo(player, 'flash msg', {msgText: 'no action point!'});
-    }
-    this.isPlayerTurnOver(player);
-    // console.log(player)
-  },
+  
   /*
       When you select the Attack Action, you will choose a
       Hero in your current Wave to make the Attack, as well
@@ -269,6 +271,7 @@ Room.prototype = {
 
     let player = this.users.find(player => player.socket === playerId);
     if(player.actionPoint){
+      console.log(data)
 
     } else {
       rooms[this.roomName].sendTo(player, 'flash msg', {msgText: 'no action point!'});
@@ -320,7 +323,7 @@ function handleSocket(socket) {
     room.heroAttack(socket.id, data);
   });
   socket.on('Recruit a Hero', function(data){
-    room.hireCard(socket.id, data.cardId, data.field);
+    room.hireCard(socket.id, data.cardId, data.field, data.un);
   });
 
   socket.on('requestCardsInfo', function(){

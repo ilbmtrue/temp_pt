@@ -1,3 +1,5 @@
+const { map } = require("../cards_data_2012");
+
 /*
     Объеденить socket события действий 
     смена хода
@@ -77,7 +79,7 @@ class ActionController
 
     hireHero(tableField){
         // if(playerTurn){
-            socket.emit('Recruit a Hero', {cardId: this.chosen, field: tableField.classList[1]});
+            socket.emit('Recruit a Hero', {cardId: this.chosen, field: tableField.classList[1], un: getMapKeyByValue(gameFieldDic, tableField.classList[1])});
             [].forEach.call(this.possibleTarget, el => {
                 el.classList.remove('card_posable-target');
             });
@@ -222,10 +224,10 @@ var pickLeader = null;
 const socket = io({
     autoConnect: false
 });
-let gameWaveDic = new Map();
-gameWaveDic.set(1, 'vanguard')
-            .set(2, 'flank')
-            .set(3, 'rear');
+let gameWaveDic = new Map([[1, 'vanguard'], [2, 'flank'], [3, 'rear']]);
+let gameFieldDic = new Map([[1, "vanguard__l"], [2, "vanguard__m"], [3, "vanguard__r"], 
+                            [4, "flank__l"], [5, "flank__m"], [6, "flank__r"], 
+                            [7, "rear__l"], [8, "rear__m"], [9, "rear__r"]]);
 let wavePrefere = -1;
 let gameRound = 1;
 let gameTurn = 1;
@@ -242,7 +244,12 @@ function messageBoardAnimation(){
     messageBoard.classList.add('flash--active');
 }
            
-
+function getMapKeyByValue(map, searchValue) {
+    for (let [key, value] of map.entries()) {
+      if (value === searchValue)
+        return key;
+    }
+  }
 function fillGameTable(player, data){
     let a = document.getElementsByClassName(player)[0];
     let d = data.gameTable.find(user => user.name === player).table;
@@ -477,9 +484,9 @@ $(document).ready(function () {
             if(playerTurn){
                 if(actionController.chosen){
                     if(actionController.playerAction === 'attack'){
-                        if(elem.classList.contains('card').getAttribute('data-card-id')){
+                        if(elem.classList.contains('card') && elem.getAttribute('data-card-id')){
                             console.log(event.target);
-                            actionController.target = event.target.getAttribute('data-card-id');
+                            actionController.target = elem.getAttribute('data-card-id');
                             actionController.characterAttack();
                             document.querySelector('body').style.cursor = "inherit";
                             return;
@@ -489,6 +496,7 @@ $(document).ready(function () {
                         }       
                     } 
 
+                    // hire hero to field
                     if(!modalShow && elem.classList.contains('card')){    
                         if(elem.closest('#player')){
                             if(elem.parentNode.classList.contains("card_posable-target")){
