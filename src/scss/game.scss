@@ -53,7 +53,26 @@ $imgpath: '../img/icon';
 .ico__move{background-image: url($imgpath + "/move.jpg");}
 .ico__castling{background-image: url($imgpath + "/castling.jpg");}
 
+.card-action{
+    display: none;
+    justify-content: space-around;
+}
+.card__action{
+    width: 15px;
+    height: 15px;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: contain;
+    // position: relative;
+    border: 1px solid purple;
+    cursor: pointer;
+}
+.card.attack{
 
+}
+.card.move{
+
+}
 .firstplayer{
     background-image: url('../img/firstplayer.jpg');
 }
@@ -236,7 +255,7 @@ $imgpath: '../img/icon';
     cursor: pointer;
 }
 .characteristic{
-    display: flex;
+    display: none;
     align-items: end;
     justify-content: flex-end;
     width: 100%;

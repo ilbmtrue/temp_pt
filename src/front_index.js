@@ -5,18 +5,79 @@
 */
 let imageFormat = '.webp';
 
-class PlayerAction 
+
+
+class ActionController 
 {   
     constructor() { 
-        this.select = null;
+        this.select = null; // выбрана карта
+
         this.target = null;
-        this.chosen = null;
+
+        this.chosen = null; // card ID
+
         this.chosenDOMElem = null;
+
         this.possibleTarget = null;
+
+        this.playerAction = null; // имя действия
     }
+
+    getPossibleField(player_action){
+        if(!playerTurn){
+            messageBoard.innerText = 'Not your turn!';                
+            messageBoardAnimation();
+            this.chosen = "";
+            this.chosenDOMElem = null;
+        } else {
+            switch (player_action) {
+                case 'attack':
+                    this.select = true;
+                    document.querySelector('body').style.cursor = "crosshair"; 
+                    this.possibleTarget = document.querySelector('#enemy-player').querySelectorAll('.card-holder');
+                    [].forEach.call(this.possibleTarget, el => {
+                        if(el.children[0].getAttribute('data-card-id')){
+                            el.classList.add('card_posable-target');
+                        }  
+                    });
+                break;
+                case 'move':
+                    break;
+                case 'hire_hero':
+                    this.select = true;
+                    document.querySelector('body').style.cursor = "crosshair";         
+                    switch (gameWave) {
+                        case 1:
+                            this.possibleTarget = gameTable.querySelector('.vanguard').querySelectorAll('.card-holder');
+                            break;
+                        case 2:
+                            this.possibleTarget = gameTable.querySelector('.flank').querySelectorAll('.card-holder');
+                            break;
+                        case 3:
+                            this.possibleTarget = gameTable.querySelector('.rear').querySelectorAll('.card-holder');
+                            break;
+                        default:break;
+                    }
+                    [].forEach.call(this.possibleTarget, el => {
+                        if(!el.children[0].getAttribute('data-card-id')){
+                            el.classList.add('card_posable-target');
+                        }  
+                    });
+                    document.querySelector('.modal').classList.remove("modal__show");
+                    gameTable.style.opacity = 1;
+                    modalShow = false;
+                    break;
+                case 'remove_corps':
+                    break;
+                default:
+                    break;
+            }
+        }
+    }
+
     hireHero(tableField){
         // if(playerTurn){
-            socket.emit('hireHero', {cardId: this.chosen, field: tableField.classList[1]});
+            socket.emit('Recruit a Hero', {cardId: this.chosen, field: tableField.classList[1]});
             [].forEach.call(this.possibleTarget, el => {
                 el.classList.remove('card_posable-target');
             });
@@ -40,10 +101,24 @@ class PlayerAction
         [].forEach.call(rotatedCards, el => {
             el.classList.remove('rotate-card');
         });
-        action.chosen = "";
-        action.chosenDOMElem = "";
+        actionController.chosen = "";
+        actionController.chosenDOMElem = "";
+    }
+    characterAttack(){
+        socket.emit('Character Attack', {cardId: this.chosen, victim: this.target});
+        [].forEach.call(this.possibleTarget, el => {
+            el.classList.remove('card_posable-target');
+        });
+        this.chosen = "";
+        this.playerAction = "";
+        this.chosenDOMElem = "";
+    }
+    removeCorps(){
+        // if target have class corps
     }
 
+
+/*
     selectField(){
         if(!playerTurn){
             messageBoard.innerText = 'Not your turn!';                
@@ -68,19 +143,21 @@ class PlayerAction
             [].forEach.call(this.possibleTarget, el => {
                 if(!el.children[0].getAttribute('data-card-id')){
                     el.classList.add('card_posable-target');
-                }
-                
+                }  
             });
-
-        }       
-                
+        }              
         document.querySelector('.modal').classList.remove("modal__show");
         gameTable.style.opacity = 1;
         modalShow = false;
     }
+*/
+    
+    // cardMove(){
+
+    // }
 
 }
-let action = new PlayerAction();
+let actionController = new ActionController();
 
 
 class PanelAction {
@@ -90,17 +167,16 @@ class PanelAction {
     }
     pickCard(){
         if(playerTurn){
-            socket.emit('requestCard');
+            socket.emit('Draw a Card');
         } else {
             messageBoard.innerText = 'Not your turn!';
             messageBoardAnimation();
         }     
     }
-    attack() {console.log('attack');}
+    // attack() {console.log('attack');}
     spell() {console.log('spell');}
     special() {console.log('special');}
     order() {console.log('order');}
-    removeCorps() {console.log('removeCorps');}
     move() {console.log('move');}
     castling() {console.log('castling');}
 
@@ -121,6 +197,7 @@ const playerHand = document.getElementById('player-hand');
 const messageBoard =  document.getElementById('messageBoard');  
 const infoBoard =  document.getElementById('infoBoard');  
 const gameTable = document.getElementById('gameTable'); 
+
 
 let modalShow = false;
 let chosenCard = 0;
@@ -145,7 +222,10 @@ var pickLeader = null;
 const socket = io({
     autoConnect: false
 });
-
+let gameWaveDic = new Map();
+gameWaveDic.set(1, 'vanguard')
+            .set(2, 'flank')
+            .set(3, 'rear');
 let wavePrefere = -1;
 let gameRound = 1;
 let gameTurn = 1;
@@ -173,6 +253,10 @@ function fillGameTable(player, data){
                 e = a.getElementsByClassName(line + '__' + place)[0];
                 e.style['background-image'] = 'url(\'./img/cards/s-'+ card.img + imageFormat + '\')';
                 e.dataset.cardId = d[line][place];
+                if(player === userName){
+                    e.querySelector('.card-action').style.display = 'flex';   
+                }
+                e.querySelector('.characteristic').style.display = 'flex';
                 e.querySelector('.characteristic__attack').innerText = (line === "flank" && place === "m" ) ? card.leader_atk : card.atk;
                 e.querySelector('.characteristic__defence').innerText = (line === "flank" && place === "m" ) ? card.leader_def : card.def;
             }
@@ -185,8 +269,8 @@ socket.on('table update', function(data){
     players.forEach(player => {
         fillGameTable(player, data);
     });
-    if(action.chosenDOMElem){
-        action.chosenDOMElem.remove();
+    if(actionController.chosenDOMElem){
+        actionController.chosenDOMElem.remove();
     }
     infoBoard.innerText = `Action point: ${data.gameTable.find(player => player.name === userName).actionPoints}`;
     
@@ -370,8 +454,6 @@ $(document).ready(function () {
         event.currentTarget.style.display = 'none';
     });
 
-
-
     document.addEventListener('contextmenu', function(event){
         event.preventDefault();
         event.stopPropagation();
@@ -385,36 +467,51 @@ $(document).ready(function () {
             cardInfoBlock = false;
         }
     });
-    document.addEventListener('mousedown', function(event){
-        // console.log('event.target'); console.log(event.target);
-        // console.log('event.currentTarget'); console.log(event.currentTarget);
-        
 
+
+    document.addEventListener('mousedown', function(event){
         if(event.button == 0){        
             let elem = event.target;
-            if(playerTurn && action.chosen){
-                if(!modalShow && elem.classList.contains('card')){    
-                    if(elem.closest('#player')){
-                        if(elem.parentNode.classList.contains("card_posable-target")){
-                            action.hireHero(event.target);
+
+
+            if(playerTurn){
+                if(actionController.chosen){
+                    if(actionController.playerAction === 'attack'){
+                        if(elem.classList.contains('card').getAttribute('data-card-id')){
+                            console.log(event.target);
+                            actionController.target = event.target.getAttribute('data-card-id');
+                            actionController.characterAttack();
                             document.querySelector('body').style.cursor = "inherit";
                             return;
                         } else {
                             messageBoard.innerText = 'Select correct field!';
                             messageBoardAnimation();
+                        }       
+                    } 
+
+                    if(!modalShow && elem.classList.contains('card')){    
+                        if(elem.closest('#player')){
+                            if(elem.parentNode.classList.contains("card_posable-target")){
+                                actionController.hireHero(event.target);
+                                document.querySelector('body').style.cursor = "inherit";
+                                return;
+                            } else {
+                                messageBoard.innerText = 'Select correct field!';
+                                messageBoardAnimation();
+                            }
+                        } else {
+                            messageBoard.innerText = 'Select your field!';
+                            messageBoardAnimation();
                         }
-                    } else {
-                        messageBoard.innerText = 'Select your field!';
-                        messageBoardAnimation();
-                    }
-                } 
+                    } 
+                }
             }
 
-            if(elem.classList.contains('hand-card') && !modalShow){
+            // if(elem.classList.contains('hand-card') && !modalShow){
+            if(elem.classList.contains('hand-card')){
                 let card = cardsCollection.find(c => c.id == elem.dataset.cardId);
-                // chosenCard = card.id;
-                action.chosen = card.id;
-                action.chosenDOMElem = elem;
+                actionController.chosen = card.id;
+                actionController.chosenDOMElem = elem;
                 let img = document.querySelector('.review-img');                
                 img.style.backgroundImage = 'url(\'./img/cards/'+ card.img + imageFormat + '\')';
                 if(img.classList.contains('--rotate') && (wavePrefere !== -1)){ 
@@ -429,38 +526,75 @@ $(document).ready(function () {
             if(modalShow && elem.classList.contains('modal')){
                 document.querySelector('.modal').classList.remove("modal__show");
                 gameTable.style.opacity = 1;
-                // chosenCard = 0;
-                action.chosen = 0;
+                actionController.chosen = 0;
+                actionController.chosenDOMElem = "";
                 modalShow = false;
                 return
             }
             
             if(elem.classList.contains('action__hireLeader')){
-
-                action.hireLeader();
+                actionController.hireLeader();
                 return
             }
             
             if(elem.classList.contains('action__hire')){
-                action.selectField();
+                actionController.getPossibleField('hire_hero');
                 return
             }
 
-            if(elem.classList.contains('review-img')){
+            /*
+                When you select the Attack Action, you will choose a
+                Hero in your current Wave to make the Attack, as well
+                as a target on the opposing Unit.
+            */
+            if(!actionController.playerAction && elem.classList.contains('attack')){
+                // check current wave
+                let card = elem.closest('.card');
+                let wave = card.closest('.c-wave').classList[1];
+                if(gameWaveDic.get(gameWave) === wave){
+                    actionController.chosen = card.getAttribute('data-card-id');
+                    actionController.chosenDOMElem = card;
+                    actionController.playerAction = 'attack';
+                    actionController.getPossibleField('attack');
+                } else {
+                    messageBoard.innerText = "hero attack only from current wave";
+                    messageBoardAnimation();
+                }
+                return
+            }
+            if(elem.classList.contains('move')){
+                let card = elem.closest('.card')
+                actionController.chosen = card.getAttribute('data-card-id');
+                actionController.chosenDOMElem = card;
+                actionController.playerAction = 'move';
+                actionController.cardMove(cardId);
+                return
+            }
+            if(modalShow && elem.classList.contains('review-img')){
                 elem.classList.toggle('--rotate');
                 return
             } 
+            /*
+                клик если
+            */     
+            //  была выбрана карта 
+            if(actionController.playerAction){
+                // тут выбор одной или нескольких из возможных целей ( в зависимости от действия)
+
+
+            }
         }
 
         if(event.button == 2){
-            if(action.select){
-                [].forEach.call(action.possibleTarget, el => {
+            if(actionController.select){
+                [].forEach.call(actionController.possibleTarget, el => {
                     el.classList.remove('card_posable-target');
                 });
                 document.querySelector('body').style.cursor = "inherit";
-                action.select = false;
-                action.chosen = "";
-                action.chosenDOMElem = null;
+                actionController.select = false;
+                actionController.action = null;
+                actionController.playerAction = "";
+                actionController.chosenDOMElem = null;
                 event.preventDefault();
                 event.stopPropagation();
                 return;

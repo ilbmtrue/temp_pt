@@ -61,8 +61,17 @@ function PlayerTable()
   this.deck = this.shuffleStartDeck(); 
 }
 
+function Game(users){
+  this.users = [{users}]
+  this.turn = 1
+  this.wave = 1
+  this.round = 1
+}
+Game.prototype = {
 
+  getTable: function(){},
 
+}
 function User(name = 'anonymous', socket) 
 {
   this.userId = ++lastUserId;
@@ -88,7 +97,6 @@ function Room(room_name) {
   this.users = []
   this.sockets = {}
   this.numGame = numGame
-
   
   this.cardFirstPlayer = 0
   this.cardSecondPlayer = 0
@@ -205,27 +213,7 @@ Room.prototype = {
     });
 
   },
-  // handoverTurn: function(){
-  //   this.playerTurn = this.users.filter( p => p.name !== this.users);
-  //   io.in(this.roomName).emit('transfer turn', {turnFor: this.playerTurn});
-  // },
-  // isNextWave: function(){
-  //   console.log(this.users[0].actionPoint + ' ' + this.users[1].actionPoint)
-  //   if( (this.users[0].actionPoint == 0) && (this.users[1].actionPoint == 0)){
-  //     this.users[0].actionPoint = 2;
-  //     this.users[1].actionPoint = 2;
-  //     [this.cardFirstPlayer, this.cardSecondPlayer] = [this.cardSecondPlayer, this.cardFirstPlayer];
-  //     if(this.wave < 4){  
-  //       this.wave++;
-  //     } else { 
-  //       this.wave = 0;
-  //       this.round++;
-  //     }
-  //     io.in(this.roomName).emit('next wave');
-  //   }
-    
-  // },
-  // getCardFrom: function(arrayCards, cardId){},
+
   getTable: function(){
     let gameTable = [];
     Array.prototype.forEach.call(this.users, function(player) {
@@ -249,7 +237,8 @@ Room.prototype = {
   hireCard: function(playerId, cardId, field){
     let player = this.users.find(player => player.socket === playerId);
     if(player.actionPoint){
-      let playerTable = this.users.find(player => player.socket === playerId).table;
+      // let playerTable = this.users.find(player => player.socket === playerId).table;
+      let playerTable = player.table;
       let f = field.split('__');
       if(playerTable.unit[f[0]][f[1]] === ""){
         playerTable.hand.splice(playerTable.hand.indexOf(Number(cardId)), 1);
@@ -266,6 +255,26 @@ Room.prototype = {
     }
     this.isPlayerTurnOver(player);
     // console.log(player)
+  },
+  /*
+      When you select the Attack Action, you will choose a
+      Hero in your current Wave to make the Attack, as well
+      as a target on the opposing Unit.
+      All Heroes can perform a Melee Attack, but both the
+      attacker and the target must be “in Melee” to do so.
+      Only the foremost Hero or Leader in each column is
+      considered “in Melee”.
+  */
+  heroAttack: function(playerId, data){
+
+    let player = this.users.find(player => player.socket === playerId);
+    if(player.actionPoint){
+
+    } else {
+      rooms[this.roomName].sendTo(player, 'flash msg', {msgText: 'no action point!'});
+    }
+
+    this.isPlayerTurnOver(player);
   },
   // get card from players deck and push it to players hand
   requestCard: function(playerId){
@@ -298,18 +307,22 @@ Room.prototype = {
 
 
 function handleSocket(socket) {
-
   var user = null;
   var room = null;
-  var game = null;
-  var firstPlayer = null;
-  var secondPlayer = null;
 
-  socket.on('chosen leader', pickLeader);
-  socket.on('requestCard', playerRequestCard);
-  socket.on('hireHero', function(data){
+  socket.on('chosen leader',  function(card){
+    room.hireLeader(socket.id, card);
+  });
+  socket.on('Draw a Card', function(data){
+    room.requestCard(socket.id);
+  });
+  socket.on('Character Attack', function(data){
+    room.heroAttack(socket.id, data);
+  });
+  socket.on('Recruit a Hero', function(data){
     room.hireCard(socket.id, data.cardId, data.field);
   });
+
   socket.on('requestCardsInfo', function(){
     socket.emit('reciveCardsInfo', {cardsInfo: Cards});
   });
@@ -326,20 +339,17 @@ function handleSocket(socket) {
     }
     socket.join(roomName);
     io.to(roomName).emit("someone join", {user: userName});
-    io_adm.to("Admin room").emit('someone ready', {room: roomName, user: userName, s: socket.id});  
+    // io_adm.to("Admin room").emit('someone ready', {room: roomName, user: userName, s: socket.id});  
     socket.emit('selfJoin', {myname: userName, cards: cardsImgArray});
     socket.broadcast.emit('enemyJoin', {enemy: userName});
     var clients = io.nsps["/"].adapter.rooms[roomName];
     console.log('line~252| in room# ' + roomName + ' sits: ' + clients.length);
     
-    if (room.numUsers() == 2) {    
-      // room.game = new Game(room.getUsers(), room.getName(), numGame++);
-      // game = room.game;
-      // games[game];
+    if(room.numUsers() == 2) {    
       room.getUserNames();
       enemy = room.getUserNames().replace(userName, '').trim();
       socket.emit('enemyJoin', {enemy: enemy}); 
-      console.log('|||||||||||||||||||||| users ready ||||||||||||||||||||||||||||||');
+      console.log('| users ready |');
       room.battlePrepare();
     }
   });
@@ -373,12 +383,15 @@ function handleSocket(socket) {
     }
     room.broadcastFrom(user, 'user_leave', user.getName());
   }
-  function pickLeader(card){
-    room.hireLeader(socket.id, card);
-  }
-  function playerRequestCard(){
-    room.requestCard(socket.id);
-  }
+  // function pickLeader(card){
+  //   room.hireLeader(socket.id, card);
+  // }
+  // function playerRequestCard(){
+  //   room.requestCard(socket.id);
+  // }
+  // function playerHeroAttack(data){
+  //   room.heroAttack(socket.id, data);
+  // }
 }
 
 

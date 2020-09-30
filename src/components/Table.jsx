@@ -20,25 +20,25 @@ export default class Table extends Component{
                     <div id="player" className="player">
                         <div className="user-name"></div>
                         <div className="user-field">
-                            <div className="rear">
+                            <div className="c-wave rear">
                                 <div className={"card-wave rear-wave"}/>
-                                <Card classes={"card rear__l"} value={i++} press={()=> this.handleClick(i)}/>
-                                <Card classes={"card rear__m"} value={i++} press={()=> this.handleClick(i)}/>
-                                <Card classes={"card rear__r"} value={i++} press={()=> this.handleClick(i)}/>
+                                <Card classes={"card rear__l"} player={true} value={i++} press={()=> this.handleClick(i)}/>
+                                <Card classes={"card rear__m"} player={true} value={i++} press={()=> this.handleClick(i)}/>
+                                <Card classes={"card rear__r"} player={true} value={i++} press={()=> this.handleClick(i)}/>
                                 {/* <Card classes={"card empty-card"}/> */}
                             </div>
-                            <div className="flank">
+                            <div className="c-wave flank">
                                 <div className={"card-wave flank-wave"}/>
-                                <Card classes={"card flank__l"} value={i++} press={()=> this.handleClick(i)}/>
-                                <Card classes={"card flank__m"} value={i++} press={()=> this.handleClick(i)}/>
-                                <Card classes={"card flank__r"} value={i++} press={()=> this.handleClick(i)}/>
+                                <Card classes={"card flank__l"} player={true} value={i++} press={()=> this.handleClick(i)}/>
+                                <Card classes={"card flank__m"} player={true} value={i++} press={()=> this.handleClick(i)}/>
+                                <Card classes={"card flank__r"} player={true} value={i++} press={()=> this.handleClick(i)}/>
                                 {/* <Card classes={"card empty-card"}/> */}
                             </div>
-                            <div className="vanguard">
+                            <div className="c-wave vanguard">
                                 <div className={"card-wave vanguard-wave"}/>
-                                <Card classes={"card vanguard__l"} value={i++} press={()=> this.handleClick(i)}/>
-                                <Card classes={"card vanguard__m"} value={i++} press={()=> this.handleClick(i)}/>
-                                <Card classes={"card vanguard__r"} value={i++} press={()=> this.handleClick(i)}/>
+                                <Card classes={"card vanguard__l"} player={true} value={i++} press={()=> this.handleClick(i)}/>
+                                <Card classes={"card vanguard__m"} player={true} value={i++} press={()=> this.handleClick(i)}/>
+                                <Card classes={"card vanguard__r"} player={true} value={i++} press={()=> this.handleClick(i)}/>
                                 {/* <Card classes={"card empty-card"}/> */}
                             </div>
                         </div>
@@ -46,21 +46,21 @@ export default class Table extends Component{
                     <div id="enemy-player" className="player">
                         <div className="user-name"></div>
                         <div className="user-field">
-                            <div className="vanguard">              
+                            <div className="c-wave vanguard">              
                                 <div className={"card-wave vanguard-wave"}/>
                                 <Card classes={"card vanguard__l"} value={j++} press={()=> this.handleClick(j)}/>
                                 <Card classes={"card vanguard__m"} value={j++} press={()=> this.handleClick(j)}/>
                                 <Card classes={"card vanguard__r"} value={j++} press={()=> this.handleClick(j)}/>
                                 {/* <Card classes={"card empty-card"}/> */}
                             </div>
-                            <div className="flank">
+                            <div className="c-wave flank">
                                 <div className={"card-wave flank-wave"}/>
                                 <Card classes={"card flank__l"} value={j++} press={()=> this.handleClick(j)}/>
                                 <Card classes={"card flank__m"} value={j++} press={()=> this.handleClick(j)}/>
                                 <Card classes={"card flank__r"} value={j++} press={()=> this.handleClick(j)}/>
                                 {/* <Card classes={"card empty-card"}/>   */}
                             </div>
-                            <div className="rear">
+                            <div className="c-wave rear">
                                 <div className={"card-wave rear-wave"}/>
                                 <Card classes={"card rear__l"} value={j++} press={()=> this.handleClick(j)}/>
                                 <Card classes={"card rear__m"} value={j++} press={()=> this.handleClick(j)}/>

@@ -9,7 +9,14 @@ const Card = props => {
                     <div className="characteristic__attack" data-card-attack="0"></div>
                     <div className="characteristic__defence" data-card-defence="0"></div>
                 </div>
-                {props.value}
+                {(props.player) 
+                ? <div className="card-action">
+                    <div className="ico__attack card__action attack"></div>
+                    <div className="ico__move card__action move"></div>
+                </div>
+                : '' }
+                
+                {/* {props.value} */}
             </div>
         </div>
     );
