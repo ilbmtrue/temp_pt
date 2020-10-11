@@ -419,3 +419,16 @@ $imgpath: '../img/icon';
 .--show{
     display: block;
 }
+
+.blood-token{
+    display: none;
+}
+.token{
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    color: yellow;
+    line-height: 30px;
+    text-align: center;
+    background-color: red;
+}

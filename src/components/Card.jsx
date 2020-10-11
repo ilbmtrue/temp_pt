@@ -4,7 +4,7 @@ import React, { Component } from "react";
 const Card = props => {
     return (
         <div className="card-holder">
-            <div className={props.classes} onClick={props.press}>
+            <div className={props.classes} data-field-num={props.field} onClick={props.press}>
                 <div className="characteristic">
                     <div className="characteristic__attack" data-card-attack="0"></div>
                     <div className="characteristic__defence" data-card-defence="0"></div>
@@ -16,7 +16,9 @@ const Card = props => {
                     <div className="ico__move card__action move"></div> : '' } 
                 </div>
                 : '' }
-                
+                <div className="blood-token">
+                    <div className="token"></div>      
+                </div>
                 {/* {props.value} */}
             </div>
         </div>

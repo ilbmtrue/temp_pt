@@ -79,7 +79,8 @@ class ActionController
 
     hireHero(tableField){
         // if(playerTurn){
-            socket.emit('Recruit a Hero', {cardId: this.chosen, field: tableField.classList[1], un: getMapKeyByValue(gameFieldDic, tableField.classList[1])});
+            // socket.emit('Recruit a Hero', {cardId: this.chosen, field: tableField.getAttribute('data-field-num'), un: getMapKeyByValue(gameFieldDic, tableField.classList[1])});
+            socket.emit('Recruit a Hero', {cardId: this.chosen, field: tableField.getAttribute('data-field-num')});
             [].forEach.call(this.possibleTarget, el => {
                 el.classList.remove('card_posable-target');
             });
@@ -176,7 +177,14 @@ class PanelAction {
         }     
     }
     // attack() {console.log('attack');}
-    spell() {console.log('spell');}
+    pass() {
+        if(playerTurn){
+            socket.emit('Pass');
+        } else {
+            messageBoard.innerText = 'Not your turn!';
+            messageBoardAnimation();
+        }
+    }
     special() {console.log('special');}
     order() {console.log('order');}
     move() {console.log('move');}
@@ -271,6 +279,56 @@ function fillGameTable(player, data){
     }  
 }
 
+function fillGameTableB(player, data){
+    let a = document.getElementsByClassName(player)[0];
+    let d = data.gameTable.find(user => user.name === player).table;
+    d = JSON.parse(d);
+    // let e = a.querySelectorAll('.table__field');
+    for(f in d){
+        if(d[f]){
+            let card = cardsCollection.find(c => c.id == d[f].id);
+            let e = a.querySelectorAll(`[data-field-num=\"${f}\"`)[0];
+            if(d[f].isAlive){
+                e.style['background-image'] = 'url(\'./img/cards/s-'+ card.img + imageFormat + '\')';
+                e.dataset.cardId = d[f].id;
+                if(player === userName){
+                    e.querySelector('.card-action').style.display = 'flex';   
+                }
+                
+                e.querySelector('.characteristic').style.display = 'flex';
+                e.querySelector('.characteristic__attack').innerText = (f == 5) ? card.leader_atk : card.atk;
+                e.querySelector('.characteristic__defence').innerText = (f == 5) ? card.leader_def : card.def;
+                if(d[f].blood){
+                    e.querySelector('.blood-token').style.display = 'flex';
+                    e.querySelector('.token').innerText = d[f].blood;
+                }
+                
+            } else {
+                e.style['background-image'] = 'url(\'./img/shirt-3.jpg\')';
+                if(player === userName){
+                    e.querySelector('.card-action').style.display = 'none';   
+                }
+                e.querySelector('.blood-token').style.display = 'none';
+                e.querySelector('.characteristic').style.display = 'none';
+            }
+        }
+    }
+
+    console.log('fillGameTableB');
+   
+
+}
+socket.on('table update B', function(data){
+    console.log("from server action: 'table update B'");
+    players.forEach(player => {
+        fillGameTableB(player, data);
+    });
+    if(actionController.chosenDOMElem){
+        actionController.chosenDOMElem.remove();
+    }
+    infoBoard.innerText = `Action point: ${data.gameTable.find(player => player.name === userName).actionPoints}`;
+    
+});
 socket.on('table update', function(data){
     console.log("from server action: 'table update'");
     players.forEach(player => {
@@ -353,7 +411,7 @@ socket.on("battle begin", function(data){
     console.log('#####round for: ' + roundForPlayer)
     moveWaveCard(roundForPlayer)
     players.forEach(player => {
-        fillGameTable(player, data);
+        fillGameTableB(player, data);
     });
     controlPanel.style.visibility = "visible";
     new PanelAction(controlPanel);
@@ -395,6 +453,8 @@ socket.on("next round", function(data){
     moveWaveCard(roundForPlayer);
 });
 socket.on("next wave", function(data){
+
+    console.log('asef');
     gameWave = data.wave;
     if(data.player === userName){
         messageBoard.innerText = "Your turn";
@@ -407,6 +467,8 @@ socket.on("next wave", function(data){
     }
     infoBoard.innerText = "Action points: 2";
     moveWaveCard(roundForPlayer);
+
+
 });
 socket.on("next turn", function(data){
     if(data.player === userName){
@@ -565,6 +627,7 @@ $(document).ready(function () {
                     actionController.playerAction = 'attack';
                     actionController.getPossibleField('attack');
                 } else {
+                    
                     messageBoard.innerText = "hero attack only from current wave";
                     messageBoardAnimation();
                 }
