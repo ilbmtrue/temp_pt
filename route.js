@@ -1,5 +1,12 @@
 var crypto = require('crypto');
 module.exports = function(app) {
+    app.get('/{8}*', (req,res) => {
+        if(req.url.length === 10){
+            console.log(req.url);
+        } else {
+            console.log('asdasd');
+        }
+    });
     app.get('/admin', (req,res) => {
         res.sendFile(__dirname + '/dist/admin/adminPage.html');
     });

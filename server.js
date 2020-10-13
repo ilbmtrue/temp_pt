@@ -56,7 +56,6 @@ function PlayerTable()
 {
   this.hand = '';
   this.drop = '';
-
   this.unit2 = new Map([[1, ""], [2, ""], [3, ""], [4, ""], [5, ""], [6, ""], [7, ""], [8, ""], [9, ""]]);
   this.shuffleStartDeck = function() {
     return shuffle(Array(Cards.length).fill().map((e, i) => i + 1));
@@ -96,6 +95,7 @@ function User(name = 'anonymous', socket)
   this.socket = socket;
   this.table = new PlayerTable();
   this.actionPoint = 0;
+  this.inRoom = 1;
 }
 User.prototype = {
   getId: function () {
@@ -116,9 +116,10 @@ function Room(room_name) {
   this.numGame = numGame
   
   this.cardsOnTable = new Map()
+
   this.cardFirstPlayer = 0
   this.cardSecondPlayer = 0
-  this.prepeare = 0
+  this.battleBegin = 0
   this.turn = 1
   this.wave = 1
   this.round = 1
@@ -151,7 +152,7 @@ Room.prototype = {
     this.sockets[user.getId()] = socket;    
   },
   removeUser: function (id) {
-    this.users = this.users.filter( user => user.getId() !== id);
+    // this.users = this.users.filter( user => user.getId() !== id);
     delete this.sockets[id];
     if(this.users.length == 0){
       delete this;
@@ -176,15 +177,10 @@ Room.prototype = {
   hireLeader: function(playerId, cardId){
     let playerTable = this.users.find(player => player.socket === playerId).table;
     
-    // playerTable.field.c = cardId;
-    // playerTable.unit.flank.m = cardId; //alternative option
-    // playerTable.unit2.set(5, Cards[cardId - 1]); //alternative option
-
     playerTable.placeCard(cardId, 5);
     playerTable.hand.splice(playerTable.hand.indexOf(Number(cardId)), 1);
-    this.prepeare++;
-    if (this.prepeare == 2) {
-      // this.users = [users[0], users[1]];
+    this.battleBegin++;
+    if (this.battleBegin == 2) {
       this.battlebegin();
     } else {
       playerName = this.users.find(player => player.socket === playerId).name;
@@ -192,7 +188,8 @@ Room.prototype = {
     }  
   },
   hireCard: function(playerId, cardId, field){
-    let player = this.users.find(player => player.socket === playerId);
+    let player = this.users.find(player => player.socket === playerId); 
+   
     if(player.actionPoint){
       // let playerTable = this.users.find(player => player.socket === playerId).table;
       let playerTable = player.table;
@@ -323,6 +320,14 @@ Room.prototype = {
       Only the foremost Hero or Leader in each column is
       considered “in Melee”.
   */
+  updateTablePerks: function(){
+    for(let u in this.users){
+      for(let c in u.table.unit2){
+        console.log(u);
+      }
+    }
+    
+  },
   heroAttack: function(playerId, data){
     let player = this.users.find(player => player.socket === playerId);
     let enemyPlayer = this.users.find(player => player.socket !== playerId);
@@ -331,12 +336,14 @@ Room.prototype = {
       let card = player.table.getCardById(data.cardId)
       let cardVictim = enemyPlayer.table.getCardById(data.victim)
 
+      
       // preattack
       // attack
       // postattack  
 
       cardVictim.blood += card.atk;
       
+
       io.in(this.roomName).emit('table update B', {
         gameTable: this.getTableB()
       });
@@ -403,18 +410,49 @@ function handleSocket(socket) {
   });
   socket.on('disconnect', onLeave);
 
+    /*
+    function User(name = 'anonymous', socket) 
+    {
+      this.userId = ++lastUserId;
+      this.name = name;
+      this.socket = socket;
+      this.table = new PlayerTable();
+      this.actionPoint = 0;
+      this.inRoom = 1;
+    }
+    */
+  
   socket.on('ready to game', function (data) {
+    console.log('socket ready: ' + socket.id);
     let userName = data.userName || 'undefined user';
     let roomName = data.room || 'waiting room';
     room = getOrCreateRoom(data.room);
-    if(room.getUsers().find(user => user.name === data.userName)){
+    let userB = room.getUsers().find(user => user.name === data.userName);
+    if(userB){
       console.log('user exist');
+      userB.socket = socket.id;
+      userB.inRoom = 1;
+      user = userB;
+      room.sockets[user.getId()] = socket;  
+      socket.join(roomName);
+      socket.emit('rejoin', {
+        player: user.name,
+        enemy: room.getUsers().find(user => user.name !== data.userName).name,
+        cards: cardsImgArray,
+        gameTable: room.getTableB(),
+        hand: user.table.hand,
+        actionPoint: user.actionPoint,
+        playerTurn: room.playerTurn,
+        roundForPlayer: room.roundForPlayer, 
+        round: room.round, 
+        wave: room.wave
+      });
+      return;
     } else {
       room.addUser(user = new User(data.userName, socket.id), socket);
     }
-    socket.join(roomName);
-    io.to(roomName).emit("someone join", {user: userName});
-    // io_adm.to("Admin room").emit('someone ready', {room: roomName, user: userName, s: socket.id});  
+    socket.join(roomName); // ~~~~~
+    io.to(roomName).emit("someone join", {user: userName}); 
     socket.emit('selfJoin', {myname: userName, cards: cardsImgArray});
     socket.broadcast.emit('enemyJoin', {enemy: userName});
     var clients = io.nsps["/"].adapter.rooms[roomName];
@@ -427,16 +465,18 @@ function handleSocket(socket) {
       console.log('| users ready |');
       room.battlePrepare();
     }
+
   });
 
-  function onJoin(data) {
-    room = getOrCreateRoom(data.roomName);
-    room.addUser(user = new User(data.userName, socket.id), socket);
-    room.sendTo(user, 'room', { userId: user.getId(), roomName: room.getName(), users: room.getUsers()});
+  // function onJoin(data) {
+  //   console.log('DELETE IT');
+  //   room = getOrCreateRoom(data.roomName);
+  //   room.addUser(user = new User(data.userName, socket.id), socket);
+  //   room.sendTo(user, 'room', { userId: user.getId(), roomName: room.getName(), users: room.getUsers()});
     // if (room.numUsers() == 2) {
     //   console.log('---------------------------');
     // }
-  }
+  // }
   function getOrCreateRoom(roomName) {
     let room;
     // if (!name) { name = ++lastRoomId + '_room'; }
@@ -450,23 +490,26 @@ function handleSocket(socket) {
     if (room === null) {
       return;
     }
+    user.inRoom = 0;
+    console.log(socket.id + ' - is leave');
     room.removeUser(user.getId());
-    console.log('User %d left room %s. Users in room: %d', user.getId(), room.getName(), room.numUsers());
-    if (room.isEmpty()) {
+    // console.log('User %d left room %s. Users in room: %d', user.getId(), room.getName(), room.numUsers());
+    let ar = room.users.filter(user => user.inRoom === 1)
+    if( ar.length === 0 ){
       console.log('Room is empty - dropping room %s', room.getName());
       delete rooms[room.getName()];
+    } else {
+      console.log('Users in room: %d', room.numUsers());
     }
+    
+
+
+    // if (room.isEmpty()) {
+    //   console.log('Room is empty - dropping room %s', room.getName());
+    //   delete rooms[room.getName()];
+    // }
     room.broadcastFrom(user, 'user_leave', user.getName());
   }
-  // function pickLeader(card){
-  //   room.hireLeader(socket.id, card);
-  // }
-  // function playerRequestCard(){
-  //   room.requestCard(socket.id);
-  // }
-  // function playerHeroAttack(data){
-  //   room.heroAttack(socket.id, data);
-  // }
 }
 
 

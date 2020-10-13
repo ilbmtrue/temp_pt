@@ -1,10 +1,5 @@
 const { map } = require("../cards_data_2012");
 
-/*
-    Объеденить socket события действий 
-    смена хода
-    
-*/
 let imageFormat = '.webp';
 
 
@@ -318,11 +313,64 @@ function fillGameTableB(player, data){
    
 
 }
+
+socket.on('rejoin', function(data){
+    console.log('rejoined');
+    cardsImage = data.cards;
+    enemyName = data.enemy;
+
+    let fieldPlayer = document.getElementById('player');
+    let fieldPlayerName = fieldPlayer.getElementsByClassName("user-name")[0];
+    let fieldEnemyPlayer = document.getElementById('enemy-player');
+    let fieldEnemyPlayerName = fieldEnemyPlayer.getElementsByClassName("user-name")[0];
+    
+    
+
+    fieldPlayer.classList.add(data.player);
+    fieldPlayerName.innerHTML = data.player;      
+    fieldEnemyPlayer.classList.add(data.enemy);
+    fieldEnemyPlayerName.innerHTML = data.enemy;  
+    players.push(data.player, data.enemy);
+    players.forEach(player => {
+        fillGameTableB(player, data)
+    });
+
+    roundForPlayer = data.roundForPlayer;
+    gameRound = data.round;
+    gameWave = data.wave;
+    moveWaveCard(roundForPlayer);
+    
+    for (let i = 0; i < data.hand.length; i++) {
+        var new_card = document.createElement('div');
+        new_card.className = 'hand-card';
+        new_card.setAttribute('data-card-id', data.hand[i]);
+        new_card.style['background-image'] = 'url(\'./img/cards/'+ cardsImage[data.hand[i]] + imageFormat + '\')';
+        // new_card.classList.add('rotate-card');
+        playerHand.append(new_card);
+    }
+
+    infoBoard.innerText = `Action point: ${data.actionPoint}`;
+    controlPanel.style.visibility = "visible";
+    new PanelAction(controlPanel);
+    document.querySelectorAll('.action').forEach(e => e.classList.toggle('--show'));
+    if(data.playerTurn === userName){   
+        messageBoard.innerText += ". Your turn";messageBoardAnimation();
+        playerTurn = true;
+    } else {
+        messageBoard.innerText += ". Enemy turn";messageBoardAnimation();
+        playerTurn = false;
+    }
+});
 socket.on('table update B', function(data){
     console.log("from server action: 'table update B'");
-    players.forEach(player => {
-        fillGameTableB(player, data);
-    });
+    data.gameTable.forEach(player => {
+        fillGameTableB(player.name, data)
+    }
+
+    );
+    // players.forEach(player => {
+    //     fillGameTableB(player, data);
+    // });
     if(actionController.chosenDOMElem){
         actionController.chosenDOMElem.remove();
     }
@@ -512,16 +560,24 @@ function newTurn(r,w){
 
 $(document).ready(function () {
     joinroom = window.location.pathname.slice(1);
-    $(document).on('click', '.js-ready-game', function(event){      
-        socket.open();
-        setTimeout(() => {
-            socket.emit('ready to game', {userName: userName, room: joinroom});    
-        }, 100);
-        if(cardsCollection.length == 0){
-            socket.emit('requestCardsInfo')
-        }       
-        event.currentTarget.style.display = 'none';
-    });
+    socket.open();
+    if(cardsCollection.length == 0){
+        socket.emit('requestCardsInfo');
+    }  
+    setTimeout(() => {
+        socket.emit('ready to game', {userName: userName, room: joinroom});    
+    }, 100);
+    
+    // $(document).on('click', '.js-ready-game', function(event){      
+    //     socket.open();
+    //     setTimeout(() => {
+    //         socket.emit('ready to game', {userName: userName, room: joinroom});    
+    //     }, 100);
+    //     if(cardsCollection.length == 0){
+    //         socket.emit('requestCardsInfo')
+    //     }       
+    //     event.currentTarget.style.display = 'none';
+    // });
 
     document.addEventListener('contextmenu', function(event){
         event.preventDefault();
