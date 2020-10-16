@@ -4,6 +4,7 @@ Object.freeze( Cards );
 Cards.forEach(c => {
   c["blood"] = 0;
   c["isAlive"] = 1;
+  c['atkType'] = 'melee';
 });
 
 
@@ -38,8 +39,85 @@ require('./route.js')(app);
 
 var game_token = '';
 
+function CardsRoadMap()
+{
+  this.fields = [
+    new Node(1, "rear", "left"),
+    new Node(2, "rear", "middle"),
+    new Node(3, "rear", "right"),
+    new Node(4, "flank", "left"),
+    new Node(5, "flank", "middle"),
+    new Node(6, "flank", "right"),
+    new Node(7, "vanguard", "left"),
+    new Node(8, "vanguard", "middle"),
+    new Node(9, "vanguard", "right"),
+  ];
+  this.column = {
+    left: { vanguard: null, flank: null, rear: null },
+    middle: { vanguard: null, flank: null, rear: null },
+    right: { vanguard: null, flank: null, rear: null },
+  };
+  /*
+    147
+    258
+    369
+  */
+  this.fields[0].aheadNeighbor = this.fields[3];  // 1->4
+  this.fields[1].aheadNeighbor = this.fields[4];  // 2->5
+  this.fields[2].aheadNeighbor = this.fields[5];  // 3->6
 
+  this.fields[3].aheadNeighbor = this.fields[6];  // 4->7
+  this.fields[3].behindNeighbor = this.fields[0]; // 4->1
+  this.fields[4].aheadNeighbor = this.fields[7];  // 5->8
+  this.fields[4].behindNeighbor = this.fields[1]; // 5->2
+  this.fields[5].aheadNeighbor = this.fields[8];  // 6->9
+  this.fields[5].behindNeighbor = this.fields[2]; // 6->3
 
+  this.fields[6].behindNeighbor = this.fields[3]; // 7->4
+  this.fields[7].behindNeighbor = this.fields[4]; // 8->5
+  this.fields[8].behindNeighbor = this.fields[5]; // 9->6
+}
+CardsRoadMap.prototype = {
+  getNodeByNum: function(num){
+    return this.fields.filter(node => node.num === num);
+  },
+  getNodeByCardId: function(id){
+    for(let i = 0; i < this.fields.length; i++){
+      if(this.fields[i].card){
+        if(this.fields[i].card.id == id){
+          return this.fields[i];
+        }
+      }
+    }
+    return false;
+  },
+  init: (function(){
+
+  })(),
+}
+function Node(num, line, side){
+  this.num = num;
+  this.card = null;
+  this.line = line;
+  this.side = side;
+  this.aheadNeighbor = null;
+  this.behindNeighbor = null;
+}
+
+// cardsRoadMap = new CardsRoadMap(); 
+
+// cardsRoadMap.fields[0].aheadNeighbor = cardsRoadMap.fields[3];  // 1->4
+// cardsRoadMap.fields[1].aheadNeighbor = cardsRoadMap.fields[4];  // 2->5
+// cardsRoadMap.fields[2].aheadNeighbor = cardsRoadMap.fields[5];  // 3->6
+// cardsRoadMap.fields[3].aheadNeighbor = cardsRoadMap.fields[6];  // 4->7
+// cardsRoadMap.fields[3].behindNeighbor = cardsRoadMap.fields[1]; // 4->1
+// cardsRoadMap.fields[4].aheadNeighbor = cardsRoadMap.fields[7];  // 5->8
+// cardsRoadMap.fields[4].behindNeighbor = cardsRoadMap.fields[2]; // 5->2
+// cardsRoadMap.fields[5].aheadNeighbor = cardsRoadMap.fields[8];  // 6->9
+// cardsRoadMap.fields[5].behindNeighbor = cardsRoadMap.fields[3]; // 6->3
+// cardsRoadMap.fields[6].behindNeighbor = cardsRoadMap.fields[3]; // 7->4
+// cardsRoadMap.fields[7].behindNeighbor = cardsRoadMap.fields[4]; // 8->5
+// cardsRoadMap.fields[8].behindNeighbor = cardsRoadMap.fields[5]; // 9->6
 
 function shuffle(array) {
   var m = array.length, t, i;
@@ -72,12 +150,40 @@ PlayerTable.prototype = {
   },
   placeCard: function(id, fieldNum){
     let c = Cards[id - 1];
-    this.unit2.set(+fieldNum,  {id: c.id, atk: c.atk, def: c.def, leader_atk: c.leader_atk, leader_def: c.leader_def, blood: c.blood, isAlive: c.isAlive});
+    let line = "", side = "";
+    switch (+fieldNum) {
+      case 1: line = "rear"; side = "left";break;
+      case 2: line = "rear"; side = "middle";break;
+      case 3: line = "rear"; side = "right";break;
+      case 4: line = "flank"; side = "left";break;
+      case 5: line = "flank"; side = "middle";break;
+      case 6: line = "flank"; side = "right";break;
+      case 7: line = "vanguard"; side = "left";break;
+      case 8: line = "vanguard"; side = "middle";break;
+      case 9: line = "vanguard"; side = "right";break;
+      default:break;
+    }
+    
+    this.unit2.set(+fieldNum,  new Object({
+      id: c.id, 
+      atk: (fieldNum == 5) ? c.leader_atk : c.atk, 
+      def: (fieldNum == 5) ? c.leader_def : c.def, 
+      atkType: c.atkType,
+      // leader_atk: c.leader_atk, 
+      // leader_def: c.leader_def, 
+      blood: c.blood, 
+      isAlive: c.isAlive, 
+      locate: fieldNum,
+      line: line,
+      side: side,
+    }));
+
+
   },
 }
 
 function Game(users){
-  this.users = [{users}]
+  this.users = [...users]
   this.turn = 1
   this.wave = 1
   this.round = 1
@@ -94,6 +200,7 @@ function User(name = 'anonymous', socket)
   this.name = name;
   this.socket = socket;
   this.table = new PlayerTable();
+  this.cardsRoadMap = new CardsRoadMap();
   this.actionPoint = 0;
   this.inRoom = 1;
 }
@@ -175,9 +282,13 @@ Room.prototype = {
     }, this);
   },
   hireLeader: function(playerId, cardId){
-    let playerTable = this.users.find(player => player.socket === playerId).table;
-    
+    let player = this.users.find(player => player.socket === playerId); 
+    let playerTable = player.table;
     playerTable.placeCard(cardId, 5);
+
+    player.cardsRoadMap.fields[4].card = playerTable.unit2.get(5);
+    player.cardsRoadMap.column["middle"]["flank"] = playerTable.unit2.get(5);
+
     playerTable.hand.splice(playerTable.hand.indexOf(Number(cardId)), 1);
     this.battleBegin++;
     if (this.battleBegin == 2) {
@@ -194,13 +305,28 @@ Room.prototype = {
       // let playerTable = this.users.find(player => player.socket === playerId).table;
       let playerTable = player.table;
       let f = field;//.split('__');
-      
+      let line, side = "";
+      switch (+field) {
+        case 1: line = "rear"; side = "left";break;
+        case 2: line = "rear"; side = "middle";break;
+        case 3: line = "rear"; side = "right";break;
+        case 4: line = "flank"; side = "left";break;
+        case 5: line = "flank"; side = "middle";break;
+        case 6: line = "flank"; side = "right";break;
+        case 7: line = "vanguard"; side = "left";break;
+        case 8: line = "vanguard"; side = "middle";break;
+        case 9: line = "vanguard"; side = "right";break;
+        default:break;
+      }
       if(playerTable.unit2.get(+field) === ""){
         
         playerTable.hand.splice(playerTable.hand.indexOf(Number(cardId)), 1);
         // playerTable.unit[f[0]][f[1]] = cardId;
         playerTable.placeCard(cardId, field);
         
+        player.cardsRoadMap.fields[+field - 1].card = playerTable.unit2.get(+field);
+        player.cardsRoadMap.column[side][line] = playerTable.unit2.get(+field);
+
         player.actionPoint--;
         io.in(this.roomName).emit('table update B', {
           gameTable: this.getTableB()
@@ -333,20 +459,58 @@ Room.prototype = {
     let enemyPlayer = this.users.find(player => player.socket !== playerId);
     if(player.actionPoint){
       console.log(data)
-      let card = player.table.getCardById(data.cardId)
+      let cardAssaulter = player.table.getCardById(data.cardId)
       let cardVictim = enemyPlayer.table.getCardById(data.victim)
 
+      let attackerPlace = player.cardsRoadMap.getNodeByCardId(data.cardId);
+      let victimPlace = enemyPlayer.cardsRoadMap.getNodeByCardId(data.victim);
+
+      let path = 1;
+      let blockedBy = "";
+      function findFreePath(node){
+        if(!node.aheadNeighbor){
+          return path;
+        }
+        if(node.aheadNeighbor.card){
+          if(node.aheadNeighbor.card.isAlive){
+            blockedBy = node.aheadNeighbor.card;
+            return 0;
+          }
+        } else {
+          path = findFreePath(node.aheadNeighbor);
+        }
+        return path;
+      }
       
+      if(cardAssaulter.atkType === "melee"){
+        //from attacker
+        path = findFreePath(attackerPlace);
+        if(path){
+          // to victim
+          path = findFreePath(victimPlace);
+          if(path){
+            // melee path free, attack action
+
+            cardVictim.blood += cardAssaulter.atk;  
+
+            io.in(this.roomName).emit('table update B', {
+              gameTable: this.getTableB()
+            });
+            return;
+          }          
+        } 
+        let liveStatus = (blockedBy.isAlive) ? "" : "Труп";
+        let text = 'can\'t get target \n\r' + liveStatus + ' ' + Cards[blockedBy.id - 1].name + ' stand on the way (' + blockedBy.line + ' ' + blockedBy.side + ')';
+        rooms[this.roomName].sendTo(player, 'flash msg', {msgText: text});
+        return;
+      }
+      // console.log(player.cardsRoadMap.getNodeByCardId(data.cardId))
+      // console.log(enemyPlayer.cardsRoadMap.getNodeByCardId(data.victim))
+
       // preattack
       // attack
       // postattack  
-
-      cardVictim.blood += card.atk;
       
-
-      io.in(this.roomName).emit('table update B', {
-        gameTable: this.getTableB()
-      });
     } else {
       rooms[this.roomName].sendTo(player, 'flash msg', {msgText: 'no action point!'});
     }
@@ -527,4 +691,6 @@ io_adm.on('connection', (socket) => {
 });
 
 io.on('connection', handleSocket);
+
+
 

@@ -6,9 +6,11 @@ module.exports = [
         img: '1',
         atk: 2,
         def: 4,
-        ability_v: 'intercept',
-        ability_f: '',
-        ability_r: '',
+        ability_v: [ { intercept: 1 }, { selfHurt: -2 } ], // passive
+        ability_f: [ { memberHurt: [5, 2]} ], //5 - leader // passive
+        ability_r: [ { multipleAttack: ['unique', 1] } ],
+        ability_s: [ { multipleAttack: ['any', 7] } ],
+        ability_l: [ { dmgEnemy: ['all', 1] } ], // passive 
         vanguard: 'Перехват. Получает на 2 повреждения меньше от ближних и дальних атак.',
         flank: 'Ваш лидер получает на 2 повреждения меньше от ближних и дальних атак.',
         rear: 'Атака: до 5 разных героев получают по 1 повреждению.',
@@ -25,6 +27,9 @@ module.exports = [
         img: '2',
         atk: 3,
         def: 6,
+        ability_v: [ { selfAtkInc: 2 }, { selfHurt: -1 } ],
+        ability_f: [ { dmgReflect: ['melee', 2]} ], 
+        ability_r: [ { wtf: [] } ],
         vanguard: '+2 к силе. Получает на 1 повреждение меньше от ближних или дальних атак.',
         flank: 'Герой, атаковавший этот отряд в ближнем бою, получает 2 повреждения.',
         rear: 'Дальняя атака этим героем при розыгрыше первого своего приказа в фазу тыла.',

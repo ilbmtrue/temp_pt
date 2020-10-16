@@ -1,4 +1,5 @@
 node_modules
 0trash
 dist
+src/AppTestCard.js
 src/img/*

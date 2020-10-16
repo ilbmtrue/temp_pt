@@ -225,7 +225,9 @@ let player_table = Object.assign({}, table);
 var players = [];
 var pickLeader = null;
 const socket = io({
-    autoConnect: false
+    autoConnect: false,
+    reconnectionAttempts: 20
+
 });
 let gameWaveDic = new Map([[1, 'vanguard'], [2, 'flank'], [3, 'rear']]);
 let gameFieldDic = new Map([[1, "vanguard__l"], [2, "vanguard__m"], [3, "vanguard__r"], 

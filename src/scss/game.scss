@@ -3,6 +3,9 @@
     width: 500px;
     height: 400px;
 } */
+body{
+    min-width: 640px;
+}
 #control-panel{
     visibility: hidden;
     display: flex;
