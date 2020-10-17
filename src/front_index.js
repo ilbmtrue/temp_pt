@@ -472,8 +472,8 @@ socket.on("prepare new battle", function(data){
     for (let i = 0; i < data.cards.length; i++) {
         var new_card = document.createElement('div');
         new_card.className = 'hand-card';
-        new_card.setAttribute('data-card-id', data.cards[i]);
-        new_card.style['background-image'] = 'url(\'./img/cards/'+ cardsImage[data.cards[i]] + imageFormat + '\')';
+        new_card.setAttribute('data-card-id', data.cards[i].id);
+        new_card.style['background-image'] = 'url(\'./img/cards/'+ cardsImage[data.cards[i].img] + imageFormat + '\')';
         new_card.classList.add('rotate-card');
         playerHand.append(new_card);
     } 
