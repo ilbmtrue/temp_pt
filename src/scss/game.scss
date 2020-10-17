@@ -49,6 +49,7 @@ $imgpath: '../img/icon';
 .ico__pick-card{background-image: url($imgpath + "/pick-card.jpg");}
 .ico__hire-hero{background-image: url($imgpath + "/hire-hero.jpg");}
 .ico__attack{background-image: url($imgpath + "/attack.jpg");}
+.ico__body-remove{background-image: url($imgpath + "/remove-body.jpg");}
 .ico__spell{background-image: url($imgpath + "/spell.jpg");}
 .ico__special{background-image: url($imgpath + "/special.jpg");}
 .ico__order{background-image: url($imgpath + "/order.jpg");}
@@ -75,6 +76,9 @@ $imgpath: '../img/icon';
 }
 .card.move{
 
+}
+.body-remove{
+    display: none;
 }
 .firstplayer{
     background-image: url('../img/firstplayer.jpg');

@@ -42,6 +42,7 @@ var game_token = '';
 function CardsRoadMap()
 {
   this.deck = [...Cards],
+  this.discard = [],
   this.hand = [],
   this.fields = [
     new Node(1, "rear", "left"),
@@ -551,6 +552,16 @@ Room.prototype = {
     
     this.isPlayerTurnOver(player);
   },
+  bodyRemove: function(playerId, data){
+    let player = this.users.find(player => player.socket === playerId);
+
+    let node = player.cardsRoadMap.getNodeByCardId(data.card_id);
+    player.cardsRoadMap.discard.push(node.card);
+    node.card = null;
+    io.in(this.roomName).emit('table update B', {
+      gameTable: this.getTableB()
+    });
+  },
   // get card from players deck and push it to players hand
   requestCard: function(playerId){
     let player = this.users.find(player => player.socket === playerId);
@@ -596,8 +607,11 @@ function handleSocket(socket) {
     gameLog.push(`player ${socket.id} [chosen leader] ${card}`);
     room.hireLeader(socket.id, card);
   });
+
+  socket.on('Remove body', function(data){
+    room.bodyRemove(socket.id, data);
+  });
   socket.on('Draw a Card', function(data){
-    
     room.requestCard(socket.id);
   });
   socket.on('Character Attack', function(data){

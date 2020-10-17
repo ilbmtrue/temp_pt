@@ -12,6 +12,7 @@ class ActionController
         this.target = null;
 
         this.chosen = null; // card ID
+        this.chosenField = null; // field num
 
         this.chosenDOMElem = null;
 
@@ -64,27 +65,28 @@ class ActionController
                     gameTable.style.opacity = 1;
                     modalShow = false;
                     break;
-                case 'remove_corps':
+                case 'body-remove':
+
+
                     break;
                 default:
                     break;
             }
         }
     }
-
+    removeBody(){
+        socket.emit('Remove body', {card_id: this.chosen, field_num: this.chosenField});
+        this.chosen = "";
+        this.chosenField = "";
+        this.playerAction = null;       
+    }
     hireHero(tableField){
-        // if(playerTurn){
-            // socket.emit('Recruit a Hero', {cardId: this.chosen, field: tableField.getAttribute('data-field-num'), un: getMapKeyByValue(gameFieldDic, tableField.classList[1])});
             socket.emit('Recruit a Hero', {cardId: this.chosen, field: tableField.getAttribute('data-field-num')});
             [].forEach.call(this.possibleTarget, el => {
                 el.classList.remove('card_posable-target');
             });
             this.chosen = "";
-            this.chosenDOMElem.remove();
-        // } else {
-        //     messageBoard.innerText = 'Not your turn!';
-        //     messageBoardAnimation();
-        // }          
+            this.chosenDOMElem.remove();          
     }
     hireLeader(){
         socket.emit('chosen leader', this.chosen);
@@ -277,36 +279,40 @@ function fillGameTable(player, data){
 }
 
 function fillGameTableB(player, data){
-    let a = document.getElementsByClassName(player)[0];
-    let d = data.gameTable.find(user => user.name === player).table;
-    d = JSON.parse(d);
+    let playerUnitElem = document.getElementsByClassName(player)[0];
+    let playerTable = data.gameTable.find(user => user.name === player).table;
+    playerTable = JSON.parse(playerTable);
     // let e = a.querySelectorAll('.table__field');
-    for(f in d){
-        if(d[f]){
-            let card = cardsCollection.find(c => c.id == d[f].id);
-            let e = a.querySelectorAll(`[data-field-num=\"${f}\"`)[0];
-            if(d[f].isAlive){
-                e.style['background-image'] = 'url(\'./img/cards/s-'+ card.img + imageFormat + '\')';
-                e.dataset.cardId = d[f].id;
+    for(f in playerTable){
+        if(playerTable[f]){
+            let card = cardsCollection.find(c => c.id == playerTable[f].id);
+            let cardElem = playerUnitElem.querySelectorAll(`[data-field-num=\"${f}\"`)[0];
+            if(playerTable[f].isAlive){
+                cardElem.style['background-image'] = 'url(\'./img/cards/s-'+ card.img + imageFormat + '\')';
+                cardElem.dataset.cardId = playerTable[f].id;
                 if(player === userName){
-                    e.querySelector('.card-action').style.display = 'flex';   
+                    cardElem.querySelector('.card-action').style.display = 'flex';
+                    cardElem.querySelector('.card-action').querySelector('.body-remove').style.display = 'none';
                 }
                 
-                e.querySelector('.characteristic').style.display = 'flex';
-                e.querySelector('.characteristic__attack').innerText = (f == 5) ? card.leader_atk : card.atk;
-                e.querySelector('.characteristic__defence').innerText = (f == 5) ? card.leader_def : card.def;
-                if(d[f].blood){
-                    e.querySelector('.blood-token').style.display = 'flex';
-                    e.querySelector('.token').innerText = d[f].blood;
+                cardElem.querySelector('.characteristic').style.display = 'flex';
+                cardElem.querySelector('.characteristic__attack').innerText = (f == 5) ? card.leader_atk : card.atk;
+                cardElem.querySelector('.characteristic__defence').innerText = (f == 5) ? card.leader_def : card.def;
+                if(playerTable[f].blood){
+                    cardElem.querySelector('.blood-token').style.display = 'flex';
+                    cardElem.querySelector('.token').innerText = playerTable[f].blood;
                 }
                 
             } else {
-                e.style['background-image'] = 'url(\'./img/shirt-3.jpg\')';
+                cardElem.style['background-image'] = 'url(\'./img/shirt-3.jpg\')';
                 if(player === userName){
-                    e.querySelector('.card-action').style.display = 'none';   
+                    cardElem.querySelector('.attack').style.display = 'none';
+                    cardElem.querySelector('.move').style.display = 'none';
+                    cardElem.querySelector('.body-remove').style.display = 'flex';
+                    
                 }
-                e.querySelector('.blood-token').style.display = 'none';
-                e.querySelector('.characteristic').style.display = 'none';
+                cardElem.querySelector('.blood-token').style.display = 'none';
+                cardElem.querySelector('.characteristic').style.display = 'none';
             }
         }
     }
@@ -570,17 +576,6 @@ $(document).ready(function () {
         socket.emit('ready to game', {userName: userName, room: joinroom});    
     }, 100);
     
-    // $(document).on('click', '.js-ready-game', function(event){      
-    //     socket.open();
-    //     setTimeout(() => {
-    //         socket.emit('ready to game', {userName: userName, room: joinroom});    
-    //     }, 100);
-    //     if(cardsCollection.length == 0){
-    //         socket.emit('requestCardsInfo')
-    //     }       
-    //     event.currentTarget.style.display = 'none';
-    // });
-
     document.addEventListener('contextmenu', function(event){
         event.preventDefault();
         event.stopPropagation();
@@ -690,6 +685,14 @@ $(document).ready(function () {
                     messageBoardAnimation();
                 }
                 return
+            }
+            if(!actionController.playerAction && elem.classList.contains('body-remove')){
+                let card = elem.closest('.card');
+                actionController.chosen = card.getAttribute('data-card-id');
+                actionController.chosenField = card.getAttribute('data-field-num');
+                actionController.chosenDOMElem = card;
+                actionController.playerAction = 'body-remove';
+                actionController.removeBody();
             }
             if(elem.classList.contains('move')){
                 let card = elem.closest('.card')
