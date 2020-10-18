@@ -1,10 +1,22 @@
 const Cards = require('./cards_data_2012.js');
+
+// Cards.splice(9, 15);
 Object.freeze( Cards ); 
 
 Cards.forEach(c => {
   c["blood"] = 0;
   c["isAlive"] = 1;
   c['atkType'] = 'melee';
+  c['intercept'] = 0;
+  if(!c.hasOwnProperty('ability')){
+    c['ability'] = {
+      vanguard: {  title:c.vanguard, type: "unknown" },
+      flank: { title:c.flank, type: "unknown" },
+      rear: {  title:c.rear, type: "unknown"  },
+      order: {  title:c.special, type: "unknown" },
+      leader: {  title:c.leader_special, type: "unknown" },
+    }
+  }
 });
 
 const gameLog = [];
@@ -13,6 +25,16 @@ const cardsImgArray = [];
 for (let i = 0; i < Cards.length; i++) {
   cardsImgArray[Cards[i]['id']] = Cards[i]['img']; 
 }
+
+
+// for (let i = 0; i < Cards.length; i++) {
+//   console.log(Cards[i].id);
+//   console.log('v: ' + Cards[i].vanguard);
+//   console.log('f: ' + Cards[i].flank);
+//   console.log('r: ' + Cards[i].rear);
+//   console.log('s: ' + Cards[i].special);
+//   console.log('l: ' + Cards[i].leader_special);
+// }
 
 var crypto = require('crypto');
 const express = require("express");
@@ -60,6 +82,8 @@ function CardsRoadMap()
     middle: { vanguard: null, flank: null, rear: null },
     right: { vanguard: null, flank: null, rear: null },
   };
+
+  this.cardsProperties = new Map(),
   /*
     1 4 7
     2 5 8
@@ -92,9 +116,11 @@ CardsRoadMap.prototype = {
     return true;
   },
   pushCardsFromDeckToHand: function(count = 1){
+    let arrLength = 0;
     for(let i = 0; i < count; i++){
-      this.hand.push(this.deck.shift());
+      arrLength = this.hand.push(this.deck.shift());
     }
+    return this.hand[arrLength - 1];
   },
   getNodeByNum: function(num){
     return this.fields.filter(node => node.num === num);
@@ -109,9 +135,9 @@ CardsRoadMap.prototype = {
     }
     return false;
   },
-  init: (function(){
 
-  })(),
+  init: (function(){})(),
+
   removeCardFromHandById: function(card_id){
     this.hand.splice(this.hand.findIndex( card => card.id === card_id), 1);
   },
@@ -130,11 +156,23 @@ CardsRoadMap.prototype = {
       locate: field_num,
       line: line, // not needed in future
       side: side, // not needed in future
-      
+      ability: c.ability,
     });
 
+    let t = null;
+    if(field_num == 5){
+      t = c['ability']['leader'];
+    } else {
+      t = c['ability'][line];
+    }
+    
+    if(t.type === "passive"){
+      this.cardsProperties.set(c.id, {ability: t} );
+    }
+    
+
     this.column[side][line] = this.fields[+field_num - 1].card;
-   
+    console.log(this.cardsProperties);
   }
 }
 function Node(num, line, side){
@@ -182,6 +220,7 @@ function PlayerTable()
   }
   // what cards will be used
   this.deck = this.shuffleStartDeck(); 
+  console.log(this.deck);
 }
 PlayerTable.prototype = {
 
@@ -263,6 +302,9 @@ function Room(room_name) {
   this.playerTurn = ""
   this.roundForPlayer = ""
 
+  this.perksPreAttack = [];
+  this.perksPostAttack = [];
+
 }
 Room.prototype = {
   getName: function () { return this.roomName; },
@@ -336,9 +378,10 @@ Room.prototype = {
       let f = field;//.split('__');
       let line, side = "";
       [line, side] = getLineSideByFieldNum(field);
-      if(playerTable.unit2.get(+field) === ""){
-        playerTable.hand.splice(playerTable.hand.indexOf(Number(cardId)), 1);
-        playerTable.placeCard(cardId, field);
+      // if(playerTable.unit2.get(+field) === ""){
+      if(player.cardsRoadMap.fields[+field-1].card === null){
+        // playerTable.hand.splice(playerTable.hand.indexOf(Number(cardId)), 1);
+        // playerTable.placeCard(cardId, field);
         player.cardsRoadMap.addCardOnTable(cardId, field);
         player.actionPoint--;
         io.in(this.roomName).emit('table update B', {
@@ -392,13 +435,7 @@ Room.prototype = {
             Any Hero with damage equal to or exceeding its life is considered defeated.
           */
 
-          // for(let u of this.users){
-          //   for(let c of u.cardsRoadMap.fields.values()){
-          //     if(c.card){
-          //       c.card.isAlive = (c.card.blood >= c.card.def) ? 0 : 1;
-          //     }             
-          //   }
-          // }
+
           io.in(this.roomName).emit('next wave', {player: this.playerTurn, wave: this.wave});
           io.in(this.roomName).emit('table update B', {
             gameTable: this.getTableB()
@@ -415,8 +452,6 @@ Room.prototype = {
 
   battlebegin: function(){
     [this.cardFirstPlayer, this.cardSecondPlayer] = shuffle(rooms[this.roomName].getUserNamesArray());
-    // let gameTable = this.getTableB();
-    // let gameTable = this.getTable();
     this.playerTurn = this.cardFirstPlayer;
     this.roundForPlayer = this.cardFirstPlayer;
     console.log(this.roundForPlayer)
@@ -439,16 +474,13 @@ Room.prototype = {
   },
   getTableB: function(){
     let gameTable = [];
-    // let gameTable2 = [];
     Array.prototype.forEach.call(this.users, function(player) {
-      // let obj = Object.fromEntries(player.table.unit2);
       let obj = [];
       player.cardsRoadMap.fields.forEach(function(item, i) {
         let t = item.card;
         obj[i+1]= !t ? "" : t;
       });
       gameTable.push({name: player.name, actionPoints: player.actionPoint, table: JSON.stringify(Object.assign({}, obj))});
-      // gameTable.push({name: player.name, actionPoints: player.actionPoint, table: JSON.stringify(obj)});
     });
     return gameTable;
   },
@@ -488,15 +520,15 @@ Room.prototype = {
     let player = this.users.find(player => player.socket === playerId);
     let enemyPlayer = this.users.find(player => player.socket !== playerId);
     if(player.actionPoint){
-      let cardAssaulter = player.table.getCardById(data.cardId)
-      let cardVictim = enemyPlayer.table.getCardById(data.victim)
+      // let cardAssaulter = player.table.getCardById(data.cardId)
+      // let cardVictim = enemyPlayer.table.getCardById(data.victim)
 
       let attackerPlace = player.cardsRoadMap.getNodeByCardId(data.cardId);
       let victimPlace = enemyPlayer.cardsRoadMap.getNodeByCardId(data.victim);
 
       let path = 1;
       let blockedBy = "";
-      function findFreePath(node){
+      function findMeleePath(node){
         if(!node.aheadNeighbor){
           return path;
         }
@@ -506,17 +538,35 @@ Room.prototype = {
             return 0;
           }
         } else {
-          path = findFreePath(node.aheadNeighbor);
+          path = findMeleePath(node.aheadNeighbor);
         }
         return path;
       }
-      
+      function findRangePath(node){ // node only victim
+        let temp = node;
+        //roll to vanguard line 
+        while(temp.hasOwnProperty('aheadNeighbor')){
+          temp = temp.aheadNeighbor;
+        }
+        while(temp.card.id !== node.card.id){
+          if(temp.card.intercept){
+            blockedBy = temp.card;
+            return 0;
+          }
+          temp = temp.behindNeighbor;
+        }
+        return path;
+      }
+
+
+
+
       if(attackerPlace.card.atkType === "melee"){
         //from attacker
-        path = findFreePath(attackerPlace);
+        path = findMeleePath(attackerPlace);
         if(path){
           // to victim
-          path = findFreePath(victimPlace);
+          path = findMeleePath(victimPlace);
           if(path){
             // melee path free, attack action
 
@@ -533,6 +583,17 @@ Room.prototype = {
         rooms[this.roomName].sendTo(player, 'flash msg', {msgText: text});
         return;
       } else if(attackerPlace.card.atkType === "range"){
+        path = findRangePath(victimPlace);
+        if(path){
+          victimPlace.card.blood += attackerPlace.card.atk;  
+          io.in(this.roomName).emit('table update B', {
+            gameTable: this.getTableB()
+          });
+          return;
+        } else {
+          let text = 'can\'t get target \n\r' + Cards[blockedBy.id - 1].name + ' stand on the way (' + blockedBy.line + ' ' + blockedBy.side + ')';
+          rooms[this.roomName].sendTo(player, 'flash msg', {msgText: text});
+        }
         rooms[this.roomName].sendTo(player, 'flash msg', {msgText: 'range attack!'});
       } else if(attackerPlace.card.atkType === "spell"){
         rooms[this.roomName].sendTo(player, 'flash msg', {msgText: 'cast spell!'});
@@ -552,9 +613,44 @@ Room.prototype = {
     
     this.isPlayerTurnOver(player);
   },
+  heroMove: function(playerId, data){
+    let player = this.users.find(player => player.socket === playerId);
+    if(data.targetField === "5"){
+      rooms[this.roomName].sendTo(player, 'flash msg', {msgText: 'Can\'t switch with leader!'});
+      return;
+    }
+    let node = player.cardsRoadMap.getNodeByCardId(data.card_id);
+    let [line, side] = getLineSideByFieldNum(data.targetField)
+    if(player.cardsRoadMap.fields[data.targetField - 1].card){
+     // "switch";
+      if(player.actionPoint < 2){
+        rooms[this.roomName].sendTo(player, 'flash msg', {msgText: 'Not enough action points to switch!'});
+        return;
+      } else {
+        //switch heroes
+        let temp = Object.assign({}, player.cardsRoadMap.fields[data.targetField - 1].card);
+        player.cardsRoadMap.fields[data.targetField - 1].card = node.card;
+        player.cardsRoadMap.fields[node.num - 1].card = temp;
+        player.actionPoint +=-2;
+        console.log('hero switch');
+      } 
+    } else {
+      // "move";
+      [node.card.line, node.card.side] = [line, side]; // todo: future remove line side in card
+      player.cardsRoadMap.fields[data.targetField - 1].card = node.card;
+      player.cardsRoadMap.fields[node.num - 1].card = null;
+      player.actionPoint--;
+      console.log('heroMove');
+    }
+    io.in(this.roomName).emit('table update B', {
+      gameTable: this.getTableB()
+    });
+    this.isPlayerTurnOver(player);
+
+    
+  },
   bodyRemove: function(playerId, data){
     let player = this.users.find(player => player.socket === playerId);
-
     let node = player.cardsRoadMap.getNodeByCardId(data.card_id);
     player.cardsRoadMap.discard.push(node.card);
     node.card = null;
@@ -567,31 +663,43 @@ Room.prototype = {
     let player = this.users.find(player => player.socket === playerId);
     if(player.actionPoint){
 
-      if(player.cardsRoadMap.hand.length < 6){
-        player.cardsRoadMap.pushCardsFromDeckToHand();
-      }
-
-      let getRndCard, answerMsg, answerData;
-      let playerDeckCount = player.table.deck.length;
-      console.log('player ' + playerId + ' want card he have: ' + playerDeckCount + 'cards');
-      if(playerDeckCount > 0){
-        getRndCard = Math.floor(Math.random() * playerDeckCount) + 1;
-        player.table.deck.splice(player.table.deck.indexOf(getRndCard), 1);
-        player.table.hand.push(getRndCard);
-        answerData = Cards.find(card => card.id === getRndCard);
-        player.actionPoint--;
-        answerData.actionPoint = player.actionPoint;
-        answerData.actionName = "giveCard";
-
-        rooms[this.roomName].sendTo(player, 'giveCard', answerData);
-
-        gameLog.push(`player ${player} [Draw a Card] card id#${answerData.id}`);
+      if(player.cardsRoadMap.deck.length > 0){
+        if(player.cardsRoadMap.hand.length < 5){
+          let answerData = "";
+          answerData = player.cardsRoadMap.pushCardsFromDeckToHand();
+          player.actionPoint--;
+          answerData.actionPoint = player.actionPoint;
+          answerData.actionName = "giveCard";
+          rooms[this.roomName].sendTo(player, 'giveCard', answerData);
+          gameLog.push(`player ${player.name} [Draw a Card] card id#${answerData.id}`);
+          console.log(`player ${player.name} [Draw a Card] card id#${answerData.id}`);
+        } else {
+          rooms[this.roomName].sendTo(player, 'flash msg', {msgText: `To much cards in hand! (${player.cardsRoadMap.hand.length})`});
+        }
       } else {
         rooms[this.roomName].sendTo(player, 'flash msg', {msgText: 'No more cards in your deck!'});
       }
       
+
+      // let getRndCard, answerMsg, answerData;
+      // let playerDeckCount = player.table.deck.length;
+      // console.log('player ' + playerId + ' want card he have: ' + playerDeckCount + 'cards');
+      // if(playerDeckCount > 0){
+      //   getRndCard = Math.floor(Math.random() * playerDeckCount) + 1;
+      //   player.table.deck.splice(player.table.deck.indexOf(getRndCard), 1);
+      //   player.table.hand.push(getRndCard);
+      //   answerData = Cards.find(card => card.id === getRndCard);
+      //   // player.actionPoint--;
+      //   answerData.actionPoint = player.actionPoint;
+      //   answerData.actionName = "giveCard";
+      //   rooms[this.roomName].sendTo(player, 'giveCard', answerData);
+      //   gameLog.push(`player ${player} [Draw a Card] card id#${answerData.id}`);
+      // } else {
+      //   rooms[this.roomName].sendTo(player, 'flash msg', {msgText: 'No more cards in your deck!'});
+      // }
+      
     } else {
-      rooms[this.roomName].sendTo(player, 'flash msg', {msgText: 'no action point!'});
+      rooms[this.roomName].sendTo(player, 'flash msg', {msgText: 'No action point!'});
     }
     this.isPlayerTurnOver(player);
   },
@@ -606,6 +714,10 @@ function handleSocket(socket) {
   socket.on('chosen leader',  function(card){
     gameLog.push(`player ${socket.id} [chosen leader] ${card}`);
     room.hireLeader(socket.id, card);
+  });
+
+  socket.on('Move Hero', function(data){
+    room.heroMove(socket.id, data);
   });
 
   socket.on('Remove body', function(data){

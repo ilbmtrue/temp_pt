@@ -8,16 +8,11 @@ class ActionController
 {   
     constructor() { 
         this.select = null; // выбрана карта
-
         this.target = null;
-
         this.chosen = null; // card ID
         this.chosenField = null; // field num
-
         this.chosenDOMElem = null;
-
         this.possibleTarget = null;
-
         this.playerAction = null; // имя действия
     }
 
@@ -38,8 +33,16 @@ class ActionController
                             el.classList.add('card_posable-target');
                         }  
                     });
-                break;
+                    break;
                 case 'move':
+                    this.select = true;
+                    document.querySelector('body').style.cursor = "crosshair"; 
+                    this.possibleTarget = document.querySelector('#player').querySelectorAll('.card-holder');
+                    [].forEach.call(this.possibleTarget, el => {
+                        if(el.children[0].getAttribute('data-field-num') !== 5){
+                            el.classList.add('card_posable-target');
+                        }  
+                    });
                     break;
                 case 'hire_hero':
                     this.select = true;
@@ -82,16 +85,19 @@ class ActionController
     }
     hireHero(tableField){
             socket.emit('Recruit a Hero', {cardId: this.chosen, field: tableField.getAttribute('data-field-num')});
+            console.log(`HIRE HERO id:${this.chosen} on field: ${tableField.getAttribute('data-field-num')}`);
+            
             [].forEach.call(this.possibleTarget, el => {
                 el.classList.remove('card_posable-target');
             });
             this.chosen = "";
-            this.chosenDOMElem.remove();          
+            this.chosenDOMElem.remove();     
+            
     }
     hireLeader(){
         socket.emit('chosen leader', this.chosen);
         let card = cardsCollection.find(c => c.id == this.chosen);
-        let a = document.querySelector('#player').querySelector('.flank__m');
+        let a = document.querySelector('#player').querySelector('.flank.middle');
         a.style['background-image'] = 'url(\'./img/cards/s-'+ card.img + imageFormat + '\')';
         this.chosenDOMElem.remove();
         document.querySelector('.modal').classList.remove("modal__show");
@@ -103,6 +109,8 @@ class ActionController
         });
         actionController.chosen = "";
         actionController.chosenDOMElem = "";
+
+        console.log(`HIRE LEADER id:${card.id} ${card.name}`);
     }
     characterAttack(){
         socket.emit('Character Attack', {cardId: this.chosen, victim: this.target});
@@ -113,8 +121,19 @@ class ActionController
         this.playerAction = "";
         this.chosenDOMElem = "";
     }
-    removeCorps(){
-        // if target have class corps
+    moveHero(){
+        socket.emit('Move Hero', {card_id: this.chosen, targetField: this.target});
+        [].forEach.call(this.possibleTarget, el => {
+            el.classList.remove('card_posable-target');
+        });
+
+        this.chosen = "";
+        this.playerAction = "";
+        // this.chosenDOMElem.removeAttribute('data-card-id');
+        // this.chosenDOMElem.style.removeProperty('background-image');
+        // this.chosenDOMElem.querySelector('.characteristic').style.removeProperty('display');
+        // this.chosenDOMElem.querySelector('.card-action').style.removeProperty('display');
+        this.chosenDOMElem = "";    
     }
 
 
@@ -151,11 +170,6 @@ class ActionController
         modalShow = false;
     }
 */
-    
-    // cardMove(){
-
-    // }
-
 }
 let actionController = new ActionController();
 
@@ -206,6 +220,8 @@ const infoBoard =  document.getElementById('infoBoard');
 const gameTable = document.getElementById('gameTable'); 
 
 
+
+
 let modalShow = false;
 let chosenCard = 0;
 let chosenCardDOM = {};
@@ -232,9 +248,9 @@ const socket = io({
 
 });
 let gameWaveDic = new Map([[1, 'vanguard'], [2, 'flank'], [3, 'rear']]);
-let gameFieldDic = new Map([[1, "vanguard__l"], [2, "vanguard__m"], [3, "vanguard__r"], 
-                            [4, "flank__l"], [5, "flank__m"], [6, "flank__r"], 
-                            [7, "rear__l"], [8, "rear__m"], [9, "rear__r"]]);
+// let gameFieldDic = new Map([[1, "vanguard__l"], [2, "vanguard__m"], [3, "vanguard__r"], 
+//                             [4, "flank__l"], [5, "flank__m"], [6, "flank__r"], 
+//                             [7, "rear__l"], [8, "rear__m"], [9, "rear__r"]]);
 let wavePrefere = -1;
 let gameRound = 1;
 let gameTurn = 1;
@@ -244,7 +260,21 @@ const gameTurnArr = [   ['#player .vanguard', '#player .flank', '#player .rear']
                         ['#enemy-player .vanguard', '#enemy-player .flank', '#enemy-player .rear']];
 
 
-
+function getLineSideByFieldNum(fieldNum){
+    switch (+fieldNum) {
+        case 1: line = "rear"; side = "left";break;
+        case 2: line = "rear"; side = "middle";break;
+        case 3: line = "rear"; side = "right";break;
+        case 4: line = "flank"; side = "left";break;
+        case 5: line = "flank"; side = "middle";break;
+        case 6: line = "flank"; side = "right";break;
+        case 7: line = "vanguard"; side = "left";break;
+        case 8: line = "vanguard"; side = "middle";break;
+        case 9: line = "vanguard"; side = "right";break;
+        default:break;
+    }
+    return [line, side];
+}
 function messageBoardAnimation(){
     messageBoard.classList.remove('flash--active');
     void messageBoard.offsetWidth;
@@ -253,31 +283,10 @@ function messageBoardAnimation(){
            
 function getMapKeyByValue(map, searchValue) {
     for (let [key, value] of map.entries()) {
-      if (value === searchValue)
+        if (value === searchValue)
         return key;
     }
-  }
-function fillGameTable(player, data){
-    let a = document.getElementsByClassName(player)[0];
-    let d = data.gameTable.find(user => user.name === player).table;
-    for(line in d){ 
-        for(place in d[line]){
-            if(d[line][place] !== ""){       
-                let card = cardsCollection.find(c => c.id == d[line][place]);            
-                e = a.getElementsByClassName(line + '__' + place)[0];
-                e.style['background-image'] = 'url(\'./img/cards/s-'+ card.img + imageFormat + '\')';
-                e.dataset.cardId = d[line][place];
-                if(player === userName){
-                    e.querySelector('.card-action').style.display = 'flex';   
-                }
-                e.querySelector('.characteristic').style.display = 'flex';
-                e.querySelector('.characteristic__attack').innerText = (line === "flank" && place === "m" ) ? card.leader_atk : card.atk;
-                e.querySelector('.characteristic__defence').innerText = (line === "flank" && place === "m" ) ? card.leader_def : card.def;
-            }
-        }
-    }  
 }
-
 function fillGameTableB(player, data){
     let playerUnitElem = document.getElementsByClassName(player)[0];
     let playerTable = data.gameTable.find(user => user.name === player).table;
@@ -285,14 +294,26 @@ function fillGameTableB(player, data){
     // let e = a.querySelectorAll('.table__field');
     for(f in playerTable){
         if(playerTable[f]){
+            let line, side = "";
+            [line, side] = getLineSideByFieldNum(f);
             let card = cardsCollection.find(c => c.id == playerTable[f].id);
             let cardElem = playerUnitElem.querySelectorAll(`[data-field-num=\"${f}\"`)[0];
+            
+            let cardAbility = card['ability'][line];
+
             if(playerTable[f].isAlive){
                 cardElem.style['background-image'] = 'url(\'./img/cards/s-'+ card.img + imageFormat + '\')';
                 cardElem.dataset.cardId = playerTable[f].id;
                 if(player === userName){
                     cardElem.querySelector('.card-action').style.display = 'flex';
                     cardElem.querySelector('.card-action').querySelector('.body-remove').style.display = 'none';
+                    cardElem.querySelector('.card-action').querySelector('.attack').style.display = 'flex';
+                    if(f !== "5"){
+                        cardElem.querySelector('.card-action').querySelector('.move').style.display = 'flex';
+                    }
+                    if(cardAbility.type === "spell"){
+                        cardElem.querySelector('.spell').style.display = 'flex';
+                    }
                 }
                 
                 cardElem.querySelector('.characteristic').style.display = 'flex';
@@ -304,16 +325,27 @@ function fillGameTableB(player, data){
                 }
                 
             } else {
+                cardElem.dataset.cardId = playerTable[f].id;
                 cardElem.style['background-image'] = 'url(\'./img/shirt-3.jpg\')';
                 if(player === userName){
                     cardElem.querySelector('.attack').style.display = 'none';
                     cardElem.querySelector('.move').style.display = 'none';
-                    cardElem.querySelector('.body-remove').style.display = 'flex';
-                    
+                    cardElem.querySelector('.body-remove').style.display = 'flex';                   
                 }
                 cardElem.querySelector('.blood-token').style.display = 'none';
                 cardElem.querySelector('.characteristic').style.display = 'none';
             }
+        } else {
+            let cardElem = playerUnitElem.querySelectorAll(`[data-field-num=\"${f}\"`)[0];
+            if(cardElem.hasAttribute('data-card-id')){
+                cardElem.removeAttribute('data-card-id');
+                cardElem.style.removeProperty('background-image');
+                cardElem.querySelector('.characteristic').style.removeProperty('display');
+                if(player === userName){
+                    cardElem.querySelector('.card-action').style.removeProperty('display');
+                }
+            }
+            
         }
     }
 
@@ -379,23 +411,23 @@ socket.on('table update B', function(data){
     // players.forEach(player => {
     //     fillGameTableB(player, data);
     // });
-    if(actionController.chosenDOMElem){
-        actionController.chosenDOMElem.remove();
-    }
+    // if(actionController.chosenDOMElem){
+    //     actionController.chosenDOMElem.remove();
+    // }
     infoBoard.innerText = `Action point: ${data.gameTable.find(player => player.name === userName).actionPoints}`;
     
 });
-socket.on('table update', function(data){
-    console.log("from server action: 'table update'");
-    players.forEach(player => {
-        fillGameTable(player, data);
-    });
-    if(actionController.chosenDOMElem){
-        actionController.chosenDOMElem.remove();
-    }
-    infoBoard.innerText = `Action point: ${data.gameTable.find(player => player.name === userName).actionPoints}`;
+// socket.on('table update', function(data){
+//     console.log("from server action: 'table update'");
+//     players.forEach(player => {
+//         fillGameTable(player, data);
+//     });
+//     if(actionController.chosenDOMElem){
+//         actionController.chosenDOMElem.remove();
+//     }
+//     infoBoard.innerText = `Action point: ${data.gameTable.find(player => player.name === userName).actionPoints}`;
     
-});
+// });
 socket.on("giveCard", function(data){
     let new_card = document.createElement('div');
     new_card.className = 'hand-card';
@@ -464,7 +496,7 @@ socket.on("battle begin", function(data){
         wavePrefere = 1;
         playerTurn = false;
     }
-    console.log('#####round for: ' + roundForPlayer)
+    console.log('round for: ' + roundForPlayer)
     moveWaveCard(roundForPlayer)
     players.forEach(player => {
         fillGameTableB(player, data);
@@ -486,7 +518,7 @@ socket.on("prepare new battle", function(data){
 });
 socket.on("pick leader", function(data){
     if(players[1] === data.player){
-        let a = document.querySelector('#enemy-player').querySelector('.flank__m');
+        let a = document.querySelector('#enemy-player').querySelector('.flank.middle');
         a.style['background-image'] = 'url(./img/shirt-3.jpg)';
     }
 });
@@ -608,9 +640,28 @@ $(document).ready(function () {
                         } else {
                             messageBoard.innerText = 'Select correct field!';
                             messageBoardAnimation();
+                            return;
                         }       
                     } 
 
+                    if(actionController.playerAction === 'move'){
+                        if(elem.closest('#player')){
+                            if(elem.classList.contains('card') && elem.getAttribute('data-field-num')){
+                                actionController.target = elem.getAttribute('data-field-num');
+                                actionController.moveHero();
+                                document.querySelector('body').style.cursor = "inherit";
+                                return;
+                            } else {
+                                messageBoard.innerText = 'Select correct field!';
+                                messageBoardAnimation();
+                            }   
+                            return;  
+                        } else {
+                            messageBoard.innerText = 'Select your field!';
+                            messageBoardAnimation();
+                        }
+                          
+                    } 
                     // hire hero to field
                     if(!modalShow && elem.classList.contains('card')){    
                         if(elem.closest('#player')){
@@ -625,7 +676,9 @@ $(document).ready(function () {
                         } else {
                             messageBoard.innerText = 'Select your field!';
                             messageBoardAnimation();
+                            return;
                         }
+                        
                     } 
                 }
             }
@@ -680,7 +733,6 @@ $(document).ready(function () {
                     actionController.playerAction = 'attack';
                     actionController.getPossibleField('attack');
                 } else {
-                    
                     messageBoard.innerText = "hero attack only from current wave";
                     messageBoardAnimation();
                 }
@@ -693,13 +745,14 @@ $(document).ready(function () {
                 actionController.chosenDOMElem = card;
                 actionController.playerAction = 'body-remove';
                 actionController.removeBody();
+                return;
             }
             if(elem.classList.contains('move')){
                 let card = elem.closest('.card')
                 actionController.chosen = card.getAttribute('data-card-id');
                 actionController.chosenDOMElem = card;
                 actionController.playerAction = 'move';
-                actionController.cardMove(cardId);
+                actionController.getPossibleField('move');
                 return
             }
             if(modalShow && elem.classList.contains('review-img')){
@@ -759,12 +812,15 @@ $(document).ready(function () {
             if(card){
                 let info = cardsCollection.find(c => c.id == card);
 
-                if(event.target.classList.contains("flank__m")){
+                if(event.target.classList.contains("flank","middle")){
                     $('#card-info .card-info__special').css('opacity', 1);
                     $('#card-info .card-info__special').text(info.leader_special);
                     $('#card-info .card-info__name').text(info.leader);
                     $('#card-info .card-info__atk').text(info.leader_atk);
                     $('#card-info .card-info__def').text(info.leader_def);
+                    $('#card-info .card-info__vanguard').text("");
+                    $('#card-info .card-info__flank').text("");
+                    $('#card-info .card-info__rear').text("");
                 } else {
                     $('#card-info .card-info__name').text(info.name);
                     $('#card-info .card-info__atk').text(info.atk);
@@ -790,6 +846,7 @@ $(document).ready(function () {
                     } else {
                         $('#card-info .card-info__rear').css('opacity', 0.2);
                     }
+
                     $('#card-info .card-info__special').text(info.special);
                     $('#card-info .card-info__special').css('opacity', 0.2);
 

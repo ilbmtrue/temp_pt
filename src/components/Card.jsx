@@ -12,6 +12,7 @@ const Card = props => {
                 {(props.player) 
                 ? <div className="card-action">
                     <div className="ico__body-remove card__action body-remove"></div>
+                    <div className="ico__spell card__action spell"></div>
                     <div className="ico__attack card__action attack"></div>
                     {(props.value !== 5) ? 
                     <div className="ico__move card__action move"></div> : '' } 

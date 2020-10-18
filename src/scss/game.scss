@@ -56,7 +56,7 @@ $imgpath: '../img/icon';
 .ico__remove-body{background-image: url($imgpath + "/remove-body.jpg");}
 .ico__move{background-image: url($imgpath + "/move.jpg");}
 .ico__castling{background-image: url($imgpath + "/castling.jpg");}
-
+.ico__spell{background-image: url($imgpath + "/spell.jpg");}
 .card-action{
     display: none;
     justify-content: space-around;
@@ -78,6 +78,9 @@ $imgpath: '../img/icon';
 
 }
 .body-remove{
+    display: none;
+}
+.spell{
     display: none;
 }
 .firstplayer{
@@ -245,11 +248,11 @@ $imgpath: '../img/icon';
     background-color: rgb(255, 255, 255);
 }
 
-.rear__l, .rear__m, .rear__r, 
-.flank__l, .flank__r,
-.vanguard__l, .vanguard__m, .vanguard__r{ 
-    font-size: inherit;
-}
+// .rear__l, .rear__m, .rear__r, 
+// .flank__l, .flank__r,
+// .vanguard__l, .vanguard__m, .vanguard__r{ 
+//     font-size: inherit;
+// }
 
 .flank__m{
     // transform: rotate(180deg);
