@@ -1,7 +1,17 @@
 const { map } = require("../cards_data_2012");
 
 let imageFormat = '.webp';
+const cardsCollection = [];
+const controlPanel = document.getElementById("control-panel");
+const playerHand = document.getElementById('player-hand');  
+const messageBoard =  document.getElementById('messageBoard');  
+const infoBoard =  document.getElementById('infoBoard');  
+const gameTable = document.getElementById('gameTable'); 
 
+
+let gameRoundEl = null;
+let gameWaveEl = null;
+let gameTurnEl = null;
 
 
 class ActionController 
@@ -212,13 +222,6 @@ class PanelAction {
 
 
 
-const cardsCollection = [];
-const controlPanel = document.getElementById("control-panel");
-const playerHand = document.getElementById('player-hand');  
-const messageBoard =  document.getElementById('messageBoard');  
-const infoBoard =  document.getElementById('infoBoard');  
-const gameTable = document.getElementById('gameTable'); 
-
 
 
 
@@ -358,7 +361,9 @@ socket.on('rejoin', function(data){
     console.log('rejoined');
     cardsImage = data.cards;
     enemyName = data.enemy;
-
+    gameRoundEl = document.querySelector('.game-round');
+    gameWaveEl = document.querySelector('.game-wave');
+    gameTurnEl = document.querySelector('.game-turn');
     let fieldPlayer = document.getElementById('player');
     let fieldPlayerName = fieldPlayer.getElementsByClassName("user-name")[0];
     let fieldEnemyPlayer = document.getElementById('enemy-player');
@@ -503,6 +508,9 @@ socket.on("battle begin", function(data){
     });
     controlPanel.style.visibility = "visible";
     new PanelAction(controlPanel);
+    gameRoundEl = document.querySelector('.game-round');
+    gameWaveEl = document.querySelector('.game-wave');
+    gameTurnEl = document.querySelector('.game-turn');
     document.querySelectorAll('.action').forEach(e => e.classList.toggle('--show'));
 });
 
@@ -524,6 +532,8 @@ socket.on("pick leader", function(data){
 });
 
 socket.on("next round", function(data){
+
+
     if(data.player === userName){
         messageBoard.innerText = "Your turn";
         messageBoardAnimation();
@@ -537,7 +547,9 @@ socket.on("next round", function(data){
     roundForPlayer = data.player;
     gameRound = data.round;
     gameWave = data.wave;
-    
+    gameRoundEl.innerHTML = 'round: ' + data.round;
+    gameWaveEl.innerHTML = 'wave: ' + data.wave;
+    gameTurnEl.innerHTML = 'turn: ' + data.player;
     moveWaveCard(roundForPlayer);
 });
 socket.on("next wave", function(data){
@@ -553,6 +565,10 @@ socket.on("next wave", function(data){
         messageBoardAnimation();
         playerTurn = false;
     }
+
+    gameWaveEl.innerHTML = 'wave: ' + data.wave;
+    gameTurnEl.innerHTML = 'turn: ' + data.player;
+
     infoBoard.innerText = "Action points: 2";
     moveWaveCard(roundForPlayer);
 
@@ -568,7 +584,9 @@ socket.on("next turn", function(data){
         messageBoardAnimation();
         playerTurn = false;
     }
-    console.log('round: ' + gameRound + ' wave: ' + gameWave + ' turn: ' + gameTurn);
+        
+    gameTurnEl.innerHTML = 'turn: ' + data.player;
+
     infoBoard.innerText = "Action points: 2";
     // moveWaveCard(roundForPlayer);
 });

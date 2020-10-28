@@ -10,23 +10,23 @@ module.exports = [
             vanguard: {
                 title: "Перехват. Получает на 2 повреждения меньше от ближних и дальних атак.",
                 type: "passive",
-                propertiy: {
+                property: {
                     target: "self",
-                    properties: ["intercept:1", "reciveLessDmg:[melee, range]:2"],
+                    action: ["intercept", "reciveLessDmg;melee,range;2"],
                 },
             },
             flank: {
                 title: "Ваш лидер получает на 2 повреждения меньше от ближних и дальних атак.",
                 type: "passive",
-                propertiy: {
+                property: {
                     target: "leader",
-                    properties: ["reciveLessDmg:[melee, range]:2"],
+                    action: ["reciveLessDmg;melee,range;2"],
                 },
             },
             rear: {
                 title: "Атака: до 5 разных героев получают по 1 повреждению.",
-                type: "active",
-                propertiy: {
+                type: "spell",
+                property: {
                     target: "upTo:5",
                     cast: ["upTo:5"],
                 },
@@ -34,18 +34,16 @@ module.exports = [
             order: {
                 title: "Нанести 7 повреждений героям. Распределить как угодно",
                 type: "active",
-                propertiy: {
+                property: {
                     target: "upTo:7",
                     cast: ["upTo:7"],
                 },
             },
+            //+
             leader:{
                 title: "Все герои противника получают 1 повреждение в конце каждой фазы перед проверкой потерь.",
-                type: "passive",
-                propertiy: {
-                    target: "all:enemy",
-                    cast: ["dealDmg:1"],
-                },
+                type: "before checkloss",
+                property: "#alchemist", 
             }
         },
         vanguard: 'Перехват. Получает на 2 повреждения меньше от ближних и дальних атак.',
@@ -68,23 +66,23 @@ module.exports = [
             vanguard: {
                 title: "+2 к силе. Получает на 1 повреждение меньше от ближних или дальних атак.",
                 type: "passive",
-                propertiy: {
+                property: {
                     target: "self",
-                    properties: ["incAtk:2", "reciveLessDmg:[melee, range]:1"],
+                    action: ["incAtk:2", "reciveLessDmg:[melee, range]:1"],
                 },
             },
             flank: {
                 title: "Герой, атаковавший этот отряд в ближнем бою, получает 2 повреждения.",
                 type: "passive",
-                propertiy: {
+                property: {
                     target: "self",
-                    properties: ["reflectDmg:[melee]:2"],
+                    action: ["reflectDmg:[melee]:2"],
                 },
             },
             rear: {
                 title: "Дальняя атака этим героем при розыгрыше первого своего приказа в фазу тыла.",
                 type: "trigger",
-                propertiy: {
+                property: {
                     target: "any:enemy",
                     cast: ["attack:range:selfAtk"],
                 },
@@ -92,7 +90,7 @@ module.exports = [
             order: {
                 title: "Первый герой в каждом столбце в этом отряде проводит ближнюю атаку, но нельзя атаковать лидера.",
                 type: "active",
-                propertiy: {
+                property: {
                     target: "upTo:7",
                     cast: ["upTo:7"],
                 },
@@ -100,7 +98,7 @@ module.exports = [
             leader:{
                 title: "Если герой в этом отряде получает смертельные раны, то этот герой незамедлительно проводит атаку ближнего боя. повреждения от этой атаки проходят после проверки потерь в текущей фазе.",
                 type: "passive",
-                propertiy: {
+                property: {
                     target: "all:enemy",
                     cast: ["dealDmg:1"],
                 },
@@ -126,23 +124,23 @@ module.exports = [
             vanguard: {
                 title: "Перехват",
                 type: "passive",
-                propertiy: {
+                property: {
                     target: "self",
-                    properties: ["intercept:1"],
+                    action: ["intercept:1"],
                 },
             },
             flank: {
                 title: "+2 к силе",
                 type: "passive",
-                propertiy: {
+                property: {
                     target: "self",
-                    properties: ["reflectDmg:[melee]:2"],
+                    action: ["reflectDmg:[melee]:2"],
                 },
             },
             rear: {
                 title: "+4 к силе",
                 type: "passive",
-                propertiy: {
+                property: {
                     target: "self",
                     cast: ["attack:range:selfAtk"],
                 },
@@ -150,7 +148,7 @@ module.exports = [
             order: {
                 title: "Нанести 5 повреждений в одном столбце каждому герою в обоих отрядах",
                 type: "active",
-                propertiy: {
+                property: {
                     target: "upTo:7",
                     cast: ["upTo:7"],
                 },
@@ -158,7 +156,7 @@ module.exports = [
             leader:{
                 title: "У героев в этом отряде +3 к силе при проведении ближней атаки.",
                 type: "passive",
-                propertiy: {
+                property: {
                     target: "unk",
                     cast: ["unk"],
                 },
@@ -184,27 +182,27 @@ module.exports = [
             vanguard: {
                 title: "Этот герой восстанавливает себе столько повреждений, сколько нанес при атаке.",
                 type: "passive",
-                propertiy: {    target: "self", properties: ["wtf"],    },
+                property: {    target: "self", action: ["wtf"],    },
             },
             flank: {
                 title: "Перенести любые повреждения с героя впередистоящего на этого не затрачивая действие.",
                 type: "spell",
-                propertiy: {    target: "forerunner", properties: ["wtf"],   },
+                property: {    target: "forerunner", action: ["wtf"],   },
             },
             rear: {
                 title: "Атака: перенести до 2 повреждений со своего лидера на любого героя.",
                 type: "spell",
-                propertiy: {    target: "any:enemy",    cast: ["wtf"], },
+                property: {    target: "any:enemy",    cast: ["wtf"], },
             },
             order: {
                 title: "Перенести все повреждения с одного героя на любого другого героя.",
                 type: "spell",
-                propertiy: {    target: "any:unit",   cast: ["wtf"],   },
+                property: {    target: "any:unit",   cast: ["wtf"],   },
             },
             leader:{
                 title: "Этот лидер и все герои в этом отряде восстанавливают здоровье, в количестве, равном нанесенным повреждениям при любой атаке.",
                 type: "passive",
-                propertiy: { target: "self", cast: ["dwtf"], },
+                property: { target: "self", cast: ["dwtf"], },
             }
         },
         vanguard: 'Этот герой восстанавливает себе столько повреждений, сколько нанес при атаке.',
@@ -227,27 +225,27 @@ module.exports = [
             vanguard: {
                 title: "+1 к силе за каждое мертвое тело в обоих отрядах.",
                 type: "passive",
-                propertiy: {    target: "self", properties: ["wtf"],    },
+                property: {    target: "self", action: ["wtf"],    },
             },
             flank: {
                 title: "+4 к силе, если стоит позади мертвого тела.",
                 type: "passive",
-                propertiy: {    target: "self", properties: ["reflectDmg:[melee]:2"],   },
+                property: {    target: "self", action: ["reflectDmg:[melee]:2"],   },
             },
             rear: {
                 title: "Атака: убрать все мертые тела в одной фазе в любом отряде",
                 type: "trigger",
-                propertiy: {    target: "any:enemy",    cast: ["attack:range:selfAtk"], },
+                property: {    target: "any:enemy",    cast: ["attack:range:selfAtk"], },
             },
             order: {
                 title: "Вернуть все мертвые тела из одной фазы обоих отрядов в руку владельца.",
                 type: "active",
-                propertiy: {    target: "upTo:7",   cast: ["upTo:7"],   },
+                property: {    target: "upTo:7",   cast: ["upTo:7"],   },
             },
             leader:{
                 title: "Мертвые тела в этом отряде могут атаковать и имеют силу, равную 3. Тела не являются героями и не получают преимуществ впередистоящих героев, не блокируют ближнюю атаку.",
                 type: "passive",
-                propertiy: { target: "all:enemy", cast: ["dealDmg:1"], },
+                property: { target: "all:enemy", cast: ["dealDmg:1"], },
             }
         },
         vanguard: '+1 к силе за каждое мертвое тело в обоих отрядах.',
@@ -270,27 +268,27 @@ module.exports = [
             vanguard: {
                 title: "Перехват. +2 к силе.",
                 type: "passive",
-                propertiy: {    target: "self", properties: ["intercept:1"], },
+                property: {    target: "self", action: ["intercept:1"], },
             },
             flank: {
                 title: "Атака: переместить до 7 повреждений с героев этого отряда на этого героя.",
                 type: "active",
-                propertiy: {    target: "spell",   properties: ["wtf"],    },
+                property: {    target: "spell",   action: ["wtf"],    },
             },
             rear: {
                 title: "Герои в этом отряде в тылу могут переносить любые повреждения на этого героя, не затрачивая действие.",
                 type: "active",
-                propertiy: {    target: "leader",   cast: ["unk"],  },
+                property: {    target: "leader",   cast: ["unk"],  },
             },
             order: {
                 title: "Перераспределить героев и мертвые тела в своем отряде.",
                 type: "active",
-                propertiy: {    target: "unk",  cast: ["unk"],  },
+                property: {    target: "unk",  cast: ["unk"],  },
             },
             leader:{
                 title: "Смертельные раны, полученные в этом отряде переносятся на лидера. Если у героя 4 здоровья, а он получил 5 повреждений, то 3 повреждения получит герой, а 2 - Кэролин.",
                 type: "trigger",
-                propertiy: {    target: "unk",  cast: ["unk"],  },
+                property: {    target: "unk",  cast: ["unk"],  },
             }
         },
         vanguard: 'Перехват. +2 к силе.',
@@ -313,27 +311,27 @@ module.exports = [
             vanguard: {
                 title: "Атака: выполнить атакующиую способность любого другого героя в авангарде.",
                 type: "active",
-                propertiy: {    target: "hero", properties: ["heal:4"], },
+                property: {    target: "hero", action: ["heal:4"], },
             },
             flank: {
                 title: "Атака: выполнить атакующую способность любого другого героя во фланге.",
                 type: "active",
-                propertiy: {    target: "leader",   properties: ["unk"],    },
+                property: {    target: "leader",   action: ["unk"],    },
             },
             rear: {
                 title: "Атака: выполнить атакующую способность любого другого героя в тыле.",
                 type: "active",
-                propertiy: {    target: "leader",   cast: ["unk"],  },
+                property: {    target: "leader",   cast: ["unk"],  },
             },
             order: {
                 title: "Покажите приказ из руки и выполните его.",
                 type: "active",
-                propertiy: {    target: "unk",  cast: ["unk"],  },
+                property: {    target: "unk",  cast: ["unk"],  },
             },
             leader:{
                 title: "Этот лидер имеет ту же самую силу, здоровье и способность, что и лидер противника. Если копировать характеристики невозможно, то использовать собственные.",
                 type: "trigger",
-                propertiy: {    target: "unk",  cast: ["unk"],  },
+                property: {    target: "unk",  cast: ["unk"],  },
             }
         },
         vanguard: 'Атака: выполнить атакующиую способность любого другого героя в авангарде.',
@@ -356,23 +354,23 @@ module.exports = [
             vanguard: {
                 title: "Атака: восстановить до 4 повреждений на любом герое.",
                 type: "active",
-                propertiy: {
+                property: {
                     target: "hero",
-                    properties: ["heal:4"],
+                    action: ["heal:4"],
                 },
             },
             flank: {
                 title: "Атака: восстановить до 2 повреждений на своем лидере.",
                 type: "active",
-                propertiy: {
+                property: {
                     target: "leader",
-                    properties: ["unk"],
+                    action: ["unk"],
                 },
             },
             rear: {
                 title: "Атака: воскресить мертвое тело. Этот герой получает повреждения, равные здоровью воскрешенного.",
                 type: "active",
-                propertiy: {
+                property: {
                     target: "leader",
                     cast: ["unk"],
                 },
@@ -380,7 +378,7 @@ module.exports = [
             order: {
                 title: "Воскресить мертвое тело, полностью восстановив ему здоровье.",
                 type: "active",
-                propertiy: {
+                property: {
                     target: "unk",
                     cast: ["unk"],
                 },
@@ -388,7 +386,7 @@ module.exports = [
             leader:{
                 title: "В конце каждого полного раунда, за исключением первого, положите маркер уровня на эту карту. Все герои в этом отряде получают +1 к силе за каждый маркер.",
                 type: "trigger",
-                propertiy: {
+                property: {
                     target: "unk",
                     cast: ["unk"],
                 },
@@ -414,29 +412,29 @@ module.exports = [
             vanguard: {
                 title: "Перехват: Не получает повреждений от дальней атаки.",
                 type: "passive",
-                propertiy: {
+                property: {
                     target: "unk",
-                    properties: ["unk"],
+                    action: ["unk"],
                 },
             },
             flank: {
                 title: "Впередистоящий получает перехват. Позадистоящий получает дальнюю атаку.",
                 type: "passive",
-                propertiy: [
+                property: [
                     {
                         target: "forerunner",
-                        properties: ["intercept:1"],
+                        action: ["intercept:1"],
                     },
                     {
                         target: "supporter",
-                        properties: ["ranged"],
+                        action: ["ranged"],
                     }
             ],
             },
             rear: {
                 title: "Атака: противник должен сбросить случайную карту.",
                 type: "active",
-                propertiy: {
+                property: {
                     target: "unk",
                     cast: ["unk"],
                 },
@@ -444,7 +442,7 @@ module.exports = [
             order: {
                 title: "Случайно взять карту из руки противника и разыграть ее приказ. Сбросить карту.",
                 type: "active",
-                propertiy: {
+                property: {
                     target: "unk",
                     cast: ["unk"],
                 },
@@ -452,7 +450,7 @@ module.exports = [
             leader:{
                 title: "Когда противник использует ближнюю атаку, Вы решаете, какую цель он достигнет. Цель должна быть доступна для ближней атаки.",
                 type: "trigger",
-                propertiy: {
+                property: {
                     target: "unk",
                     cast: ["unk"],
                 },
@@ -478,23 +476,23 @@ module.exports = [
             vanguard: {
                 title: "Атака: вернуть своего героя в руку.",
                 type: "active",
-                propertiy: {
+                property: {
                     target: "unk",
-                    properties: ["unk"],
+                    action: ["unk"],
                 },
             },
             flank: {
                 title: "Атака: противник должен показать карту из своей руки. Вы разыгрываете приказ этой карты.",
                 type: "active",
-                propertiy: {
+                property: {
                     target: "unk",
-                    properties: ["unk"],
+                    action: ["unk"],
                 },
             },
             rear: {
                 title: "Атака: нанять героя из своей руки, провести им атаку, а затем сбросить его.",
                 type: "active",
-                propertiy: {
+                property: {
                     target: "unk",
                     cast: ["unk"],
                 },
@@ -502,7 +500,7 @@ module.exports = [
             order: {
                 title: "Случайно взять карту из руки противника и разыграть ее приказ. Сбросить карту.",
                 type: "active",
-                propertiy: {
+                property: {
                     target: "unk",
                     cast: ["unk"],
                 },
@@ -510,7 +508,7 @@ module.exports = [
             leader:{
                 title: "Когда противник использует ближнюю атаку, Вы решаете, какую цель он достигнет. Цель должна быть доступна для ближней атаки.",
                 type: "trigger",
-                propertiy: {
+                property: {
                     target: "unk",
                     cast: ["unk"],
                 },
@@ -772,7 +770,46 @@ module.exports = [
         img: '25',
         atk: 1,
         def: 4,
-        
+        ability: {
+            vanguard: {
+                title: "Перехват. Получает на 2 повреждения меньше от ближних и дальних атак.",
+                type: "passive",
+                property: {
+                    target: "self",
+                    action: ["intercept", "reciveLessDmg;melee,range;2"],
+                },
+            },
+            flank: {
+                title: "Ваш лидер получает на 2 повреждения меньше от ближних и дальних атак.",
+                type: "passive",
+                property: {
+                    target: "leader",
+                    action: ["reciveLessDmg;melee,range;2"],
+                },
+            },
+            rear: {
+                title: "Атака: до 5 разных героев получают по 1 повреждению.",
+                type: "spell",
+                property: {
+                    target: "upTo:5",
+                    cast: ["upTo:5"],
+                },
+            },
+            order: {
+                title: "Нанести 7 повреждений героям. Распределить как угодно",
+                type: "active",
+                property: {
+                    target: "upTo:7",
+                    cast: ["upTo:7"],
+                },
+            },
+            //+
+            leader:{
+                title: "В конце каждой фазы все герои и лидер, стоящие в этой фазе, исцеляют 2 повреждения. Это действие выполняется перед проверкой потерь.",
+                type: "before checkloss",
+                property: "#healer", 
+            }
+        },
         vanguard: 'Перехват. Получает на 2 повреждения меньше от ближних или дальних атак.',
         flank: 'Атака: восстановить до 4 повреждений на любом герое.',
         rear: 'Атака: восстановить до 2 повреждений любым 3 разным героям.',
