@@ -1,5 +1,6 @@
 node_modules
 0trash
 dist
+cards_data_2013.js
 src/AppTestCard.js
 src/img/*

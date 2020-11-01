@@ -170,8 +170,6 @@ CardsRoadMap.prototype = {
     return false;
   },
 
-  init: (function(){})(),
-
   removeCardFromHandById: function(card_id){
     this.hand.splice(this.hand.findIndex( card => card.id === card_id), 1);
   },
@@ -190,7 +188,11 @@ CardsRoadMap.prototype = {
       locate: field_num,
       line: line, // not needed in future
       side: side, // not needed in future
-      ability: c.ability,
+      ability: {
+        // action happens when ...
+        takeDamage: [],
+        doDamage: [],
+      },
     });
 
     let t = null;
@@ -199,27 +201,29 @@ CardsRoadMap.prototype = {
     } else {
       t = c['ability'][line];
     }
+
+
     // property type : passive, active(spell,order) 
     if(t.type === "passive"){
       if(t.property.target === "leader"){
-        this.fields[5].buffs.push(t.property.action)
+        this.fields[5].buffs.push({card_id: c.id, action: t.property.action})
       }
       if(t.property.target === "self"){
-        this.fields[field_num - 1].buffs.push(t.property.action)
+        this.fields[field_num - 1].buffs.push({card_id: c.id, action: t.property.action});
       }
-
-      this.cardsProperties.set(c.id, {ability: t} );
+      this.cardsProperties.set(c.id, {ability: t} ); // ~~~~~
     }
     
     if(t.type === "before checkloss"){
       let room = getRoomByUserName(this.userName);
       room.perksBeforeCheckloss.push({user: this.userName, card_id: c.id, action: t.property});     
+    }   
+    if(t.type === "active"){
+      this.fields[field_num - 1].spell = t.property.action;
     }
-
     
-
     this.column[side][line] = this.fields[+field_num - 1].card;
-    console.log(this.cardsProperties);
+
   }
 }
 
@@ -502,7 +506,12 @@ Room.prototype = {
 
   // perksBeforeCheckloss и метод и массив ----- --имзенить названия
   afterCheckLoss(){
-    return
+    for(let u of this.users){
+      if(!u.cardsRoadMap.fields[4].card.isAlive){
+        let anotherUser = this.users.filter( p => p.name !== u.name )[0];
+        socket.emit('END game', { lose: u.name, win: anotherUser.name});
+      }
+    }
   },
 
   isPlayerTurnOver(user){

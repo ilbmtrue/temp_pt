@@ -12,7 +12,7 @@ module.exports = [
                 type: "passive",
                 property: {
                     target: "self",
-                    action: ["intercept", "reciveLessDmg;melee,range;2"],
+                    action: "tempCardAbilFunc1_1",
                 },
             },
             flank: {
@@ -20,12 +20,12 @@ module.exports = [
                 type: "passive",
                 property: {
                     target: "leader",
-                    action: ["reciveLessDmg;melee,range;2"],
+                    action: "tempCardAbilFunc1_2",
                 },
             },
             rear: {
                 title: "Атака: до 5 разных героев получают по 1 повреждению.",
-                type: "spell",
+                type: "active",
                 property: {
                     target: "upTo:5",
                     cast: ["upTo:5"],
@@ -33,7 +33,7 @@ module.exports = [
             },
             order: {
                 title: "Нанести 7 повреждений героям. Распределить как угодно",
-                type: "active",
+                type: "order",
                 property: {
                     target: "upTo:7",
                     cast: ["upTo:7"],
@@ -68,7 +68,7 @@ module.exports = [
                 type: "passive",
                 property: {
                     target: "self",
-                    action: ["incAtk:2", "reciveLessDmg:[melee, range]:1"],
+                    action: "tempCardAbilFunc2_1",
                 },
             },
             flank: {
@@ -76,7 +76,7 @@ module.exports = [
                 type: "passive",
                 property: {
                     target: "self",
-                    action: ["reflectDmg:[melee]:2"],
+                    action: "tempCardAbilFunc2_2",
                 },
             },
             rear: {
@@ -89,7 +89,7 @@ module.exports = [
             },
             order: {
                 title: "Первый герой в каждом столбце в этом отряде проводит ближнюю атаку, но нельзя атаковать лидера.",
-                type: "active",
+                type: "order",
                 property: {
                     target: "upTo:7",
                     cast: ["upTo:7"],
@@ -126,7 +126,7 @@ module.exports = [
                 type: "passive",
                 property: {
                     target: "self",
-                    action: ["intercept:1"],
+                    action: "tempCardAbilFunc3_1",
                 },
             },
             flank: {
@@ -134,7 +134,7 @@ module.exports = [
                 type: "passive",
                 property: {
                     target: "self",
-                    action: ["reflectDmg:[melee]:2"],
+                    action: "tempCardAbilFunc3_2",
                 },
             },
             rear: {
@@ -142,12 +142,12 @@ module.exports = [
                 type: "passive",
                 property: {
                     target: "self",
-                    cast: ["attack:range:selfAtk"],
+                    action: "tempCardAbilFunc3_3",
                 },
             },
             order: {
                 title: "Нанести 5 повреждений в одном столбце каждому герою в обоих отрядах",
-                type: "active",
+                type: "order",
                 property: {
                     target: "upTo:7",
                     cast: ["upTo:7"],
@@ -157,8 +157,8 @@ module.exports = [
                 title: "У героев в этом отряде +3 к силе при проведении ближней атаки.",
                 type: "passive",
                 property: {
-                    target: "unk",
-                    cast: ["unk"],
+                    target: "self:all:hero",
+                    action: "#fighter",
                 },
             }
         },
@@ -186,17 +186,17 @@ module.exports = [
             },
             flank: {
                 title: "Перенести любые повреждения с героя впередистоящего на этого не затрачивая действие.",
-                type: "spell",
+                type: "active",
                 property: {    target: "forerunner", action: ["wtf"],   },
             },
             rear: {
                 title: "Атака: перенести до 2 повреждений со своего лидера на любого героя.",
-                type: "spell",
+                type: "active",
                 property: {    target: "any:enemy",    cast: ["wtf"], },
             },
             order: {
                 title: "Перенести все повреждения с одного героя на любого другого героя.",
-                type: "spell",
+                type: "order",
                 property: {    target: "any:unit",   cast: ["wtf"],   },
             },
             leader:{
@@ -282,7 +282,7 @@ module.exports = [
             },
             order: {
                 title: "Перераспределить героев и мертвые тела в своем отряде.",
-                type: "active",
+                type: "order",
                 property: {    target: "unk",  cast: ["unk"],  },
             },
             leader:{
@@ -325,7 +325,7 @@ module.exports = [
             },
             order: {
                 title: "Покажите приказ из руки и выполните его.",
-                type: "active",
+                type: "order",
                 property: {    target: "unk",  cast: ["unk"],  },
             },
             leader:{
@@ -377,7 +377,7 @@ module.exports = [
             },
             order: {
                 title: "Воскресить мертвое тело, полностью восстановив ему здоровье.",
-                type: "active",
+                type: "order",
                 property: {
                     target: "unk",
                     cast: ["unk"],
@@ -441,7 +441,7 @@ module.exports = [
             },
             order: {
                 title: "Случайно взять карту из руки противника и разыграть ее приказ. Сбросить карту.",
-                type: "active",
+                type: "order",
                 property: {
                     target: "unk",
                     cast: ["unk"],
@@ -499,7 +499,7 @@ module.exports = [
             },
             order: {
                 title: "Случайно взять карту из руки противника и разыграть ее приказ. Сбросить карту.",
-                type: "active",
+                type: "order",
                 property: {
                     target: "unk",
                     cast: ["unk"],

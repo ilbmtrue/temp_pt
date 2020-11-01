@@ -586,7 +586,6 @@ socket.on("next turn", function(data){
     }
         
     gameTurnEl.innerHTML = 'turn: ' + data.player;
-
     infoBoard.innerText = "Action points: 2";
     // moveWaveCard(roundForPlayer);
 });
@@ -595,6 +594,12 @@ socket.on("next turn", function(data){
 socket.on("user_join", function(data){
     console.log('user ' + roomInfo.userId + ' ' + roomInfo.userName + ' join, [' + roomInfo.users + ']');
 });
+
+socket.on("END game", function(data){
+    messageBoard.innerText = data.win + " win! " + data.lose + " lose";
+    messageBoardAnimation();
+})
+
 socket.on("enemyJoin", function(data){
     const fieldPlayer = document.getElementById('enemy-player');
     fieldPlayer.classList.add(data.enemy);
