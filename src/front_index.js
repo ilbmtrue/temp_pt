@@ -305,6 +305,9 @@ function fillGameTableB(player, data){
             let cardAbility = card['ability'][line];
 
             if(playerTable[f].isAlive){
+                if(cardElem.classList.contains('corps')){
+                    cardElem.classList.remove('corps')
+                }
                 cardElem.style['background-image'] = 'url(\'./img/cards/s-'+ card.img + imageFormat + '\')';
                 cardElem.dataset.cardId = playerTable[f].id;
                 if(player === userName){
@@ -329,6 +332,10 @@ function fillGameTableB(player, data){
                 
             } else {
                 cardElem.dataset.cardId = playerTable[f].id;
+                if(!cardElem.classList.contains('corps')){
+                    cardElem.classList.add('corps')
+                }
+             
                 cardElem.style['background-image'] = 'url(\'./img/shirt-3.jpg\')';
                 if(player === userName){
                     cardElem.querySelector('.attack').style.display = 'none';
@@ -649,22 +656,32 @@ $(document).ready(function () {
     document.addEventListener('mousedown', function(event){
         if(event.button == 0){        
             let elem = event.target;
-
-
             if(playerTurn){
                 if(actionController.chosen){
                     if(actionController.playerAction === 'attack'){
-                        if(elem.classList.contains('card') && elem.getAttribute('data-card-id')){
-                            console.log(event.target);
-                            actionController.target = elem.getAttribute('data-card-id');
-                            actionController.characterAttack();
-                            document.querySelector('body').style.cursor = "inherit";
-                            return;
+                        if(elem.closest('#enemy-player')){
+                            if(elem.classList.contains('card') && elem.getAttribute('data-card-id')){
+                                if(!elem.classList.contains('corps')){
+                                    console.log(event.target);
+                                    actionController.target = elem.getAttribute('data-card-id');
+                                    actionController.characterAttack();
+                                    document.querySelector('body').style.cursor = "inherit";
+                                    return;
+                                } else {
+                                    messageBoard.innerText = 'Select something alive!';
+                                    messageBoardAnimation();
+                                    return;
+                                }
+
+                            } else {
+                                messageBoard.innerText = 'Select correct field!';
+                                messageBoardAnimation();
+                                return;
+                            }       
                         } else {
-                            messageBoard.innerText = 'Select correct field!';
-                            messageBoardAnimation();
-                            return;
-                        }       
+                            messageBoard.innerText = 'Select enemy field!';
+                            messageBoardAnimation(); 
+                        }
                     } 
 
                     if(actionController.playerAction === 'move'){
@@ -835,7 +852,7 @@ $(document).ready(function () {
             if(card){
                 let info = cardsCollection.find(c => c.id == card);
 
-                if(event.target.classList.contains("flank","middle")){
+                if(event.target.classList.contains("flank") && event.target.classList.contains("middle")){
                     $('#card-info .card-info__special').css('opacity', 1);
                     $('#card-info .card-info__special').text(info.leader_special);
                     $('#card-info .card-info__name').text(info.leader);

@@ -1,51 +1,22 @@
 //  imgSource/2012/
 module.exports = [
     {
-        id: 1,
-        name: 'Алхимик',
-        img: '1',
-        atk: 2,
-        def: 4,
+        id: 1, name: 'Алхимик', img: '1', atk: 2, def: 4,
         ability: {
-            vanguard: {
-                title: "Перехват. Получает на 2 повреждения меньше от ближних и дальних атак.",
-                type: "passive",
-                property: {
-                    target: "self",
-                    action: "tempCardAbilFunc1_1",
-                },
-            },
-            flank: {
-                title: "Ваш лидер получает на 2 повреждения меньше от ближних и дальних атак.",
-                type: "passive",
-                property: {
-                    target: "leader",
-                    action: "tempCardAbilFunc1_2",
-                },
-            },
-            rear: {
-                title: "Атака: до 5 разных героев получают по 1 повреждению.",
-                type: "active",
-                property: {
-                    target: "upTo:5",
-                    cast: ["upTo:5"],
-                },
-            },
-            order: {
-                title: "Нанести 7 повреждений героям. Распределить как угодно",
-                type: "order",
-                property: {
-                    target: "upTo:7",
-                    cast: ["upTo:7"],
-                },
-            },
-            //+
-            leader:{
-                title: "Все герои противника получают 1 повреждение в конце каждой фазы перед проверкой потерь.",
-                type: "before checkloss",
-                property: "#alchemist", 
-            }
+            vanguard: [
+                {    type: "passive", target: "self", action: "lessDmg"},
+                {    type: "passive", target: "self", action: "intercept"},
+            ],
+            flank: [
+                {    type: "passive", target: "leader", action: "lessDmg"},
+            ],
+            rear: [
+                {    type: "spell", spell: "spell_1_r"},
+            ],
         },
+        order: "do 1 damage to hero repeat 7",
+        leader_perk: "#alchemist",
+        
         vanguard: 'Перехват. Получает на 2 повреждения меньше от ближних и дальних атак.',
         flank: 'Ваш лидер получает на 2 повреждения меньше от ближних и дальних атак.',
         rear: 'Атака: до 5 разных героев получают по 1 повреждению.',
@@ -63,47 +34,20 @@ module.exports = [
         atk: 3,
         def: 6,
         ability: {
-            vanguard: {
-                title: "+2 к силе. Получает на 1 повреждение меньше от ближних или дальних атак.",
-                type: "passive",
-                property: {
-                    target: "self",
-                    action: "tempCardAbilFunc2_1",
-                },
-            },
-            flank: {
-                title: "Герой, атаковавший этот отряд в ближнем бою, получает 2 повреждения.",
-                type: "passive",
-                property: {
-                    target: "self",
-                    action: "tempCardAbilFunc2_2",
-                },
-            },
-            rear: {
-                title: "Дальняя атака этим героем при розыгрыше первого своего приказа в фазу тыла.",
-                type: "trigger",
-                property: {
-                    target: "any:enemy",
-                    cast: ["attack:range:selfAtk"],
-                },
-            },
-            order: {
-                title: "Первый герой в каждом столбце в этом отряде проводит ближнюю атаку, но нельзя атаковать лидера.",
-                type: "order",
-                property: {
-                    target: "upTo:7",
-                    cast: ["upTo:7"],
-                },
-            },
-            leader:{
-                title: "Если герой в этом отряде получает смертельные раны, то этот герой незамедлительно проводит атаку ближнего боя. повреждения от этой атаки проходят после проверки потерь в текущей фазе.",
-                type: "passive",
-                property: {
-                    target: "all:enemy",
-                    cast: ["dealDmg:1"],
-                },
-            }
+            vanguard: [
+                {   type: "passive", target: "self", action: "moreDmg" },
+                {   type: "passive", target: "self", action: "lessDmg" },
+            ],
+            flank: [
+                {   type: "passive", target: "self", action: "reflectOnMeleeAttack" }
+            ],
+            rear: [
+                {   type: "trigger", target: "any:enemy", action: "attack:range:selfAtk"}
+            ],
         },
+        order: "Первый герой в каждом столбце в этом отряде проводит ближнюю атаку, но нельзя атаковать лидера.",
+            
+        leader_perk: "#berserk",
         vanguard: '+2 к силе. Получает на 1 повреждение меньше от ближних или дальних атак.',
         flank: 'Герой, атаковавший этот отряд в ближнем бою, получает 2 повреждения.',
         rear: 'Дальняя атака этим героем при розыгрыше первого своего приказа в фазу тыла.',
@@ -121,47 +65,27 @@ module.exports = [
         atk: 4,
         def: 8,
         ability: {
-            vanguard: {
-                title: "Перехват",
-                type: "passive",
-                property: {
-                    target: "self",
-                    action: "tempCardAbilFunc3_1",
-                },
-            },
-            flank: {
-                title: "+2 к силе",
-                type: "passive",
-                property: {
-                    target: "self",
-                    action: "tempCardAbilFunc3_2",
-                },
-            },
-            rear: {
-                title: "+4 к силе",
-                type: "passive",
-                property: {
-                    target: "self",
-                    action: "tempCardAbilFunc3_3",
-                },
-            },
-            order: {
-                title: "Нанести 5 повреждений в одном столбце каждому герою в обоих отрядах",
-                type: "order",
-                property: {
-                    target: "upTo:7",
-                    cast: ["upTo:7"],
-                },
-            },
-            leader:{
-                title: "У героев в этом отряде +3 к силе при проведении ближней атаки.",
-                type: "passive",
-                property: {
-                    target: "self:all:hero",
-                    action: "#fighter",
-                },
-            }
+            vanguard: [
+                {   type: "passive", target: "self", action: "intercept",}
+            ],
+            flank: [
+                {   type: "passive", target: "self", action: "moreDmg:2",}
+            ],
+            rear: [
+                {   type: "passive", target: "self", action: "moreDmg:4",}
+            ],
         },
+        order: "Нанести 5 повреждений в одном столбце каждому герою в обоих отрядах",
+
+        leader_perk: "#fighter",
+        // leader:{
+        //     title: "У героев в этом отряде +3 к силе при проведении ближней атаки.",
+        //     type: "passive",
+        //     property: {
+        //         target: "self:all:hero",
+        //         action: "#fighter",
+        //     },
+        // }
         vanguard: 'Перехват',
         flank: '+2 к силе',
         rear: '+4 к силе',
@@ -178,33 +102,26 @@ module.exports = [
         img: '4',
         atk: 2,
         def: 6,
+        
         ability: {
-            vanguard: {
-                title: "Этот герой восстанавливает себе столько повреждений, сколько нанес при атаке.",
-                type: "passive",
-                property: {    target: "self", action: ["wtf"],    },
-            },
-            flank: {
-                title: "Перенести любые повреждения с героя впередистоящего на этого не затрачивая действие.",
-                type: "active",
-                property: {    target: "forerunner", action: ["wtf"],   },
-            },
-            rear: {
-                title: "Атака: перенести до 2 повреждений со своего лидера на любого героя.",
-                type: "active",
-                property: {    target: "any:enemy",    cast: ["wtf"], },
-            },
-            order: {
-                title: "Перенести все повреждения с одного героя на любого другого героя.",
-                type: "order",
-                property: {    target: "any:unit",   cast: ["wtf"],   },
-            },
-            leader:{
-                title: "Этот лидер и все герои в этом отряде восстанавливают здоровье, в количестве, равном нанесенным повреждениям при любой атаке.",
-                type: "passive",
-                property: { target: "self", cast: ["dwtf"], },
-            }
+            vanguard: [
+                {   type: "passive", target: "self", action: "lifelink", }
+            ],
+            flank: [
+                {    type: "spell", spell: "spell_4_f" },
+            ],
+            rear: [
+                {    type: "spell", spell: "spell_4_r" },
+            ], 
         },
+        order: "Перенести все повреждения с одного героя на любого другого героя.",
+            
+        leader_perk: "#vampire",
+        // leader:{
+        //     title: "Этот лидер и все герои в этом отряде восстанавливают здоровье, в количестве, равном нанесенным повреждениям при любой атаке.",
+        //     type: "passive",
+        //     property: { target: "self", cast: ["dwtf"], },
+        // }
         vanguard: 'Этот герой восстанавливает себе столько повреждений, сколько нанес при атаке.',
         flank: 'Перенести любый повреждения с героя впередистоящего на этого не затрачивая действие.',
         rear: 'Атака: перенести до 2 повреждений со своего лидера на любого героя.',
@@ -222,32 +139,24 @@ module.exports = [
         atk: 1,
         def: 5,
         ability: {
-            vanguard: {
-                title: "+1 к силе за каждое мертвое тело в обоих отрядах.",
-                type: "passive",
-                property: {    target: "self", action: ["wtf"],    },
-            },
-            flank: {
-                title: "+4 к силе, если стоит позади мертвого тела.",
-                type: "passive",
-                property: {    target: "self", action: ["reflectDmg:[melee]:2"],   },
-            },
-            rear: {
-                title: "Атака: убрать все мертые тела в одной фазе в любом отряде",
-                type: "trigger",
-                property: {    target: "any:enemy",    cast: ["attack:range:selfAtk"], },
-            },
-            order: {
-                title: "Вернуть все мертвые тела из одной фазы обоих отрядов в руку владельца.",
-                type: "active",
-                property: {    target: "upTo:7",   cast: ["upTo:7"],   },
-            },
-            leader:{
-                title: "Мертвые тела в этом отряде могут атаковать и имеют силу, равную 3. Тела не являются героями и не получают преимуществ впередистоящих героев, не блокируют ближнюю атаку.",
-                type: "passive",
-                property: { target: "all:enemy", cast: ["dealDmg:1"], },
-            }
+            vanguard: [
+                {    type: "passive", target: "self", action: "moreDmgFromBodies" }
+            ],
+            flank: [
+                {    type: "passive", target: "self", action: "moreDmgIfForerunnerDead" }
+            ],
+            rear: [
+                {    type: "spell", spell: "spell_5_r" }
+            ],
         },
+        order: "Вернуть все мертвые тела из одной фазы обоих отрядов в руку владельца.",
+            
+        leader_perk: "#witch",
+        // leader:{
+        //     title: "Мертвые тела в этом отряде могут атаковать и имеют силу, равную 3. Тела не являются героями и не получают преимуществ впередистоящих героев, не блокируют ближнюю атаку.",
+        //     type: "passive",
+        //     property: { target: "all:enemy", cast: ["dealDmg:1"], },
+        // },
         vanguard: '+1 к силе за каждое мертвое тело в обоих отрядах.',
         flank: '+4 к силе, если стоит позади мертвого тела.',
         rear: 'Атака: убрать все мертые тела в одной фазе в любом отряде',
@@ -265,32 +174,25 @@ module.exports = [
         atk: 3,
         def: 7,
         ability: {
-            vanguard: {
-                title: "Перехват. +2 к силе.",
-                type: "passive",
-                property: {    target: "self", action: ["intercept:1"], },
-            },
-            flank: {
-                title: "Атака: переместить до 7 повреждений с героев этого отряда на этого героя.",
-                type: "active",
-                property: {    target: "spell",   action: ["wtf"],    },
-            },
-            rear: {
-                title: "Герои в этом отряде в тылу могут переносить любые повреждения на этого героя, не затрачивая действие.",
-                type: "active",
-                property: {    target: "leader",   cast: ["unk"],  },
-            },
-            order: {
-                title: "Перераспределить героев и мертвые тела в своем отряде.",
-                type: "order",
-                property: {    target: "unk",  cast: ["unk"],  },
-            },
-            leader:{
-                title: "Смертельные раны, полученные в этом отряде переносятся на лидера. Если у героя 4 здоровья, а он получил 5 повреждений, то 3 повреждения получит герой, а 2 - Кэролин.",
-                type: "trigger",
-                property: {    target: "unk",  cast: ["unk"],  },
-            }
+            vanguard: [
+                { type: "passive", target: "self", action: "intercept" },
+                { type: "passive", target: "self", action: "moreDmg:2" },
+            ],
+            flank: [
+                {   type: "spell", spell: "spell_6_f"  }
+            ], 
+            rear: [
+                {   type: "spell", spell: "spell_6_r"  },
+            ],           
         },
+        order: "Перераспределить героев и мертвые тела в своем отряде.",
+            
+        leader_perk: "#homunculus",
+        // leader:{
+        //     title: "Смертельные раны, полученные в этом отряде переносятся на лидера. Если у героя 4 здоровья, а он получил 5 повреждений, то 3 повреждения получит герой, а 2 - Кэролин.",
+        //     type: "trigger",
+        //     property: {    target: "unk",  cast: ["unk"],  },
+        // },
         vanguard: 'Перехват. +2 к силе.',
         flank: 'Атака: переместить до 7 повреждений с героев этого отряда на этого героя.',
         rear: 'Герои в этом отряде в тылу могут переносить любые повреждения на этого героя, не затрачивая действие.',
@@ -308,32 +210,27 @@ module.exports = [
         atk: 3,
         def: 5,
         ability: {
-            vanguard: {
-                title: "Атака: выполнить атакующиую способность любого другого героя в авангарде.",
-                type: "active",
-                property: {    target: "hero", action: ["heal:4"], },
-            },
-            flank: {
-                title: "Атака: выполнить атакующую способность любого другого героя во фланге.",
-                type: "active",
-                property: {    target: "leader",   action: ["unk"],    },
-            },
-            rear: {
-                title: "Атака: выполнить атакующую способность любого другого героя в тыле.",
-                type: "active",
-                property: {    target: "leader",   cast: ["unk"],  },
-            },
-            order: {
-                title: "Покажите приказ из руки и выполните его.",
-                type: "order",
-                property: {    target: "unk",  cast: ["unk"],  },
-            },
-            leader:{
-                title: "Этот лидер имеет ту же самую силу, здоровье и способность, что и лидер противника. Если копировать характеристики невозможно, то использовать собственные.",
-                type: "trigger",
-                property: {    target: "unk",  cast: ["unk"],  },
-            }
+        // "Атака: выполнить атакующиую способность любого другого героя в авангарде.",
+            vanguard: [
+                {    type: "spell", spell: "spell_7_v"  }
+            ],         
+        // "Атака: выполнить атакующую способность любого другого героя во фланге.",   
+            flank: [
+                {    type: "spell", spell: "spell_7_f" }
+            ],
+        // "Атака: выполнить атакующую способность любого другого героя в тыле.",
+            rear: [
+                {    type: "spell", spell: "spell_7_r"  }
+            ],
         },
+        order: "Покажите приказ из руки и выполните его.",
+            
+        leader_perk: "#doppelganger",
+        // leader:{
+        //     title: "Этот лидер имеет ту же самую силу, здоровье и способность, что и лидер противника. Если копировать характеристики невозможно, то использовать собственные.",
+        //     type: "trigger",
+        //     property: {    target: "unk",  cast: ["unk"],  },
+        // }
         vanguard: 'Атака: выполнить атакующиую способность любого другого героя в авангарде.',
         flank: 'Атака: выполнить атакующую способность любого другого героя во фланге.',
         rear: 'Атака: выполнить атакующую способность любого другого героя в тыле.',
@@ -351,47 +248,30 @@ module.exports = [
         atk: 1,
         def: 7,
         ability: {
-            vanguard: {
-                title: "Атака: восстановить до 4 повреждений на любом герое.",
-                type: "active",
-                property: {
-                    target: "hero",
-                    action: ["heal:4"],
-                },
-            },
-            flank: {
-                title: "Атака: восстановить до 2 повреждений на своем лидере.",
-                type: "active",
-                property: {
-                    target: "leader",
-                    action: ["unk"],
-                },
-            },
-            rear: {
-                title: "Атака: воскресить мертвое тело. Этот герой получает повреждения, равные здоровью воскрешенного.",
-                type: "active",
-                property: {
-                    target: "leader",
-                    cast: ["unk"],
-                },
-            },
-            order: {
-                title: "Воскресить мертвое тело, полностью восстановив ему здоровье.",
-                type: "order",
-                property: {
-                    target: "unk",
-                    cast: ["unk"],
-                },
-            },
-            leader:{
-                title: "В конце каждого полного раунда, за исключением первого, положите маркер уровня на эту карту. Все герои в этом отряде получают +1 к силе за каждый маркер.",
-                type: "trigger",
-                property: {
-                    target: "unk",
-                    cast: ["unk"],
-                },
-            }
+        // "Атака: восстановить до 4 повреждений на любом герое.",
+            vanguard: [
+                {   type: "spell", spell: "spell_8_v"},
+            ],
+        // "Атака: восстановить до 2 повреждений на своем лидере.",
+            flank: [
+                {   type: "spell", spell: "spell_8_f"}
+            ], 
+        // "Атака: воскресить мертвое тело. Этот герой получает повреждения, равные здоровью воскрешенного.",
+            rear: [
+                {   type: "spell", spell: "spell_8_r"}
+            ],            
         },
+        order: "Воскресить мертвое тело, полностью восстановив ему здоровье.",
+            
+        leader_perk: "#priestsess",
+        // leader:{
+        //     title: "В конце каждого полного раунда, за исключением первого, положите маркер уровня на эту карту. Все герои в этом отряде получают +1 к силе за каждый маркер.",
+        //     type: "trigger",
+        //     property: {
+        //         target: "unk",
+        //         cast: ["unk"],
+        //     },
+        // }
         vanguard: 'Атака: восстановить до 4 повреждений на любом герое.',
         flank: 'Атака: восстановить до 2 повреждений на своем лидере.',
         rear: 'Атака: воскресить мертвое тело. Этот герой получает повреждения, равные здоровью воскрешенного.',
@@ -409,53 +289,32 @@ module.exports = [
         atk: 4,
         def: 5,
         ability: {
-            vanguard: {
-                title: "Перехват: Не получает повреждений от дальней атаки.",
-                type: "passive",
-                property: {
-                    target: "unk",
-                    action: ["unk"],
-                },
-            },
-            flank: {
-                title: "Впередистоящий получает перехват. Позадистоящий получает дальнюю атаку.",
-                type: "passive",
-                property: [
-                    {
-                        target: "forerunner",
-                        action: ["intercept:1"],
-                    },
-                    {
-                        target: "supporter",
-                        action: ["ranged"],
-                    }
+        // "Перехват: Не получает повреждений от дальней атаки.",
+            vanguard: [ 
+                {    type: "passive", target: "self", action: "intercept"   },
+                {    type: "passive", target: "self", action: "immuneFromRange",}
             ],
-            },
-            rear: {
-                title: "Атака: противник должен сбросить случайную карту.",
-                type: "active",
-                property: {
-                    target: "unk",
-                    cast: ["unk"],
-                },
-            },
-            order: {
-                title: "Случайно взять карту из руки противника и разыграть ее приказ. Сбросить карту.",
-                type: "order",
-                property: {
-                    target: "unk",
-                    cast: ["unk"],
-                },
-            },
-            leader:{
-                title: "Когда противник использует ближнюю атаку, Вы решаете, какую цель он достигнет. Цель должна быть доступна для ближней атаки.",
-                type: "trigger",
-                property: {
-                    target: "unk",
-                    cast: ["unk"],
-                },
-            }
+        // "Впередистоящий получает перехват. Позадистоящий получает дальнюю атаку.",
+            flank: [
+                {   type: "passive", target: "forerunner", action: "intercept" },
+                {   type: "passive", target: "supporter", action: "rangeAtk" }
+            ],
+        // "Атака: противник должен сбросить случайную карту.",                
+            rear: [
+                {   type: "spell", spell: "spell_9_r"    }
+            ],
         },
+        order: "Случайно взять карту из руки противника и разыграть ее приказ. Сбросить карту.",
+            
+        leader_perk: "#planestalker",
+        // leader:{
+        //     title: "Когда противник использует ближнюю атаку, Вы решаете, какую цель он достигнет. Цель должна быть доступна для ближней атаки.",
+        //     type: "trigger",
+        //     property: {
+        //         target: "unk",
+        //         cast: ["unk"],
+        //     },
+        // }
         vanguard: 'Перехват: Не получает повреждений от дальней атаки.',
         flank: 'Впередистоящий получает перехват. Позадистоящий получает дальнюю атаку.',
         rear: 'Атака: противник должен сбросить случайную карту.',
@@ -473,47 +332,30 @@ module.exports = [
         atk: 4,
         def: 5,
         ability: {
-            vanguard: {
-                title: "Атака: вернуть своего героя в руку.",
-                type: "active",
-                property: {
-                    target: "unk",
-                    action: ["unk"],
-                },
-            },
-            flank: {
-                title: "Атака: противник должен показать карту из своей руки. Вы разыгрываете приказ этой карты.",
-                type: "active",
-                property: {
-                    target: "unk",
-                    action: ["unk"],
-                },
-            },
-            rear: {
-                title: "Атака: нанять героя из своей руки, провести им атаку, а затем сбросить его.",
-                type: "active",
-                property: {
-                    target: "unk",
-                    cast: ["unk"],
-                },
-            },
-            order: {
-                title: "Случайно взять карту из руки противника и разыграть ее приказ. Сбросить карту.",
-                type: "order",
-                property: {
-                    target: "unk",
-                    cast: ["unk"],
-                },
-            },
-            leader:{
-                title: "Когда противник использует ближнюю атаку, Вы решаете, какую цель он достигнет. Цель должна быть доступна для ближней атаки.",
-                type: "trigger",
-                property: {
-                    target: "unk",
-                    cast: ["unk"],
-                },
-            }
-        },   
+        // "Атака: вернуть своего героя в руку.",
+            vanguard: [
+                {   type: "spell", spell: "spell_10_v" }
+            ],
+        // "Атака: противник должен показать карту из своей руки. Вы разыгрываете приказ этой карты.",
+            flank: [
+                {   type: "spell", spell: "spell_10_f"  }
+            ],  
+        // "Атака: нанять героя из своей руки, провести им атаку, а затем сбросить его.",
+            rear: [
+                {   type: "spell", spell: "spell_10_r"  }
+            ],
+        },  
+        order: "Случайно взять карту из руки противника и разыграть ее приказ. Сбросить карту.",
+            
+        leader_perk: "#illusionist",
+        // leader:{
+        //     title: "Когда противник использует ближнюю атаку, Вы решаете, какую цель он достигнет. Цель должна быть доступна для ближней атаки.",
+        //     type: "trigger",
+        //     property: {
+        //         target: "unk",
+        //         cast: ["unk"],
+        //     },
+        // } 
         vanguard: 'Атака: вернуть своего героя в руку.',
         flank: 'Атака: противник должен показать карту из своей руки. Вы разыгрываете приказ этой карты.',
         rear: 'Атака: нанять героя из своей руки, провести им атаку, а затем сбросить его.',
@@ -795,21 +637,17 @@ module.exports = [
                     cast: ["upTo:5"],
                 },
             },
-            order: {
-                title: "Нанести 7 повреждений героям. Распределить как угодно",
-                type: "active",
-                property: {
-                    target: "upTo:7",
-                    cast: ["upTo:7"],
-                },
-            },
-            //+
-            leader:{
-                title: "В конце каждой фазы все герои и лидер, стоящие в этой фазе, исцеляют 2 повреждения. Это действие выполняется перед проверкой потерь.",
-                type: "before checkloss",
-                property: "#healer", 
-            }
+            
         },
+        order: {
+            title: "Нанести 7 повреждений героям. Распределить как угодно",
+            type: "spell",
+            property: {
+                target: "upTo:7",
+                cast: ["upTo:7"],
+            },
+        },
+        leader_perk: '#healer',
         vanguard: 'Перехват. Получает на 2 повреждения меньше от ближних или дальних атак.',
         flank: 'Атака: восстановить до 4 повреждений на любом герое.',
         rear: 'Атака: восстановить до 2 повреждений любым 3 разным героям.',

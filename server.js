@@ -1,4 +1,4 @@
-console.log(this)
+// console.log(this)
 
 const Cards = require('./cards_data_2012.js');
 
@@ -8,17 +8,17 @@ Object.freeze( Cards );
 Cards.forEach(c => {
   c["blood"] = 0;
   c["isAlive"] = 1;
-  c['atkType'] = 'melee';
-  c['intercept'] = [];
-  if(!c.hasOwnProperty('ability')){
-    c['ability'] = {
-      vanguard: {  title:c.vanguard, type: "unknown" },
-      flank: { title:c.flank, type: "unknown" },
-      rear: {  title:c.rear, type: "unknown"  },
-      order: {  title:c.special, type: "unknown" },
-      leader: {  title:c.leader_special, type: "unknown" },
-    }
-  }
+  // c['atkType'] = ['melee'];
+  // c['intercept'] = [];
+  // if(!c.hasOwnProperty('ability')){
+  //   c['ability'] = {
+  //     vanguard: {  title:c.vanguard, type: "unknown" },
+  //     flank: { title:c.flank, type: "unknown" },
+  //     rear: {  title:c.rear, type: "unknown"  },
+  //     order: {  title:c.special, type: "unknown" },
+  //     leader: {  title:c.leader_special, type: "unknown" },
+  //   }
+  // }
 });
 
 const gameLog = [];
@@ -82,7 +82,11 @@ function Node(num, line, side){
   this.side = side;
   this.aheadNeighbor = null;
   this.behindNeighbor = null;
-  this.buffs = [];
+  
+  
+  this.buffs = [];  // ~~~~
+  this.OnDmgRecive = []; // ```~~~~~
+  this.OnDmgDo = [];  // `~~~~~
 }
 
 function CardsRoadMap(name)
@@ -115,6 +119,7 @@ function CardsRoadMap(name)
     flank:    {left: this.fields[3], middle: this.fields[4], right: this.fields[5]},
     rear:     {left: this.fields[1], middle: this.fields[1], right: this.fields[2]}
   }
+  this.unitPerks = [];
   this.endTurnPerks = [];
 
   this.cardsProperties = new Map(),
@@ -126,20 +131,28 @@ function CardsRoadMap(name)
   this.fields[0].aheadNeighbor = this.fields[3];  // 1->4
   this.fields[1].aheadNeighbor = this.fields[4];  // 2->5
   this.fields[2].aheadNeighbor = this.fields[5];  // 3->6
-
   this.fields[3].aheadNeighbor = this.fields[6];  // 4->7
   this.fields[3].behindNeighbor = this.fields[0]; // 4->1
   this.fields[4].aheadNeighbor = this.fields[7];  // 5->8
   this.fields[4].behindNeighbor = this.fields[1]; // 5->2
   this.fields[5].aheadNeighbor = this.fields[8];  // 6->9
   this.fields[5].behindNeighbor = this.fields[2]; // 6->3
-
   this.fields[6].behindNeighbor = this.fields[3]; // 7->4
   this.fields[7].behindNeighbor = this.fields[4]; // 8->5
   this.fields[8].behindNeighbor = this.fields[5]; // 9->6
 }
+
+
+
+
+
 CardsRoadMap.prototype = {
   shuffleDeck: function(){
+    let tt;
+    tt = this.deck[1];
+    this.deck[1] = this.deck[8];
+    this.deck[8] = tt;
+    return true;
     let m = this.deck.length, t, i;
     while (m) {
       i = Math.floor(Math.random() * m--);
@@ -173,6 +186,56 @@ CardsRoadMap.prototype = {
   removeCardFromHandById: function(card_id){
     this.hand.splice(this.hand.findIndex( card => card.id === card_id), 1);
   },
+
+  // card_id, place on field
+  addAbility: function(card_id, field_num){
+    let lineAbil = null;
+    let c = Cards[card_id - 1];
+    [line, side] = getLineSideByFieldNum(field_num);
+    lineAbil = (field_num == 5) ? c['leader_perk'] : c['ability'][line];
+    if(field_num === 5){
+      if(lineAbil === "#alchemist" || lineAbil === "#healer"){
+        let room = getRoomByUserName(this.userName);
+        room.perksBeforeCheckloss.push({user: this.userName, card_id: c.id, action: lineAbil});
+      } else if(lineAbil === "#planestalker"){
+        this.fields.forEach( field => {
+          if(field.num === 5){
+            this.fields[4].buffs.push([c.id, "ranged"]);
+          } else {
+            field.buffs.push([c.id, "intercept"]);
+          }
+        });
+        // this.fields[4].buffs.push([c.id, lineAbil]);
+        // this.unitPerks.push(["leader", "ranged" ], ["hero", "intercept"]);
+      } else {
+        this.fields[4].buffs.push([c.id, lineAbil]);
+      }
+    } else {
+      lineAbil.forEach(abil => {
+        if(abil.type === "spell"){
+          this.fields[field_num - 1].card.spell = abil.spell;
+        }
+
+        if(abil.type === "passive"){
+          if(abil.target === "self"){
+            this.fields[field_num - 1].buffs.push([c.id, abil.action]);
+          }
+          if(abil.target === "leader"){
+            this.fields[4].buffs.push([c.id, abil.action]);
+          }
+        }
+      });
+
+      
+      
+    }
+    
+
+  },
+  removeAbility: function(card_id, field_num){
+    
+  },
+
   addCardOnTable: function(card_id, field_num){
     let line, side = "";
     this.removeCardFromHandById(card_id);
@@ -188,41 +251,20 @@ CardsRoadMap.prototype = {
       locate: field_num,
       line: line, // not needed in future
       side: side, // not needed in future
-      ability: {
+      spell: "",
+      buffs: [],
+      //buffs: [],
+      //ability: {
         // action happens when ...
-        takeDamage: [],
-        doDamage: [],
-      },
+      //  takeDamage: [],
+      //  doDamage: [],
+      //},
     });
-
-    let t = null;
-    if(field_num == 5){
-      t = c['ability']['leader'];
-    } else {
-      t = c['ability'][line];
-    }
-
-
-    // property type : passive, active(spell,order) 
-    if(t.type === "passive"){
-      if(t.property.target === "leader"){
-        this.fields[5].buffs.push({card_id: c.id, action: t.property.action})
-      }
-      if(t.property.target === "self"){
-        this.fields[field_num - 1].buffs.push({card_id: c.id, action: t.property.action});
-      }
-      this.cardsProperties.set(c.id, {ability: t} ); // ~~~~~
-    }
-    
-    if(t.type === "before checkloss"){
-      let room = getRoomByUserName(this.userName);
-      room.perksBeforeCheckloss.push({user: this.userName, card_id: c.id, action: t.property});     
-    }   
-    if(t.type === "active"){
-      this.fields[field_num - 1].spell = t.property.action;
-    }
-    
     this.column[side][line] = this.fields[+field_num - 1].card;
+    this.row[line][side] = this.fields[+field_num - 1].card;
+
+
+    this.addAbility(card_id, field_num);
 
   }
 }
@@ -487,6 +529,7 @@ Room.prototype = {
             }
           }
         }
+        
       });
     }
     return
@@ -646,6 +689,7 @@ Room.prototype = {
     
   },
   heroAttack: function(playerId, data){
+    let text = "";
     let player = this.users.find(player => player.socket === playerId);
     let enemyPlayer = this.users.find(player => player.socket !== playerId);
     if(player.actionPoint){
@@ -653,7 +697,15 @@ Room.prototype = {
       let victimPlace = enemyPlayer.cardsRoadMap.getNodeByCardId(data.victim);
       let path = 1;
       let blockedBy = "";
+      atkType = "melee";
 
+      if(attackerPlace.buffs.length > 0){
+        attackerPlace.buffs.forEach( buff => {
+          if(buff[1] === "ranged"){
+            atkType = "ranged";
+          }
+        });
+      }
       
       function findMeleePath(node){
         if(!node.aheadNeighbor){
@@ -672,13 +724,21 @@ Room.prototype = {
       function findRangePath(node){ // node only victim
         let temp = node;
         //roll to vanguard line 
-        while(temp.hasOwnProperty('aheadNeighbor')){
+        while(temp.aheadNeighbor !== null){
           temp = temp.aheadNeighbor;
         }
+        while(temp.card === null ){
+          temp = temp.behindNeighbor;
+          if(temp.card.isAlive) break;         
+        }
         while(temp.card.id !== node.card.id){
-          if(temp.card.intercept){
-            blockedBy = temp.card;
-            return 0;
+          if(temp.card.isAlive && temp.buffs.length > 0){
+            for(let i = 0; i < temp.buffs.length; i++){
+              if(temp.buffs[i][1] === "intercept"){
+                blockedBy = temp.card;
+                return 0;    
+              }
+            }
           }
           temp = temp.behindNeighbor;
         }
@@ -686,7 +746,7 @@ Room.prototype = {
       }
 
 
-      if(attackerPlace.card.atkType === "melee"){
+      if(atkType === "melee"){
         //from attacker
         path = findMeleePath(attackerPlace);
         if(path){
@@ -705,11 +765,21 @@ Room.prototype = {
           }          
         } 
         let liveStatus = (blockedBy.isAlive) ? "" : "Труп";
-        let text = 'can\'t get target \n\r' + liveStatus + ' ' + Cards[blockedBy.id - 1].name + ' stand on the way (' + blockedBy.line + ' ' + blockedBy.side + ')';
+        text = 'can\'t get target \n\r' + liveStatus + ' ' + Cards[blockedBy.id - 1].name + ' stand on the way (' + blockedBy.line + ' ' + blockedBy.side + ')';
         rooms[this.roomName].sendTo(player, 'flash msg', {msgText: text});
         return;
-      } else if(attackerPlace.card.atkType === "range"){
-        path = findRangePath(victimPlace);
+      } else if(atkType === "ranged"){
+        
+
+        try {
+          path = findRangePath(victimPlace);  
+        } catch (error) {
+          console.log(error);
+          path = 1;
+        }
+        
+
+       
         if(path){
           victimPlace.card.blood += attackerPlace.card.atk;  
           io.in(this.roomName).emit('table update B', {
@@ -717,13 +787,23 @@ Room.prototype = {
           });
           return;
         } else {
-          let text = 'can\'t get target \n\r' + Cards[blockedBy.id - 1].name + ' stand on the way (' + blockedBy.line + ' ' + blockedBy.side + ')';
-          rooms[this.roomName].sendTo(player, 'flash msg', {msgText: text});
+          victimPlace = enemyPlayer.cardsRoadMap.getNodeByCardId(blockedBy.id);
+          victimPlace.card.blood += attackerPlace.card.atk;  
+          
+          text = Cards[blockedBy.id - 1].name + ' (' + blockedBy.line + ' ' + blockedBy.side + ') intercept ranged attack!';
+          
+         
+            io.in(this.roomName).emit('table update B', {
+              gameTable: this.getTableB()
+            });
+          
+          
+            // rooms[this.roomName].sendTo(player, 'flash msg', {msgText: text})
+         
+          
         }
-        rooms[this.roomName].sendTo(player, 'flash msg', {msgText: 'range attack!'});
-      } else if(attackerPlace.card.atkType === "spell"){
-        rooms[this.roomName].sendTo(player, 'flash msg', {msgText: 'cast spell!'});
-      }
+        rooms[this.roomName].sendTo(player, 'flash msg', {msgText: text});
+      } 
       // console.log(player.cardsRoadMap.getNodeByCardId(data.cardId))
       // console.log(enemyPlayer.cardsRoadMap.getNodeByCardId(data.victim))
 
