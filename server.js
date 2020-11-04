@@ -552,7 +552,8 @@ Room.prototype = {
     for(let u of this.users){
       if(!u.cardsRoadMap.fields[4].card.isAlive){
         let anotherUser = this.users.filter( p => p.name !== u.name )[0];
-        socket.emit('END game', { lose: u.name, win: anotherUser.name});
+        rooms[this.roomName].broadcastFrom('END game', { lose: u.name, win: anotherUser.name});
+        console.log('END');
       }
     }
   },
@@ -697,6 +698,8 @@ Room.prototype = {
       let victimPlace = enemyPlayer.cardsRoadMap.getNodeByCardId(data.victim);
       let path = 1;
       let blockedBy = "";
+      let atkModif = 0;
+      let defModif = 0;
       atkType = "melee";
 
       if(attackerPlace.buffs.length > 0){
@@ -704,9 +707,20 @@ Room.prototype = {
           if(buff[1] === "ranged"){
             atkType = "ranged";
           }
+          if(buff[1].match(/moreDmg/g)){
+            let mod = buff[1].split(':');
+            atkModif += mod[1];
+          }
         });
       }
-      
+      if(victimPlace.buffs.length > 0){
+        victimPlace.buffs.forEach( buff => {
+          if(buff[1].match(/lessDmg/g)){
+            let mod = buff[1].split(':');
+            defModif += mod[1];
+          }
+        });
+      }
       function findMeleePath(node){
         if(!node.aheadNeighbor){
           return path;
@@ -745,7 +759,7 @@ Room.prototype = {
         return path;
       }
 
-
+      let dmg = attackerPlace.card.atk + (atkModif - defModif);
       if(atkType === "melee"){
         //from attacker
         path = findMeleePath(attackerPlace);
@@ -754,9 +768,12 @@ Room.prototype = {
           path = findMeleePath(victimPlace);
           if(path){
             // melee path free, attack action
+            
+            if(dmg > 0){
+              victimPlace.card.blood += dmg;
+            }
+            
 
-
-            victimPlace.card.blood += attackerPlace.card.atk;  
 
             io.in(this.roomName).emit('table update B', {
               gameTable: this.getTableB()
@@ -768,38 +785,38 @@ Room.prototype = {
         text = 'can\'t get target \n\r' + liveStatus + ' ' + Cards[blockedBy.id - 1].name + ' stand on the way (' + blockedBy.line + ' ' + blockedBy.side + ')';
         rooms[this.roomName].sendTo(player, 'flash msg', {msgText: text});
         return;
+
       } else if(atkType === "ranged"){
         
-
         try {
           path = findRangePath(victimPlace);  
         } catch (error) {
           console.log(error);
           path = 1;
         }
-        
-
        
         if(path){
-          victimPlace.card.blood += attackerPlace.card.atk;  
+          if(dmg > 0){
+            victimPlace.card.blood += dmg;
+          }
           io.in(this.roomName).emit('table update B', {
             gameTable: this.getTableB()
           });
           return;
         } else {
           victimPlace = enemyPlayer.cardsRoadMap.getNodeByCardId(blockedBy.id);
-          victimPlace.card.blood += attackerPlace.card.atk;  
+
+          if(dmg > 0){
+            victimPlace.card.blood += dmg;
+          } 
           
           text = Cards[blockedBy.id - 1].name + ' (' + blockedBy.line + ' ' + blockedBy.side + ') intercept ranged attack!';
-          
          
-            io.in(this.roomName).emit('table update B', {
-              gameTable: this.getTableB()
-            });
+          io.in(this.roomName).emit('table update B', {
+            gameTable: this.getTableB()
+          });
           
-          
-            // rooms[this.roomName].sendTo(player, 'flash msg', {msgText: text})
-         
+          // rooms[this.roomName].sendTo(player, 'flash msg', {msgText: text}) 
           
         }
         rooms[this.roomName].sendTo(player, 'flash msg', {msgText: text});
@@ -815,8 +832,6 @@ Room.prototype = {
       rooms[this.roomName].sendTo(player, 'flash msg', {msgText: 'no action point!'});
     }
 
-    
-    
     this.isPlayerTurnOver(player);
   },
   heroMove: function(playerId, data){

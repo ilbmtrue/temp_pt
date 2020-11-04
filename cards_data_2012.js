@@ -4,11 +4,11 @@ module.exports = [
         id: 1, name: 'Алхимик', img: '1', atk: 2, def: 4,
         ability: {
             vanguard: [
-                {    type: "passive", target: "self", action: "lessDmg"},
+                {    type: "passive", target: "self", action: "lessDmg:2"},
                 {    type: "passive", target: "self", action: "intercept"},
             ],
             flank: [
-                {    type: "passive", target: "leader", action: "lessDmg"},
+                {    type: "passive", target: "leader", action: "lessDmg:2"},
             ],
             rear: [
                 {    type: "spell", spell: "spell_1_r"},
@@ -35,8 +35,8 @@ module.exports = [
         def: 6,
         ability: {
             vanguard: [
-                {   type: "passive", target: "self", action: "moreDmg" },
-                {   type: "passive", target: "self", action: "lessDmg" },
+                {   type: "passive", target: "self", action: "moreDmg:2" },
+                {   type: "passive", target: "self", action: "lessDmg:1" },
             ],
             flank: [
                 {   type: "passive", target: "self", action: "reflectOnMeleeAttack" }
