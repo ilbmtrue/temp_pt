@@ -342,7 +342,7 @@ function User(name = 'anonymous', socket)
   this.userId = ++lastUserId;
   this.name = name;
   this.socket = socket;
-  this.table = new PlayerTable();
+  // this.table = new PlayerTable();
   this.cardsRoadMap = new CardsRoadMap(name);
   this.cardsRoadMap.shuffleDeck();
   this.actionPoint = 0;
@@ -400,6 +400,9 @@ function Room(room_name) {
   this.wave = 1
   this.round = 1
   this.ceasefire = true
+  this.finish = false
+  this.win = ""
+  this.lose = ""
   this.playerTurn = ""
   this.roundForPlayer = ""
 
@@ -459,10 +462,10 @@ Room.prototype = {
 
   hireLeader: function(playerId, cardId){
     let player = this.users.find(player => player.socket === playerId); 
-    let playerTable = player.table;
-    playerTable.placeCard(cardId, 5);
+    // let playerTable = player.table;
+    // playerTable.placeCard(cardId, 5);
     player.cardsRoadMap.addCardOnTable(+cardId, +5);
-    playerTable.hand.splice(playerTable.hand.indexOf(Number(cardId)), 1);
+    // playerTable.hand.splice(playerTable.hand.indexOf(Number(cardId)), 1);
     this.battleBegin++;
     if (this.battleBegin == 2) {
       this.battlebegin();
@@ -472,6 +475,10 @@ Room.prototype = {
     }  
   },
   hireCard: function(playerId, cardId, field){
+    if(this.finish){
+      io.in(this.roomName).emit('END game', {lose: this.lose, win: this.win});
+      return;
+    }
     let player = this.users.find(player => player.socket === playerId); 
     if(player.actionPoint){
       let playerTable = player.table;
@@ -494,6 +501,10 @@ Room.prototype = {
     this.isPlayerTurnOver(player);
   },
   pass: function(playerId){
+    if(this.finish){
+      io.in(this.roomName).emit('END game', {lose: this.lose, win: this.win});
+      return;
+    }
     let player = this.users.find(player => player.socket === playerId);
     player.actionPoint = 0;
     this.isPlayerTurnOver(player);
@@ -552,8 +563,12 @@ Room.prototype = {
     for(let u of this.users){
       if(!u.cardsRoadMap.fields[4].card.isAlive){
         let anotherUser = this.users.filter( p => p.name !== u.name )[0];
-        rooms[this.roomName].broadcastFrom('END game', { lose: u.name, win: anotherUser.name});
+        this.win = anotherUser.name;
+        this.lose = u.name;
+        this.finish = true;
+        io.in(this.roomName).emit('END game', { lose: u.name, win: anotherUser.name});
         console.log('END');
+        return
       }
     }
   },
@@ -665,7 +680,7 @@ Room.prototype = {
 
     // first cards issued
     Array.prototype.forEach.call(this.users, function(player) {
-      player.table.hand = player.table.deck.splice(0, 5);
+      // player.table.hand = player.table.deck.splice(0, 5);
       player.cardsRoadMap.pushCardsFromDeckToHand(5);
       rooms[room].sendTo(player, 'prepare new battle', {cards: player.cardsRoadMap.hand });  
     });
@@ -690,6 +705,10 @@ Room.prototype = {
     
   },
   heroAttack: function(playerId, data){
+    if(this.finish){
+      io.in(this.roomName).emit('END game', {lose: this.lose, win: this.win});
+      return;
+    }
     let text = "";
     let player = this.users.find(player => player.socket === playerId);
     let enemyPlayer = this.users.find(player => player.socket !== playerId);
@@ -835,6 +854,10 @@ Room.prototype = {
     this.isPlayerTurnOver(player);
   },
   heroMove: function(playerId, data){
+    if(this.finish){
+      io.in(this.roomName).emit('END game', {lose: this.lose, win: this.win});
+      return;
+    }
     let player = this.users.find(player => player.socket === playerId);
     if(data.targetField === "5"){
       rooms[this.roomName].sendTo(player, 'flash msg', {msgText: 'Can\'t switch with leader!'});
@@ -871,6 +894,10 @@ Room.prototype = {
     
   },
   bodyRemove: function(playerId, data){
+    if(this.finish){
+      io.in(this.roomName).emit('END game', {lose: this.lose, win: this.win});
+      return;
+    }
     let player = this.users.find(player => player.socket === playerId);
     let node = player.cardsRoadMap.getNodeByCardId(data.card_id);
     player.cardsRoadMap.discard.push(node.card);
@@ -881,6 +908,10 @@ Room.prototype = {
   },
   // get card from players deck and push it to players hand
   requestCard: function(playerId){
+    if(this.finish){  
+      io.in(this.roomName).emit('END game', {lose: this.lose, win: this.win});
+      return;
+    }
     let player = this.users.find(player => player.socket === playerId);
     if(player.actionPoint){
 
@@ -926,15 +957,25 @@ Room.prototype = {
   },
 }
 
+function inGameAction(){
 
+  
+}
 
 function handleSocket(socket) {
   var user = null;
   var room = null;
   var game = null;
+  // console.log('socket ');
+  // if(room !== null){
+  //   if(room.finish){
+  //     socket.emit('END game', {lose: room.lose, win: room.win});
+  //   }
+  // }
+  
 
   socket.on('chosen leader',  function(card){
-    room.hireLeader(socket.id, card);
+      room.hireLeader(socket.id, card);   
   });
 
   socket.on('Move Hero', function(data){
@@ -963,7 +1004,7 @@ function handleSocket(socket) {
   socket.on('disconnect', onLeave);
   
   socket.on('ready to game', function (data) {
-    console.log('socket ready: ' + socket.id);
+
     let userName = data.userName || 'undefined user';
     let roomName = data.room || 'waiting room';
     room = getOrCreateRoom(data.room);
@@ -998,6 +1039,7 @@ function handleSocket(socket) {
     io.to(roomName).emit("someone join", {user: userName}); 
     socket.emit('selfJoin', {myname: userName, cards: cardsImgArray});
     socket.broadcast.emit('enemyJoin', {enemy: userName});
+
     var clients = io.nsps["/"].adapter.rooms[roomName];
     console.log('line~252| in room# ' + roomName + ' sits: ' + clients.length);
     

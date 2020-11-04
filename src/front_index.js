@@ -226,9 +226,9 @@ class PanelAction {
 
 
 let modalShow = false;
-let chosenCard = 0;
-let chosenCardDOM = {};
-let chosenField = "";
+// let chosenCard = 0;
+// let chosenCardDOM = {};
+// let chosenField = "";
 
 let cardInfoBlock = false;
 let cardsImage = [];
@@ -241,12 +241,12 @@ let playerTurn = false;
 
 var joinroom;
 let table = { vanguard: {l: '', m: '', r: ''},flank: {l: '', m: '', r: ''},rear: {l: '', m: '', r: ''}}
-let enemy_table = Object.assign({}, table);
-let player_table = Object.assign({}, table);
+// let enemy_table = Object.assign({}, table);
+// let player_table = Object.assign({}, table);
 var players = [];
-var pickLeader = null;
+// var pickLeader = null;
 const socket = io({
-    autoConnect: false,
+    autoConnect: true,
     reconnectionAttempts: 20
 
 });
@@ -603,8 +603,13 @@ socket.on("user_join", function(data){
 });
 
 socket.on("END game", function(data){
-    messageBoard.innerText = data.win + " win! " + data.lose + " lose";
+    messageBoard.innerText = 'battle is over: ' + data.win + " win! " + data.lose + " lose";
     messageBoardAnimation();
+    document.querySelectorAll('.user-field').forEach(u => {
+        u.style.opacity = '0.3';
+    });
+    
+
 })
 
 socket.on("enemyJoin", function(data){
