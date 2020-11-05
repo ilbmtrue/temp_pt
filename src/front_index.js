@@ -365,7 +365,9 @@ function fillGameTableB(player, data){
 }
 
 socket.on('rejoin', function(data){
+
     console.log('rejoined');
+    console.log(data);
     cardsImage = data.cards;
     enemyName = data.enemy;
     gameRoundEl = document.querySelector('.game-round');
@@ -395,8 +397,8 @@ socket.on('rejoin', function(data){
     for (let i = 0; i < data.hand.length; i++) {
         var new_card = document.createElement('div');
         new_card.className = 'hand-card';
-        new_card.setAttribute('data-card-id', data.hand[i]);
-        new_card.style['background-image'] = 'url(\'./img/cards/'+ cardsImage[data.hand[i]] + imageFormat + '\')';
+        new_card.setAttribute('data-card-id', data.hand[i].id);
+        new_card.style['background-image'] = 'url(\'./img/cards/'+ cardsImage[data.hand[i].img] + imageFormat + '\')';
         // new_card.classList.add('rotate-card');
         playerHand.append(new_card);
     }

@@ -39,7 +39,7 @@ module.exports = [
                 {   type: "passive", target: "self", action: "lessDmg:1" },
             ],
             flank: [
-                {   type: "passive", target: "self", action: "reflectOnMeleeAttack" }
+                {   type: "passive", target: "self", action: "reflectOnMeleeAttack:2" }
             ],
             rear: [
                 {   type: "trigger", target: "any:enemy", action: "attack:range:selfAtk"}

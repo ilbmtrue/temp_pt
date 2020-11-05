@@ -93,7 +93,6 @@ function CardsRoadMap(name)
 {
   this.userName = name
 
-
   this.deck = [...Cards],
   this.discard = [],
   this.hand = [],
@@ -140,19 +139,11 @@ function CardsRoadMap(name)
   this.fields[6].behindNeighbor = this.fields[3]; // 7->4
   this.fields[7].behindNeighbor = this.fields[4]; // 8->5
   this.fields[8].behindNeighbor = this.fields[5]; // 9->6
+
 }
-
-
-
-
 
 CardsRoadMap.prototype = {
   shuffleDeck: function(){
-    let tt;
-    tt = this.deck[1];
-    this.deck[1] = this.deck[8];
-    this.deck[8] = tt;
-    return true;
     let m = this.deck.length, t, i;
     while (m) {
       i = Math.floor(Math.random() * m--);
@@ -183,11 +174,20 @@ CardsRoadMap.prototype = {
     return false;
   },
 
+  /**
+   * 
+   * @param {number} card_id  
+   */
   removeCardFromHandById: function(card_id){
     this.hand.splice(this.hand.findIndex( card => card.id === card_id), 1);
   },
 
-  // card_id, place on field
+  
+  /**
+    * 
+    * @param {number} card_id 
+    * @param {number} field_num 
+    */
   addAbility: function(card_id, field_num){
     let lineAbil = null;
     let c = Cards[card_id - 1];
@@ -205,8 +205,6 @@ CardsRoadMap.prototype = {
             field.buffs.push([c.id, "intercept"]);
           }
         });
-        // this.fields[4].buffs.push([c.id, lineAbil]);
-        // this.unitPerks.push(["leader", "ranged" ], ["hero", "intercept"]);
       } else {
         this.fields[4].buffs.push([c.id, lineAbil]);
       }
@@ -215,7 +213,6 @@ CardsRoadMap.prototype = {
         if(abil.type === "spell"){
           this.fields[field_num - 1].card.spell = abil.spell;
         }
-
         if(abil.type === "passive"){
           if(abil.target === "self"){
             this.fields[field_num - 1].buffs.push([c.id, abil.action]);
@@ -224,16 +221,35 @@ CardsRoadMap.prototype = {
             this.fields[4].buffs.push([c.id, abil.action]);
           }
         }
-      });
-
-      
-      
-    }
-    
-
+      });   
+    } 
   },
+
+
+  
+  /**
+   * 
+   * @param {number} card_id 
+   * @param {number} field_num 
+   */
   removeAbility: function(card_id, field_num){
-    
+    let lineAbil = null;
+    let c = Cards[card_id - 1];
+    [line, side] = getLineSideByFieldNum(field_num);
+    lineAbil = c['ability'][line];
+    lineAbil.forEach(abil => {
+      if(abil.type === "spell"){
+        this.fields[field_num - 1].card.spell = "";
+      }
+      if(abil.type === "passive"){
+        if(abil.target === "self"){
+          this.fields[field_num - 1].buffs = this.fields[field_num - 1].buffs.filter( buff => buff[0] !== card_id);
+        }
+        if(abil.target === "leader"){
+          this.fields[4].buffs = this.fields[4].buffs.filter( buff => buff[0] !== card_id);
+        }
+      }
+    });
   },
 
   addCardOnTable: function(card_id, field_num){
@@ -280,7 +296,22 @@ function shuffle(array) {
   }
   return array;
 }
-
+function getFieldNumByLineSide(line, side){
+  let num;
+  switch (line){
+    case "vanguard": 
+      num = (side === "left") ? 7 : (side === "middle") ? 8 : 9;
+      break;
+    case "flank": 
+      num = (side === "left") ? 4 : (side === "middle") ? 5 : 6; 
+      break;
+    case "rear": 
+      num = (side === "left") ? 1 : (side === "middle") ? 2 : 3; 
+      break;
+    default: break;
+  }
+  return num;
+}
 function getLineSideByFieldNum(fieldNum){
   switch (+fieldNum) {
     case 1: line = "rear"; side = "left";break;
@@ -431,13 +462,11 @@ Room.prototype = {
   },
   numUsers: function () { return this.users.length; },
   isEmpty: function () { return this.users.length === 0; },
-
   addUser: function (user, socket) {
     this.users.push(user);
     this.sockets[user.getId()] = socket;    
   },
   removeUser: function (id) {
-    // this.users = this.users.filter( user => user.getId() !== id);
     delete this.sockets[id];
     if(this.users.length == 0){
       delete this;
@@ -458,14 +487,13 @@ Room.prototype = {
       }
     }, this);
   },
-
+  getUserBySocketId: function(id){
+    return this.users.find(player => player.socket === id);
+  },
 
   hireLeader: function(playerId, cardId){
-    let player = this.users.find(player => player.socket === playerId); 
-    // let playerTable = player.table;
-    // playerTable.placeCard(cardId, 5);
+    let player = this.getUserBySocketId(playerId);
     player.cardsRoadMap.addCardOnTable(+cardId, +5);
-    // playerTable.hand.splice(playerTable.hand.indexOf(Number(cardId)), 1);
     this.battleBegin++;
     if (this.battleBegin == 2) {
       this.battlebegin();
@@ -479,10 +507,10 @@ Room.prototype = {
       io.in(this.roomName).emit('END game', {lose: this.lose, win: this.win});
       return;
     }
-    let player = this.users.find(player => player.socket === playerId); 
+    let player = this.getUserBySocketId(playerId);
     if(player.actionPoint){
       let playerTable = player.table;
-      let f = field;//.split('__');
+      let f = field;
       let line, side = "";
       [line, side] = getLineSideByFieldNum(field);
       if(player.cardsRoadMap.fields[+field-1].card === null){
@@ -505,7 +533,7 @@ Room.prototype = {
       io.in(this.roomName).emit('END game', {lose: this.lose, win: this.win});
       return;
     }
-    let player = this.users.find(player => player.socket === playerId);
+    let player = this.getUserBySocketId(playerId);
     player.actionPoint = 0;
     this.isPlayerTurnOver(player);
   },
@@ -545,8 +573,6 @@ Room.prototype = {
     }
     return
   },
-
-
   // At the end of each wave, causalities are checked and any Hero with damage equal to or exceeding their life is defeated.
   checkLoss(){
     for(let u of this.users){
@@ -557,8 +583,6 @@ Room.prototype = {
       }
     }
   },
-
-  // perksBeforeCheckloss и метод и массив ----- --имзенить названия
   afterCheckLoss(){
     for(let u of this.users){
       if(!u.cardsRoadMap.fields[4].card.isAlive){
@@ -576,22 +600,6 @@ Room.prototype = {
   isPlayerTurnOver(user){
     if(user.actionPoint === 0){
       let anotherUser = this.users.filter( p => p.name !== user.name)[0];
-      // player end turn
-
-      // if(user.cardsRoadMap.endTurnPerks.length){
-      //   user.cardsRoadMap.endTurnPerks.forEach(perk => {
-      //     //do perk
-      //     console.log(`${user.id} have end turn perk: ${perk}`);
-      //     perk.do.call(user);
-      //     //example alchemist
-      //     anotherUser.CardsRoadMap.fields.forEach( item => {
-      //       item.card.blood += 1;
-      //     });
-          
-
-      //   });
-      // }
-
       
         if(anotherUser.actionPoint === 0){
           // NEXT WAVE
@@ -601,7 +609,6 @@ Room.prototype = {
             this.checkLoss();
             this.afterCheckLoss();
           }
-          
 
           if(this.wave === 3){
             // NEXT ROUND
@@ -628,12 +635,10 @@ Room.prototype = {
           io.in(this.roomName).emit('table update B', {
             gameTable: this.getTableB()
           });
-          console.log('Next WAVE');
           return
         }  
       this.playerTurn = anotherUser.name;
       io.in(this.roomName).emit('next turn', {player: this.playerTurn});   
-      console.log('Next player turn');
     }
     
   },
@@ -642,9 +647,6 @@ Room.prototype = {
     [this.cardFirstPlayer, this.cardSecondPlayer] = shuffle(rooms[this.roomName].getUserNamesArray());
     this.playerTurn = this.cardFirstPlayer;
     this.roundForPlayer = this.cardFirstPlayer;
-    console.log(this.roundForPlayer)
-    console.log(this.cardFirstPlayer)
-    console.log(this.cardSecondPlayer)
     io.in(this.roomName).emit('battle begin', {
       firstPlayer: this.cardFirstPlayer, 
       secondPlayer: this.cardSecondPlayer,
@@ -653,13 +655,13 @@ Room.prototype = {
 
   },
 
-  getTable: function(){
-    let gameTable = [];
-    Array.prototype.forEach.call(this.users, function(player) {
-      gameTable.push({name: player.name, actionPoints: player.actionPoint, table: player.table.unit});
-    });
-    return gameTable;
-  },
+  // getTable: function(){
+  //   let gameTable = [];
+  //   Array.prototype.forEach.call(this.users, function(player) {
+  //     gameTable.push({name: player.name, actionPoints: player.actionPoint, table: player.table.unit});
+  //   });
+  //   return gameTable;
+  // },
   getTableB: function(){
     let gameTable = [];
     Array.prototype.forEach.call(this.users, function(player) {
@@ -677,7 +679,6 @@ Room.prototype = {
     let room = this.roomName;
     //this.users = [users[0], users[1]];
     [this.users[0].actionPoint, this.users[1].actionPoint] = [2,2];
-
     // first cards issued
     Array.prototype.forEach.call(this.users, function(player) {
       // player.table.hand = player.table.deck.splice(0, 5);
@@ -696,21 +697,14 @@ Room.prototype = {
       Only the foremost Hero or Leader in each column is
       considered “in Melee”.
   */
-  updateTablePerks: function(){
-    for(let u in this.users){
-      for(let c in u.table.unit2){
-        console.log(u);
-      }
-    }
-    
-  },
+  
   heroAttack: function(playerId, data){
     if(this.finish){
       io.in(this.roomName).emit('END game', {lose: this.lose, win: this.win});
       return;
     }
     let text = "";
-    let player = this.users.find(player => player.socket === playerId);
+    let player = this.getUserBySocketId(playerId);
     let enemyPlayer = this.users.find(player => player.socket !== playerId);
     if(player.actionPoint){
       let attackerPlace = player.cardsRoadMap.getNodeByCardId(data.cardId);
@@ -719,6 +713,7 @@ Room.prototype = {
       let blockedBy = "";
       let atkModif = 0;
       let defModif = 0;
+      let reflectDmg = 0;
       atkType = "melee";
 
       if(attackerPlace.buffs.length > 0){
@@ -726,7 +721,22 @@ Room.prototype = {
           if(buff[1] === "ranged"){
             atkType = "ranged";
           }
-          if(buff[1].match(/moreDmg/g)){
+          // witch vanguard perk 
+          if(buff[1] === "moreDmgFromBodies"){
+            let mod;
+
+            mod = this.users.reduce( (sum, user) => {
+              user.cardsRoadMap.fields
+                .filter( field => field.card !== null )
+                .reduce( (corpsCount, field) => {
+                  !field.card.isAlive ? corpsCount + 1 : 0;
+              }, 0);
+            }, 0);
+
+
+            
+          }
+          if(buff[1].match(/moreDmg:/g)){
             let mod = buff[1].split(':');
             atkModif += mod[1];
           }
@@ -734,9 +744,16 @@ Room.prototype = {
       }
       if(victimPlace.buffs.length > 0){
         victimPlace.buffs.forEach( buff => {
-          if(buff[1].match(/lessDmg/g)){
+          if(buff[1].match(/lessDmg:/g)){
             let mod = buff[1].split(':');
             defModif += mod[1];
+          }
+          if(buff[1] === "immuneFromRange"){
+            defModif = "immuneFromRange";
+          }
+          if(buff[1].match(/reflectOnMeleeAttack/g)){
+            let mod = buff[1].split(':');          
+            reflectDmg = mod[1];
           }
         });
       }
@@ -777,8 +794,18 @@ Room.prototype = {
         }
         return path;
       }
+      
+      let dmg;
+      if(defModif === "immuneFromRange" || defModif === "immuneFromMelee"){
+        dmg = 0;
+        rooms[this.roomName].sendTo(player, 'flash msg', {msgText: "immune"});
+        return
 
-      let dmg = attackerPlace.card.atk + (atkModif - defModif);
+      } else {
+        dmg = attackerPlace.card.atk + (atkModif - defModif);
+      }
+      
+
       if(atkType === "melee"){
         //from attacker
         path = findMeleePath(attackerPlace);
@@ -790,9 +817,12 @@ Room.prototype = {
             
             if(dmg > 0){
               victimPlace.card.blood += dmg;
-            }
-            
 
+              if(reflectDmg){
+                attackerPlace.card.blood += reflectDmg;
+              }
+
+            }
 
             io.in(this.roomName).emit('table update B', {
               gameTable: this.getTableB()
@@ -840,8 +870,6 @@ Room.prototype = {
         }
         rooms[this.roomName].sendTo(player, 'flash msg', {msgText: text});
       } 
-      // console.log(player.cardsRoadMap.getNodeByCardId(data.cardId))
-      // console.log(enemyPlayer.cardsRoadMap.getNodeByCardId(data.victim))
 
       // preattack
       // attack
@@ -854,11 +882,11 @@ Room.prototype = {
     this.isPlayerTurnOver(player);
   },
   heroMove: function(playerId, data){
-    if(this.finish){
-      io.in(this.roomName).emit('END game', {lose: this.lose, win: this.win});
-      return;
-    }
-    let player = this.users.find(player => player.socket === playerId);
+
+    //data {card_id: card id, targetField: field num}
+    if(this.finish){  io.in(this.roomName).emit('END game', {lose: this.lose, win: this.win});return; }
+
+    let player = this.getUserBySocketId(playerId);
     if(data.targetField === "5"){
       rooms[this.roomName].sendTo(player, 'flash msg', {msgText: 'Can\'t switch with leader!'});
       return;
@@ -866,26 +894,43 @@ Room.prototype = {
     let node = player.cardsRoadMap.getNodeByCardId(data.card_id);
     let [line, side] = getLineSideByFieldNum(data.targetField)
     if(player.cardsRoadMap.fields[data.targetField - 1].card){
-     // "switch";
+    // "switch";
+      let switchCard = player.cardsRoadMap.fields[data.targetField - 1];
       if(player.actionPoint < 2){
         rooms[this.roomName].sendTo(player, 'flash msg', {msgText: 'Not enough action points to switch!'});
         return;
       } else {
         //switch heroes
+
+        player.cardsRoadMap.removeAbility(Number(switchCard.card.id), Number(switchCard.num));
+        player.cardsRoadMap.removeAbility(Number(data.card_id), Number(node.num));
+
         let temp = Object.assign({}, player.cardsRoadMap.fields[data.targetField - 1].card);
+
         player.cardsRoadMap.fields[data.targetField - 1].card = node.card;
         player.cardsRoadMap.fields[node.num - 1].card = temp;
+
+        player.cardsRoadMap.addAbility(Number(switchCard.card.id), Number(switchCard.num));
+        player.cardsRoadMap.addAbility(Number(node.card.id), Number(node.num));
+
         player.actionPoint +=-2;
-        console.log('hero switch');
+        
       } 
     } else {
       // "move";
+
+      //remove buffs
+      player.cardsRoadMap.removeAbility(Number(node.card.id), Number(node.num));
+
       [node.card.line, node.card.side] = [line, side]; // todo: future remove line side in card
       player.cardsRoadMap.fields[data.targetField - 1].card = node.card;
+
+      player.cardsRoadMap.addAbility(Number(data.card_id), Number(data.targetField));
       player.cardsRoadMap.fields[node.num - 1].card = null;
       player.actionPoint--;
-      console.log('heroMove');
+
     }
+   
     io.in(this.roomName).emit('table update B', {
       gameTable: this.getTableB()
     });
@@ -898,7 +943,7 @@ Room.prototype = {
       io.in(this.roomName).emit('END game', {lose: this.lose, win: this.win});
       return;
     }
-    let player = this.users.find(player => player.socket === playerId);
+    let player = this.getUserBySocketId(playerId);
     let node = player.cardsRoadMap.getNodeByCardId(data.card_id);
     player.cardsRoadMap.discard.push(node.card);
     node.card = null;
@@ -912,7 +957,7 @@ Room.prototype = {
       io.in(this.roomName).emit('END game', {lose: this.lose, win: this.win});
       return;
     }
-    let player = this.users.find(player => player.socket === playerId);
+    let player = this.getUserBySocketId(playerId);
     if(player.actionPoint){
 
       if(player.cardsRoadMap.deck.length > 0){
@@ -957,23 +1002,13 @@ Room.prototype = {
   },
 }
 
-function inGameAction(){
 
-  
-}
 
 function handleSocket(socket) {
   var user = null;
   var room = null;
   var game = null;
-  // console.log('socket ');
-  // if(room !== null){
-  //   if(room.finish){
-  //     socket.emit('END game', {lose: room.lose, win: room.win});
-  //   }
-  // }
   
-
   socket.on('chosen leader',  function(card){
       room.hireLeader(socket.id, card);   
   });
@@ -1004,11 +1039,9 @@ function handleSocket(socket) {
   socket.on('disconnect', onLeave);
   
   socket.on('ready to game', function (data) {
-
     let userName = data.userName || 'undefined user';
     let roomName = data.room || 'waiting room';
     room = getOrCreateRoom(data.room);
-
     let userB = room.getUsers().find(user => user.name === data.userName);
     if(userB){
       console.log('user exist');
@@ -1022,7 +1055,8 @@ function handleSocket(socket) {
         enemy: room.getUsers().find(user => user.name !== data.userName).name,
         cards: cardsImgArray,
         gameTable: room.getTableB(),
-        hand: user.table.hand,
+        // hand: user.table.hand,
+        hand: user.cardsRoadMap.hand,
         actionPoint: user.actionPoint,
         playerTurn: room.playerTurn,
         roundForPlayer: room.roundForPlayer, 
@@ -1033,16 +1067,12 @@ function handleSocket(socket) {
     } else {
       room.addUser(user = new User(data.userName, socket.id), socket);
     }
-
-
     socket.join(roomName); // ~~~~~
     io.to(roomName).emit("someone join", {user: userName}); 
     socket.emit('selfJoin', {myname: userName, cards: cardsImgArray});
     socket.broadcast.emit('enemyJoin', {enemy: userName});
-
     var clients = io.nsps["/"].adapter.rooms[roomName];
     console.log('line~252| in room# ' + roomName + ' sits: ' + clients.length);
-    
     if(room.numUsers() == 2) {    
       room.getUserNames();
       enemy = room.getUserNames().replace(userName, '').trim();
@@ -1050,7 +1080,6 @@ function handleSocket(socket) {
       console.log('| users ready |');
       room.battlePrepare();
     }
-
   });
 
   function getOrCreateRoom(roomName) {
@@ -1068,7 +1097,6 @@ function handleSocket(socket) {
     user.inRoom = 0;
     console.log(socket.id + ' - is leave');
     room.removeUser(user.getId());
-    // console.log('User %d left room %s. Users in room: %d', user.getId(), room.getName(), room.numUsers());
     let ar = room.users.filter(user => user.inRoom === 1)
     if( ar.length === 0 ){
       console.log('Room is empty - dropping room %s', room.getName());
@@ -1077,12 +1105,6 @@ function handleSocket(socket) {
       console.log('Users in room: %d', room.numUsers());
     }
     
-
-
-    // if (room.isEmpty()) {
-    //   console.log('Room is empty - dropping room %s', room.getName());
-    //   delete rooms[room.getName()];
-    // }
     room.broadcastFrom(user, 'user_leave', user.getName());
   }
 }
