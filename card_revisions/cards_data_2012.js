@@ -292,7 +292,7 @@ module.exports = [
         // "Перехват: Не получает повреждений от дальней атаки.",
             vanguard: [ 
                 {    type: "passive", target: "self", action: "intercept"   },
-                {    type: "passive", target: "self", action: "immuneFromRange",}
+                {    type: "passive", target: "self", action: "immuneFromRange"}
             ],
         // "Впередистоящий получает перехват. Позадистоящий получает дальнюю атаку.",
             flank: [
@@ -374,7 +374,22 @@ module.exports = [
         img: '11',
         atk: 6,
         def: 3,
-        
+        ability: {
+        // "Атака: уничтожить героя в ближнем бою.",
+            vanguard: [
+                {   type: "spell", spell: "spell_11_v" }
+            ],
+        // "Позадистоящий получает +3 к силе.",
+            flank: [
+                {   type: "passive", target: "supporter", action: "moreDmg:3" }
+            ],  
+        // "Дальняя атака",
+            rear: [
+                {   type: "passive", target: "self", action: "rangeAtk" }
+            ],
+        },  
+        order: "Герой получает +5 к силе до конца текущей фазы.",
+        leader_perk: "#dragonmage",
         vanguard: 'Атака: уничтожить героя в ближнем бою.',
         flank: 'Позадистоящий получает +3 к силе.',
         rear: 'Дальняя атака',
@@ -391,7 +406,24 @@ module.exports = [
         img: '12',
         atk: 1,
         def: 7,
-        
+        ability: {
+        // "Перехват. Атака: убрать все повреждения с этого героя.",
+            vanguard: [
+                {   type: "passive", target: "self", action: "intercept" }
+                {   type: "spell", spell: "spell_12_v" }
+            ],
+        // "Впередистоящий получает +2 к силе и получает на 1 повреждение меньше от ближних или дальних атак.",
+            flank: [
+                {   type: "passive", target: "forerunner", action: "moreDmg:2" }
+                {   type: "passive", target: "forerunner", action: "lessDmg:1" }
+            ],  
+        // "Атака: взять карту из колоды. Можно разыграть приказ с этой карты, не затрачивая действие.",
+            rear: [
+                {   type: "spell", spell: "spell_12_r" }
+            ],
+        },  
+        order: "Разыграть любое количество приказов с руки.",
+        leader_perk: "#mystic",
         vanguard: 'Перехват. Атака: убрать все повреждения с этого героя.',
         flank: 'Впередистоящий получает +2 к силе и получает на 1 повреждение меньше от ближних или дальних атак.',
         rear: 'Атака: взять карту из колоды. Можно разыграть приказ с этой карты, не затрачивая действие.',
@@ -408,7 +440,22 @@ module.exports = [
         img: '13',
         atk: 2,
         def: 4,
-        
+        ability: {
+        // "Атака: посмотреть карты противника и сбросить одну из них.",
+            vanguard: [
+                {   type: "spell", spell: "spell_13_v" }
+            ],
+        // "Атака: посмотреть верхние 5 карт своей колоды и расположить их в любом порядке.",
+            flank: [
+                {   type: "spell", spell: "spell_13_f" }
+            ],  
+        // "Разрешается посмотреть верхнюю карту своей колоды, не затрачивая действие.",
+            rear: [
+                {   type: "passive", target: "player unit", action: "showFirstCardOnDeck" }
+            ],
+        },  
+        order: "Сбросить все карты с руки и набрать из своей колоды столько же плюс одну. Эта карта не в руке.",
+        leader_perk: "#oracle",
         vanguard: 'Атака: посмотреть карты противника и сбросить одну из них.',
         flank: 'Атака: посмотреть верхние 5 карт своей колоды и расположить их в любом порядке.',
         rear: 'Разрешается посмотреть верхнюю карту своей колоды, не затрачивая действие.',
@@ -425,7 +472,22 @@ module.exports = [
         img: '14',
         atk: 4,
         def: 6,
-        
+        ability: {
+        // "Перехват",
+            vanguard: [
+                {   type: "passive", target: "self", action: "intercept" }
+            ],
+        // "Атака: поменять местами два героя или мертвых тела в своем отряде.",
+            flank: [
+                {   type: "spell", spell: "spell_14_f" }
+            ],  
+        // "Атака: поменять местами два героя или мертвых тела в отряде противника.",
+            rear: [
+                {   type: "spell", spell: "spell_14_r" }
+            ],
+        },  
+        order: "Поменять в произвольном порядке местами геров и мертвые тела в одном столбце противника.",
+        leader_perk: "#paladin",
         vanguard: 'Перехват',
         flank: 'Атака: поменять местами два героя или мертвых тела в своем отряде.',
         rear: 'Атака: поменять местами два героя или мертвых тела в отряде противника.',
@@ -442,7 +504,24 @@ module.exports = [
         img: '15',
         atk: 3,
         def: 3,
-        
+        ability: {
+        // "Атака: нанести героям и лидеру противника в ближнем бою по 3 повреждения.",
+            vanguard: [
+                {   type: "spell", spell: "spell_15_v" }
+            ],
+        // "Дальняя атака. Впередистоящий получает дальнюю атаку.",
+            flank: [
+                {   type: "passive", target: "self", action: "rangeAtk" }
+                {   type: "passive", target: "forerunner", action: "rangeAtk" }
+            ],  
+        // "Дальняя атака.",
+            rear: [
+                {   type: "passive", target: "self", action: "rangeAtk" }
+
+            ],
+        },  
+        order: "Нанести 7 повреждений каждому герою в авангарде обоих отрядов.",
+        leader_perk: "#pyromancer",
         vanguard: 'Атака: нанести героям и лидеру противника в ближнем бою по 3 повреждения.',
         flank: 'Дальняя атака. Впередистоящий получает дальнюю атаку.',
         rear: 'Дальняя атака.',
@@ -459,7 +538,22 @@ module.exports = [
         img: '16',
         atk: 3,
         def: 7,
-        
+        ability: {
+        // "Перехват",
+            vanguard: [
+                {   type: "passive", target: "self", action: "intercept" }
+            ],
+        // "Атака: лидер проводит ближнюю атаку.",
+            flank: [
+                {   type: "spell", spell: "spell_16_f" }
+            ],  
+        // "Атака: любой герой в этом отряде проводит ближнюю атаку.",
+            rear: [
+                {   type: "spell", spell: "spell_16_r" }
+            ],
+        },  
+        order: "Нанять любое количество героев в течение одной фазы в этот отряд.",
+        leader_perk: "#overlord",
         vanguard: 'Перехват.',
         flank: 'Атака: лидер проводит ближнюю атаку.',
         rear: 'Атака: любой герой в этом отряде проводит ближнюю атаку.',
@@ -476,7 +570,22 @@ module.exports = [
         img: '17',
         atk: 2,
         def: 5,
-        
+        ability: {
+        // "Атака: вернуть героя в ближнем бою в руку владельца.",
+            vanguard: [
+                {   type: "spell", spell: "spell_17_v" }
+            ],
+        // "Атака: нанять героя в любой ряд в свой отряд на свободное место.",
+            flank: [
+                {   type: "spell", spell: "spell_17_f" }
+            ],  
+        // "Атака: взять 3 карты. Одну выбрать в руку, другую положить наверх колоды, последнюю сбросить.",
+            rear: [
+                {   type: "spell", spell: "spell_17_r" }
+            ],
+        },  
+        order: "Посмотреть всю колоду, взять любую карту в руку. Перемешать колоду.",
+        leader_perk: "#summoner",
         vanguard: 'Атака: вернуть героя в ближнем бою в руку владельца.',
         flank: 'Атака: нанять героя в любой ряд в свой отряд на свободное место.',
         rear: 'Атака: взять 3 карты. Одну выбрать в руку, другую положить наверх колоды, последнюю сбросить.',
@@ -493,7 +602,24 @@ module.exports = [
         img: '18',
         atk: 3,
         def: 10,
-        
+        ability: {
+        // "Перехват. Герой, атакующий этого героя ближней или дальней атакой, получает 2 повреждения.",
+            vanguard: [
+                {   type: "passive", target: "self", action: "intercept" }
+                {   type: "passive", target: "self", action: "reflectOnMeleeAttack:2" }
+                {   type: "passive", target: "self", action: "reflectOnRangeAttack:2" }
+            ],
+        // "Лидер в этом отряде не получает повреждений от дальних атак.",
+            flank: [
+                {   type: "passive", target: "leader", action: "immuneFromRange" }
+            ],  
+        // "Атака: перенести до 6 повреждений с героев этого отряда на этого героя.",
+            rear: [
+                {   type: "spell", spell: "spell_18_r" }
+            ],
+        },  
+        order: "Нанести 4 повреждения каждому вражескому герою или лидеру в ближнем бою.",
+        leader_perk: "#knight",
         vanguard: 'Перехват. Герой, атакующий этого героя ближней или дальней атакой, получает 2 повреждения.',
         flank: 'Лидер в этом отряде не получает повреждений от дальних атак.',
         rear: 'Атака: перенести до 6 повреждений с героев этого отряда на этого героя.',
@@ -510,7 +636,24 @@ module.exports = [
         img: '19',
         atk: 3,
         def: 10,
-        
+        ability: {
+        // "Перехват. Дальняя атака.",
+            vanguard: [
+                {   type: "passive", target: "self", action: "intercept" }
+                {   type: "passive", target: "self", action: "rangeAtk" }
+            ],
+        // "Впередистоящий и позадистоящий получают дальнюю атаку.",
+            flank: [
+                {   type: "passive", target: "forerunner", action: "rangeAtk" },
+                {   type: "passive", target: "supporter", action: "rangeAtk" }
+            ],  
+        // "Дальняя атака.",
+            rear: [
+                {   type: "passive", target: "self", action: "rangeAtk" },
+            ],
+        },  
+        order: "Нанести 5 повреждений каждому герою во фланге обоих отрядов.",
+        leader_perk: "#planestalker",
         vanguard: 'Перехват. Дальняя атака.',
         flank: 'Впередистоящий и позадистоящий получают дальнюю атаку.',
         rear: 'Дальняя атака.',
@@ -527,7 +670,24 @@ module.exports = [
         img: '20',
         atk: 5,
         def: 4,
-        
+        ability: {
+        // "Дальняя атака. +3 к силе против героев с перехватом.",
+            vanguard: [
+                {   type: "passive", target: "self", action: "toInterceptMore-Dmg:3" }
+                {   type: "passive", target: "self", action: "rangeAtk" }
+            ],
+        // "Дальняя атака. Позадистоящий получает дальнюю атаку.",
+            flank: [
+                {   type: "passive", target: "self", action: "rangeAtk" },
+                {   type: "passive", target: "supporter", action: "rangeAtk" }
+            ],  
+        // "Дальняя атака.",
+            rear: [
+                {   type: "passive", target: "self", action: "rangeAtk" },
+            ],
+        },  
+        order: "Нанести 5 повреждений каждому герою во фланге обоих отрядов.",
+        leader_perk: "#gunner",
         vanguard: 'Дальняя атака. +3 к силе против героев с перехватом.',
         flank: 'Дальняя атака. Позадистоящий получает дальнюю атаку.',
         rear: 'Дальняя атака.',
@@ -544,7 +704,22 @@ module.exports = [
         img: '21',
         atk: 1,
         def: 4,
-        
+        ability: {
+        // "Атака: другой герой в авангарде проводит ближнюю атаку.",
+            vanguard: [
+                {   type: "spell", spell: "spell_21_v" }
+            ],
+        // "Атака: другой герой во фланге проводит дальнюю атаку.",
+            flank: [
+                {   type: "spell", spell: "spell_21_f" }
+            ],  
+        // "Атака: другой герой в тылу проводит дальнюю атаку.",
+            rear: [
+                {   type: "spell", spell: "spell_21_r" },
+            ],
+        },  
+        order: "Активировать эффект приказа лидера этого отряда.",
+        leader_perk: "#mascot",
         vanguard: 'Атака: другой герой в авангарде проводит ближнюю атаку.',
         flank: 'Атака: другой герой во фланге проводит дальнюю атаку.',
         rear: 'Атака: другой герой в тылу проводит дальнюю атаку.',
@@ -561,7 +736,23 @@ module.exports = [
         img: '22',
         atk: 1,
         def: 6,
-        
+        ability: {
+        // "+1 к силе за каждое повреждение на этом герое",
+            vanguard: [
+                {   type: "passive", target: "self",  action: "someaction" }
+            ],
+        // "Позадистоящий не получает повреждений от нацеленных на него атак.",
+            flank: [
+                {   type: "passive", target: "supporter", action: "immuneFromRange" },
+                {   type: "passive", target: "supporter", action: "immuneFromMelee" }
+            ],  
+        // "Атака: поменяться местами с союзным героем и провести ближнюю атаку.",
+            rear: [
+                {   type: "spell", spell: "spell_22_r" },
+            ],
+        },  
+        order: "Любой герой, атакующий или атаковавший Ваш отряд в ближнем бою в этой фазе, погибает.",
+        leader_perk: "#templar",
         vanguard: '+1 к силе за каждое повреждение на этом герое',
         flank: 'Позадистоящий не получает повреждений от нацеленных на него атак.',
         rear: 'Атака: поменяться местами с союзным героем и провести ближнюю атаку.',
@@ -578,7 +769,23 @@ module.exports = [
         img: '23',
         atk: 3,
         def: 1,
-        
+        ability: {
+        // "Удвоенная сила против лидера.",
+            vanguard: [
+                {   type: "passive", target: "self",  action: "someaction" }
+            ],
+        // "Впередистоящий получает удвоенную базовую силу против героя.",
+            flank: [
+                {   type: "passive", target: "forerunner", action: "someaction" },
+                
+            ],  
+        // "Атака: нанести 3 повреждения лидеру противника.",
+            rear: [
+                {   type: "spell", spell: "spell_23_r" },
+            ],
+        },  
+        order: "Уничтожить любого героя.",
+        leader_perk: "#assassin",
         vanguard: 'Удвоенная сила против лидера.',
         flank: 'Впередистоящий получает удвоенную базовую силу против героя.',
         rear: 'Атака: нанести 3 повреждения лидеру противника.',
@@ -595,7 +802,23 @@ module.exports = [
         img: '24',
         atk: 2,
         def: 5,
-        
+        ability: {
+        // "Атака: в следующей фазе у противника на 1 действие меньше.",
+            vanguard: [
+                {   type: "spell", spell: "spell_24_v" }
+            ],
+        // "Атака: взять 2 карты.",
+            flank: [
+                {   type: "spell", spell: "spell_24_f" },
+                
+            ],  
+        // "Атака: другой герой в этом отряде проводит ближнюю атаку.",
+            rear: [
+                {   type: "spell", spell: "spell_24_r" },
+            ],
+        },  
+        order: "Провести 3 допольнительных действия в эту фазу.",
+        leader_perk: "#scientist",
         vanguard: 'Атака: в следующей фазе у противника на 1 действие меньше.',
         flank: 'Атака: взять 2 карты.',
         rear: 'Атака: другой герой в этом отряде проводит ближнюю атаку.',
@@ -613,40 +836,21 @@ module.exports = [
         atk: 1,
         def: 4,
         ability: {
-            vanguard: {
-                title: "Перехват. Получает на 2 повреждения меньше от ближних и дальних атак.",
-                type: "passive",
-                property: {
-                    target: "self",
-                    action: ["intercept", "reciveLessDmg;melee,range;2"],
-                },
-            },
-            flank: {
-                title: "Ваш лидер получает на 2 повреждения меньше от ближних и дальних атак.",
-                type: "passive",
-                property: {
-                    target: "leader",
-                    action: ["reciveLessDmg;melee,range;2"],
-                },
-            },
-            rear: {
-                title: "Атака: до 5 разных героев получают по 1 повреждению.",
-                type: "spell",
-                property: {
-                    target: "upTo:5",
-                    cast: ["upTo:5"],
-                },
-            },
-            
-        },
-        order: {
-            title: "Нанести 7 повреждений героям. Распределить как угодно",
-            type: "spell",
-            property: {
-                target: "upTo:7",
-                cast: ["upTo:7"],
-            },
-        },
+        // "Перехват. Получает на 2 повреждения меньше от ближних или дальних атак.",
+            vanguard: [
+                {   type: "passive", target: "self",  action: "intercept" }
+                {   type: "passive", target: "self",  action: "lessDmg:2" }
+            ],
+        // "Атака: восстановить до 4 повреждений на любом герое.",
+            flank: [
+                {   type: "spell", spell: "spell_25_f" },
+            ],  
+        // "Атака: восстановить до 2 повреждений любым 3 разным героям.",
+            rear: [
+                {   type: "spell", spell: "spell_25_r" },
+            ],
+        },  
+        order: "Восстановить до 10 повреждений у героев. Распределить как угодно.",
         leader_perk: '#healer',
         vanguard: 'Перехват. Получает на 2 повреждения меньше от ближних или дальних атак.',
         flank: 'Атака: восстановить до 4 повреждений на любом герое.',

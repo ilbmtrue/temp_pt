@@ -65,21 +65,6 @@ module.exports = {
     ],
     module:{
         rules: [
-            // {
-            //     test: /\.(js|jsx)$/, // определяем тип файлов
-            //     exclude: /(node_modules)/,  // исключаем из обработки папку node_modules
-            //     loader: "babel-loader",   // определяем загрузчик
-            //     options:{
-            //         presets:["@babel/preset-env", "@babel/preset-react"]    // используемые плагины
-            //     }
-            // },
-            // {
-            //     test:/\.jsx?$/,
-            //     exclude: /node_modules/,
-            //     use: {
-            //         loader: 'babel-loader'
-            //     },
-            // },
             {
                 test: /\.(js|jsx)$/,
                 exclude: /node_modules/,

@@ -1,4 +1,4 @@
-const { map } = require("../cards_data_2012");
+const { map } = require("../card_revisions/cards_data_2012");
 
 let imageFormat = '.webp';
 const cardsCollection = [];
@@ -108,6 +108,8 @@ class ActionController
         socket.emit('chosen leader', this.chosen);
         let card = cardsCollection.find(c => c.id == this.chosen);
         let a = document.querySelector('#player').querySelector('.flank.middle');
+
+        //  TODO debug this
         a.style['background-image'] = 'url(\'./img/cards/s-'+ card.img + imageFormat + '\')';
         this.chosenDOMElem.remove();
         document.querySelector('.modal').classList.remove("modal__show");
@@ -523,12 +525,12 @@ socket.on("battle begin", function(data){
     document.querySelectorAll('.action').forEach(e => e.classList.toggle('--show'));
 });
 
-socket.on("prepare new battle", function(data){
+socket.on("battle preparation", function(data){
     for (let i = 0; i < data.cards.length; i++) {
         var new_card = document.createElement('div');
         new_card.className = 'hand-card';
         new_card.setAttribute('data-card-id', data.cards[i].id);
-        new_card.style['background-image'] = 'url(\'./img/cards/'+ cardsImage[data.cards[i].img] + imageFormat + '\')';
+        new_card.style['background-image'] = 'url(\'./img/cards/'+ data.cards[i].img + imageFormat + '\')';
         new_card.classList.add('rotate-card');
         playerHand.append(new_card);
     } 
@@ -642,7 +644,7 @@ $(document).ready(function () {
         socket.emit('requestCardsInfo');
     }  
     setTimeout(() => {
-        socket.emit('ready to game', {userName: userName, room: joinroom});    
+        socket.emit('joined to room', {userName: userName, room: joinroom});    
     }, 100);
     
     document.addEventListener('contextmenu', function(event){
@@ -659,10 +661,18 @@ $(document).ready(function () {
         }
     });
 
-
+    
     document.addEventListener('mousedown', function(event){
         if(event.button == 0){        
             let elem = event.target;
+
+            if(elem.classList.contains("btn-ready")){
+                console.log("btn-ready");
+                socket.emit('ready new game')
+                elem.style.opacity = '0.2'
+                return
+            }
+
             if(playerTurn){
                 if(actionController.chosen){
                     if(actionController.playerAction === 'attack'){
@@ -732,11 +742,14 @@ $(document).ready(function () {
 
             // if(elem.classList.contains('hand-card') && !modalShow){
             if(elem.classList.contains('hand-card')){
-                let card = cardsCollection.find(c => c.id == elem.dataset.cardId);
-                actionController.chosen = card.id;
+                // let card = cardsCollection.find(c => c.id == elem.dataset.cardId);
+
+                // TODO: change data card
+                let card_id = elem.getAttribute('data-card-id');
+                actionController.chosen = card_id; //card.id;
                 actionController.chosenDOMElem = elem;
                 let img = document.querySelector('.review-img');                
-                img.style.backgroundImage = 'url(\'./img/cards/'+ card.img + imageFormat + '\')';
+                img.style.backgroundImage = 'url(\'./img/cards/'+ card_id + imageFormat + '\')';
                 if(img.classList.contains('--rotate') && (wavePrefere !== -1)){ 
                     img.classList.toggle('--rotate');
                 }
