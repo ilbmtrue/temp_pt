@@ -1,4 +1,5 @@
 // console.log(this)
+// const Cards = require('../card_revisions/cards_data_2012.js');
 
 // const Cards = require('./cards_data_2012.js');
 
@@ -20,9 +21,9 @@
 // for (let i = 0; i < Cards.length; i++) {
 //   let a = Cards[i].ability;
 //   console.dir(Cards[i].id + ' ' + Cards[i].leader_perk);
-  // console.dir(Cards[i].ability.vanguard);
-  // console.dir(Cards[i].ability.flank);
-  // console.dir(Cards[i].ability.rear);
+// console.dir(Cards[i].ability.vanguard);
+// console.dir(Cards[i].ability.flank);
+// console.dir(Cards[i].ability.rear);
 // }
 // process.exit(-1);
 
@@ -61,53 +62,74 @@ let Room = require('./server/room');
 let User = require('./server/user');
 
 
-function getRoomByUserName(userName){
+function getRoomByUserName(userName) {
   let user = null;
-  for(let room in rooms) {
+  for (let room in rooms) {
     user = rooms[room].users.find(user => user.name === userName);
-    if(user){
+    if (user) {
       return rooms[room];
     }
   }
   return room;
 }
-function getFieldNumByLineSide(line, side){
+function getFieldNumByLineSide(line, side) {
   let num;
-  switch (line){
-    case "vanguard": 
+  switch (line) {
+    case "vanguard":
       num = (side === "left") ? 7 : (side === "middle") ? 8 : 9;
       break;
-    case "flank": 
-      num = (side === "left") ? 4 : (side === "middle") ? 5 : 6; 
+    case "flank":
+      num = (side === "left") ? 4 : (side === "middle") ? 5 : 6;
       break;
-    case "rear": 
-      num = (side === "left") ? 1 : (side === "middle") ? 2 : 3; 
+    case "rear":
+      num = (side === "left") ? 1 : (side === "middle") ? 2 : 3;
       break;
     default: break;
   }
   return num;
 }
-function getLineSideByFieldNum(fieldNum){
-  switch (+fieldNum) {
-    case 1: line = "rear"; side = "left";break;
-    case 2: line = "rear"; side = "middle";break;
-    case 3: line = "rear"; side = "right";break;
-    case 4: line = "flank"; side = "left";break;
-    case 5: line = "flank"; side = "middle";break;
-    case 6: line = "flank"; side = "right";break;
-    case 7: line = "vanguard"; side = "left";break;
-    case 8: line = "vanguard"; side = "middle";break;
-    case 9: line = "vanguard"; side = "right";break;
-    default:break;
-  }
-  return [line, side];
+
+function getDateTime() {
+  let date = new Date();
+  let hour = date.getHours();
+  let min = date.getMinutes();
+  let sec = date.getSeconds();
+
+  min = (min < 10 ? "0" : "") + min;
+  hour = (hour < 10 ? "0" : "") + hour;
+  sec = (sec < 10 ? "0" : "") + sec;
+
+  return hour + ":" + min + ":" + sec;
 }
 
+let logCount = 0
+const fs = require("fs");
+fs.writeFile('loglast.txt', "", (err) => {
+  if (err) throw err;
+});
 
 function handleSocket(socket) {
   var user = null;
   var room = null;
   var game = null;
+
+  let onevent = socket.onevent;
+  socket.onevent = function (packet) {
+    let args = packet.data || [];
+    let logPacket = Object.assign({}, packet)
+    logPacket.data = ["*"].concat(args)
+    onevent.call(this, logPacket) // additional call to catch-all
+    onevent.call(this, packet);    // original call
+  };
+  socket.on("*", function (event, data) {
+    data = (typeof data === "undefined") ? "" : JSON.stringify(data)
+    let log = `${getDateTime()} ${logCount++} ${socket.id}  ${event}  ${data} \n\r`
+    fs.appendFile("loglast.txt", log, (err) => {
+      if (err) {
+        throw err;
+      }
+    })
+  });
 
   socket.on('joined to room', (data) => {
     let userName = data.userName || 'undefined user';
@@ -115,65 +137,72 @@ function handleSocket(socket) {
     room = getOrCreateRoom(roomName);
     room.addUser(user = new User(userName, socket.id, socket), socket);
     socket.join(roomName);
-  })
 
+    if (room.users.length <= 2) {
+      let arr = []
+      room.users.forEach(player => arr.push(player.name))
+      // let enemyPlayerName = room.users.find(player => player.name !== data.userName) || "unknown"
+      try {
+        // io.in(room.roomName).emit('player join room', { player: data.userName, enemy: enemyPlayerName.name});  
+        io.in(room.roomName).emit('player join room', { players: arr });
+      } catch (error) {
+        console.log(error)
+      }
+
+    }
+
+  })
   socket.on('ready new game', () => {
     let user = room.getUserBySocket(socket)
     let state
     game = room.getOrCreateGame(user)
     state = room.userReady(user)
-
-    if(state === "new game preparation"){
-      
-      // let data = { firstPlayer: game.cardFirstPlayer, secondPlayer: game.cardSecondPlayer, gameTable: game.getTable() }
-      // debug this
-      Array.prototype.forEach.call(game.players, function(player) {    
+    if (state === "new game preparation") {
+      Array.prototype.forEach.call(game.players, function (player) {
+        let enemyUser = game.players.filter(p => p.socketId !== socket.id)[0];
         let playerSocket = rooms[room.roomName].sockets[player.socketId];
-        playerSocket.emit('battle preparation', {cards: player.board.hand })
-        
+        playerSocket.emit('battle preparation', { selfCards: player.board.hand.map(c => c.id), enemyCards: enemyUser.board.hand.length  })
       });
-
-      // io.in(room.roomName).emit('battle begin', data);
+      io.in(room.roomName).emit('flash msg', { msgText: 'pick leader!!' });
     }
-    if(state === "one more"){
-      console.log(2)
-      io.in(room.roomName).emit('flash msg', {msgText: 'one more'});
+    if (state === "one more") {
+      io.in(room.roomName).emit('flash msg', { msgText: 'one more' });
     }
-    if(!state){
+    if (!state) {
       console.log('PROBLEMS');
     }
   })
   socket.on('disconnect', onLeave);
-  
-  socket.on('chosen leader',  function(card){
-    room.getGameBySocketId(socket.id);
-    //player - socket id , card - card id
-    if(game.hireLeader(player, card)){
-      io.in(room).emit('pick leader', {player: playerName});
+  socket.on('chosen leader', function (card) {
+    let call = game.hireLeader(socket.id, card)
+    if (call) {
+      io.in(room.roomName).emit(call.msg, call.data);
     } else {
-      console.log('PROBLEM! pick leader');
+      console.log('PROBLEMS')
     }
   });
-  socket.on('Move Hero', function(data){
-    room.heroMove(socket.id, data);
+
+  socket.on('Move Hero', function (data) {
+    game.heroMove(socket.id, data);
   });
-  socket.on('Remove body', function(data){
-    room.bodyRemove(socket.id, data);
+  socket.on('Remove body', function (data) {
+    game.bodyRemove(socket.id, data);
   });
-  socket.on('Draw a Card', () => {
-    game.requestCard(socket.id);
+  socket.on('Draw a Card', function () {
+    sendAnswer(game.requestCard(socket.id));
   });
-  socket.on('Character Attack', function(data){
-    room.heroAttack(socket.id, data);
+
+  socket.on('Character Attack', function (data) {
+    sendAnswer(game.heroAttack(socket.id, data));
   });
-  socket.on('Recruit a Hero', function(data){
-    room.hireCard(socket.id, data.cardId, data.field, data.un);
+  socket.on('Recruit a Hero', function (data) {
+    sendAnswer(game.hireCard(socket.id, data.cardId, data.field, data.un));
   });
-  socket.on('Pass', function(){
-    room.pass(socket.id);
+  socket.on('Pass', function () {
+    sendAnswer(game.pass(socket.id))
   });
-  socket.on('requestCardsInfo', function(){
-    socket.emit('reciveCardsInfo', {cardsInfo: "Cards"});
+  socket.on('requestCardsInfo', function () {
+    socket.emit('reciveCardsInfo', { cardsInfo: Cards });
   });
 
   function getOrCreateRoom(roomName) {
@@ -193,21 +222,79 @@ function handleSocket(socket) {
     console.log(socket.id + ' - is leave');
     room.removeUser(user.getId());
     let ar = room.users.filter(user => user.inRoom === 1)
-    if( ar.length === 0 ){
+    if (ar.length === 0) {
       console.log('Room is empty - dropping room %s', room.getName());
       delete rooms[room.getName()];
     } else {
       console.log('Users in room: %d', room.numUsers());
     }
-    
+
     room.broadcastFrom(user, 'user_leave', user.getName());
   }
+  function sendAnswer(messages) {
+    
+    
+    if (messages.status === "failure") {
+      socket.emit("flash msg", messages.data)
+    } else if (messages.status === "success") {
+      // let gameTable = game.getTable()
+      let currentPlayer = game.getUserBySocketId(socket.id);
+      let enemyUser = game.players.filter(p => p.socketId !== socket.id)[0];
+      let currentPlayerTable = currentPlayer.getTable()
+      let enemyPlayerTable = enemyUser.getTable()
+      let enemySocket = room.sockets[enemyUser.socketId]
 
+      socket.emit("update", {
+        turnFor: game.playerTurn,
+        roundFor: game.roundForPlayer,
+        round: game.round,
+        wave: game.wave,
+        turn: game.turn,
+
+        self: {
+          name: currentPlayer.userName,
+          actionPoint: currentPlayer.actionPoint,
+          hand: currentPlayer.board.hand.map(c => c.id),
+          deck: currentPlayer.board.deck.length,
+          discard: currentPlayer.board.discard,
+          table: currentPlayerTable,
+        },
+        enemy: {
+          name: enemyUser.userName,
+          hand: enemyUser.board.hand.length,
+          deck: enemyUser.board.deck.length,
+          discard: enemyUser.board.discard,
+          table: enemyPlayerTable,
+        }
+      });
+      enemySocket.emit("update", {
+        turnFor: game.playerTurn,
+        roundFor: game.roundForPlayer,
+        round: game.round,
+        wave: game.wave,
+        turn: game.turn,
+
+        self: {
+          name: enemyUser.userName,
+          actionPoint: enemyUser.actionPoint,
+          hand: enemyUser.board.hand.map(c => c.id),
+          deck: enemyUser.board.deck.length,
+          discard: enemyUser.board.discard,
+          table: enemyPlayerTable,          
+        },
+        enemy: {
+          name: currentPlayer.userName,
+          hand: currentPlayer.board.hand.length,
+          deck: currentPlayer.board.deck.length,
+          discard: currentPlayer.board.discard,
+          table: currentPlayerTable,
+        }
+      });
+      
+    }
+  }
 }
 
 
-http.listen(3000, function () { console.log('HTTP server started on port 3000'); });
-io.on('connection', handleSocket);
-
-
-
+  http.listen(3000, function () { console.log('HTTP server started on port 3000'); });
+  io.on('connection', handleSocket);

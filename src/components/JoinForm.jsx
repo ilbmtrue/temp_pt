@@ -18,16 +18,7 @@ export default class JoinForm extends React.Component{
     handleNameChange(e){
         this.setState({name:e.target.value})
     }
-    // reqReadyStateChange(){
-    //     if (xhr.readyState == 4) {
-    //         var status = xhr.status;
-    //         if (status == 200) {
-    //             window.location = window.location.href + xhr.responseText;
-    //         } else { 
-    //             console.log('status: ' + status + ' - ' + xhr.statusText);
-    //         }
-    //     }
-    // }
+
     joinRoom(event) {
         console.log('room: ' + this.state.room + ' name: ' + this.state.name);
         event.preventDefault();

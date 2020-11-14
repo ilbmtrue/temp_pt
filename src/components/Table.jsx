@@ -8,9 +8,7 @@ export default class Table extends Component{
     handleClick() {
        // console.log('значение this:', this);
     }
-    // press = (i) => {
-    //     console.log('card#' + i);
-    // };
+
     render(){
         let i = 1;
         let j = 1;
@@ -43,6 +41,11 @@ export default class Table extends Component{
                                 {/* <Card classes={"card empty-card"}/> */}
                             </div>
                         </div>
+                    </div>
+                    <div className="game-flow-info">
+                        <span className="game-round">round: 1</span>
+                        <span className="game-wave">wave: 1</span>
+                        <span className="game-turn">turn: 0</span>
                     </div>
                     <div id="enemy-player" className="player">
                         <div className="user-name"></div>

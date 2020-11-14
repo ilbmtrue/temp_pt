@@ -3,32 +3,16 @@ const Player = require("./player")
 function Game(gameId) {
     this.gameId = gameId
     this.players = []
-    /*
-        this.cardFirstPlayer = 0
-        this.cardSecondPlayer = 0
-        this.battleBegin = 0
-        this.turn = 1
-        this.wave = 1
-        this.round = 1
-        this.ceasefire = true
-        this.finish = false
-        this.win = ""
-        this.lose = ""
-        this.playerTurn = ""
-        this.roundForPlayer = ""
-        this.perksPreAttack = []
-        this.perksPostAttack = []
-        this.perks = []
-        this.perksBeforeCheckloss = []
-    */
 }
 
 Game.prototype = {
-    getUserBySocketId: function(id){
-        return this.players.find(player => player.socket === id);
+    getUserBySocketId: function (id) {
+        return this.players.find(player => player.socketId === id);
     },
     preparation: function () {
-        this.battleBegin = 0
+        this.playersReady = 0
+        this.firstPlayer
+        this.secondPlayer
         this.turn = 1
         this.wave = 1
         this.round = 1
@@ -40,100 +24,68 @@ Game.prototype = {
         this.perksPostAttack = []
         this.perks = []
         this.perksBeforeCheckloss = []
-        
+        this.roundForPlayer = ""
 
         let room = this.roomName;
-    
         // rework this moment
-        [this.players[0].actionPoint, this.players[1].actionPoint] = [2,2];
-       
-        Array.prototype.forEach.call(this.players, function(player) {
+        [this.players[0].actionPoint, this.players[1].actionPoint] = [2, 2];
+        Array.prototype.forEach.call(this.players, function (player) {
             player.board.pushCardsFromDeckToHand(5);
-
             // rooms[room].sendTo(player, 'battle preparation', {cards: player.cardsRoadMap.hand });  
         });
-
-
-        
-    },
-    
-    start: function () {
-        if (this.players.length == 2) {
-            room.getUserNames();
-            enemy = room.getUserNames().replace(userName, '').trim();
-            socket.emit('enemyJoin', { enemy: enemy });
-            room.battlePrepare();
-            [this.cardFirstPlayer, this.cardSecondPlayer] = shuffle(rooms[this.roomName].getUserNamesArray());
-            this.playerTurn = this.cardFirstPlayer;
-            this.roundForPlayer = this.cardFirstPlayer;
-            io.in(this.roomName).emit('battle begin', {
-                firstPlayer: this.cardFirstPlayer,
-                secondPlayer: this.cardSecondPlayer,
-                gameTable: this.getTable()
-            });
-        }
-
-        let playersNames = [];
-        for (let u in this.players) {
-            playersNames.push(this.players[u].userName);
-        }
-        [this.cardFirstPlayer, this.cardSecondPlayer] = shuffleArray(playersNames);
-        this.playerTurn = this.cardFirstPlayer;
-        this.roundForPlayer = this.cardFirstPlayer;
-        return true
     },
     hireLeader: function (playerId, cardId) {
         let player = this.getUserBySocketId(playerId);
-        player.board.addCardOnTable(+cardId, +5);
-        this.battleBegin++;
-        if (this.battleBegin == 2) {
-            this.battlebegin();
+        let sideEffects = player.board.addCardOnTable(+cardId, +5);
+        if (sideEffects) {
+            if (sideEffects.gameEvent === "perksBeforeCheckloss") {
+                this.perksBeforeCheckloss.push({ user: sideEffects.perk.user, cardId: sideEffects.perk.cardId, action: sideEffects.perk.action });
+            }
+            // gameEvent: "perksBeforeCheckloss", action: { user: this.userName, card_id: c.id, action: lineAbil }
+        }
+        this.playersReady++;
+        if (this.playersReady == 2) {
+            return this.battleBegin();
         } else {
-            playerName = this.players.find(player => player.socket === playerId).name;
-            io.in(this.roomName).emit('pick leader', { player: playerName });
+            playerName = this.players.find(player => player.socketId === playerId).userName;
+            return { msg: 'pick leader', data: { player: playerName } }
+            //io.in(this.roomName).emit('pick leader', { player: playerName });
         }
     },
+
     hireCard: function (playerId, cardId, field) {
-        if (this.finish) {
-            io.in(this.roomName).emit('END game', { lose: this.lose, win: this.win });
-            return;
-        }
         let player = this.getUserBySocketId(playerId);
         if (player.actionPoint) {
-            let playerTable = player.table;
-            let f = field;
-            let line, side = "";
-            [line, side] = getLineSideByFieldNum(field);
+            let result
+            let turn
             if (player.board.fields[+field - 1].card === null) {
                 player.board.addCardOnTable(+cardId, +field);
                 player.actionPoint--;
-                io.in(this.roomName).emit('table update B', {
-                    gameTable: this.getTable()
-                });
-
+                result = { status: "success" }
             } else {
-                rooms[this.roomName].sendTo(player, 'flash msg', { msgText: 'Pick another field!' });
+                return { status: "failure", msg: "flash msg", data: { msgText: 'Pick another field!' } }
             }
+            this.isPlayerTurnOver(player)
+            return result
+            
         } else {
-            rooms[this.roomName].sendTo(player, 'flash msg', { msgText: 'no action point!' });
+            return { status: "failure", msg: "flash msg", data: { msgText: 'no action point!' } }
         }
-        this.isPlayerTurnOver(player);
     },
     pass: function (playerId) {
-        if (this.finish) {
-            io.in(this.roomName).emit('END game', { lose: this.lose, win: this.win });
-            return;
-        }
         let player = this.getUserBySocketId(playerId);
         player.actionPoint = 0;
-        this.isPlayerTurnOver(player);
+        let turn = this.isPlayerTurnOver(player)
+
+        return {status: "success" }
+        // return this.isPlayerTurnOver(player)
     },
     perksBefore: function () {
         if (this.perksBeforeCheckloss.length) {
             this.perksBeforeCheckloss.forEach(perk => {
                 // todo: must be rafactor, after all cards implempen..
                 if (perk["action"] === "#alchemist") {
-                    let enemyUser = this.players.filter(p => p.name !== perk.user)[0];
+                    let enemyUser = this.players.filter(p => p.userName !== perk.user)[0];
                     enemyUser.board.fields.forEach(item => {
                         if (item.card && item.card.isAlive) {
                             if (item.num !== 5) {
@@ -144,7 +96,7 @@ Game.prototype = {
                     });
                 }
                 if (perk["action"] === "#healer") {
-                    let currentUser = this.players.filter(p => p.name === perk.user)[0];
+                    let currentUser = this.players.filter(p => p.userName === perk.user)[0];
                     for (let item of currentUser.board.row[wave - 1]) {
                         if (item.card && item.card.isAlive) {
                             if (item.card.blood) {
@@ -174,11 +126,11 @@ Game.prototype = {
     afterCheckLoss: function () {
         for (let u of this.players) {
             if (!u.board.fields[4].card.isAlive) {
-                let anotherUser = this.players.filter(p => p.name !== u.name)[0];
-                this.win = anotherUser.name;
-                this.lose = u.name;
+                let anotherUser = this.players.filter(p => p.userName !== u.userName)[0];
+                this.win = anotherUser.userName;
+                this.lose = u.userName;
                 this.finish = true;
-                io.in(this.roomName).emit('END game', { lose: u.name, win: anotherUser.name });
+                io.in(this.roomName).emit('END game', { lose: u.userName, win: anotherUser.userName });
                 console.log('END');
                 return
             }
@@ -186,48 +138,42 @@ Game.prototype = {
     },
     isPlayerTurnOver: function (user) {
         if (user.actionPoint === 0) {
-            let anotherUser = this.players.filter(p => p.name !== user.name)[0];
-
+            let anotherUser = this.players.filter(p => p.userName !== user.userName)[0];
+            // NEXT WAVE?
             if (anotherUser.actionPoint === 0) {
-                // NEXT WAVE
                 this.players.forEach(player => player.actionPoint = 2);
                 if (!this.ceasefire) {
                     this.perksBefore();
                     this.checkLoss();
                     this.afterCheckLoss();
                 }
-
-                if (this.wave === 3) {
-                    // NEXT ROUND
-                    this.round++;
-                    this.wave = 1;
-                    this.roundForPlayer = user.name;
+                // NEXT ROUND?
+                if (this.wave === 3) {   
+                    this.round++
+                    this.wave = 1
+                    this.roundForPlayer = user.userName
+                    [this.firstPlayer, this.secondPlayer] = [this.secondPlayer, this.firstPlayer]
                     if (this.ceasefire) {
-                        this.ceasefire = false;
+                        this.ceasefire = false
                     }
-                    io.in(this.roomName).emit("next round", { player: this.roundForPlayer, round: this.round, wave: this.wave });
-                    io.in(this.roomName).emit('table update B', {
-                        gameTable: this.getTable()
-                    });
-                    return;
+
+                    // return {msg: "next round", data: {player: this.roundForPlayer , round: this.round, wave: this.wave} } // + return table
+                    return true //{msg: "next game step", data: {player: this.roundForPlayer , round: this.round, wave: this.wave} } // + return table
                 }
                 this.wave++;
-                this.playerTurn = anotherUser.name;
-                /*
-                At the end of each Wave, casualties are checked. 
-                Any Hero with damage equal to or exceeding its life is considered defeated.
-                */
+                this.turn = 1;
+                this.playerTurn = anotherUser.userName;
 
-                io.in(this.roomName).emit('next wave', { player: this.playerTurn, wave: this.wave });
-                io.in(this.roomName).emit('table update B', {
-                    gameTable: this.getTable()
-                });
-                return
+                return true // {msg: "next game step", data: {player: this.roundForPlayer , round: this.round, wave: this.wave} } // + return table
+                // return {msg: "next wave", data: {player: this.playerTurn, wave: this.wave} } // + return table
             }
-            this.playerTurn = anotherUser.name;
-            io.in(this.roomName).emit('next turn', { player: this.playerTurn });
-        }
+            this.turn++
+            this.playerTurn = anotherUser.userName;
 
+            return true // {msg: "next game step", data: {player: this.roundForPlayer , round: this.round, wave: this.wave}}
+            // return {msg: "next turn", data: {player: this.playerTurn}}
+        }
+        return false
     },
     getTable: function () {
         let gameTable = [];
@@ -237,23 +183,56 @@ Game.prototype = {
                 let t = item.card;
                 obj[i + 1] = !t ? "" : t;
             });
-            gameTable.push({ name: player.name, actionPoints: player.actionPoint, table: JSON.stringify(Object.assign({}, obj)) });
+            gameTable.push({ name: player.userName, actionPoints: player.actionPoint, table: JSON.stringify(Object.assign({}, obj)) });
         });
         return gameTable;
     },
-    battlebegin: function () {
+    getPlayerTable: function(playerId){
+        let player = this.getUserBySocketId(playerId)
+        let playerGameTable
+        let obj = []
+        player.board.fields.forEach( (item, i) => {
+            obj[i + 1] = !item.card ? "" : item.card
+        })
+        playerGameTable = { table: JSON.stringify(Object.assign({}, obj)) }
+        
+        return playerGameTable;
+    },
+    battleBegin: function () {
+
+        // get players name 
+        let arr = []
+        this.players.forEach(player => arr.push(player.userName))
+
+        let m = arr.length, t, i;
+        while (m) {
+            i = Math.floor(Math.random() * m--);
+            t = arr[m];
+            arr[m] = arr[i];
+            arr[i] = t;
+        }
+
+        [this.firstPlayer, this.secondPlayer] = [...arr]
+
+        this.playerTurn = this.firstPlayer;
+        this.roundForPlayer = this.firstPlayer;
+
         console.log("battlebegin")
+
+        // return 
+        //io.in(this.roomName).emit('battle begin', );
+        return { msg: 'battle begin', data: { firstPlayer: this.firstPlayer, secondPlayer: this.secondPlayer, gameTable: this.getTable() } }
     },
-    battlePrepare: function () {
-        let room = this.roomName;
-        //this.users = [users[0], users[1]];
-        [this.players[0].actionPoint, this.players[1].actionPoint] = [2, 2];
-        // first cards issued
-        Array.prototype.forEach.call(this.players, function (player) {
-            player.board.pushCardsFromDeckToHand(5);
-            rooms[room].sendTo(player, 'prepare new battle', { cards: player.board.hand });
-        });
-    },
+    // battlePrepare: function () {
+    //     let room = this.roomName;
+    //     //this.users = [users[0], users[1]];
+    //     [this.players[0].actionPoint, this.players[1].actionPoint] = [2, 2];
+    //     // first cards issued
+    //     Array.prototype.forEach.call(this.players, function (player) {
+    //         player.board.pushCardsFromDeckToHand(5);
+    //         rooms[room].sendTo(player, 'prepare new battle', { cards: player.board.hand });
+    //     });
+    // },
     heroAttack: function (playerId, data) {
         if (this.finish) {
             io.in(this.roomName).emit('END game', { lose: this.lose, win: this.win });
@@ -261,7 +240,7 @@ Game.prototype = {
         }
         let text = "";
         let player = this.getUserBySocketId(playerId);
-        let enemyPlayer = this.players.find(player => player.socket !== playerId);
+        let enemyPlayer = this.players.find(player => player.socketId !== playerId);
         if (player.actionPoint) {
             let attackerPlace = player.board.getNodeByCardId(data.cardId);
             let victimPlace = enemyPlayer.board.getNodeByCardId(data.victim);
@@ -288,9 +267,6 @@ Game.prototype = {
                                     !field.card.isAlive ? corpsCount + 1 : 0;
                                 }, 0);
                         }, 0);
-
-
-
                     }
                     if (buff[1].match(/moreDmg:/g)) {
                         let mod = buff[1].split(':');
@@ -354,6 +330,7 @@ Game.prototype = {
             let dmg;
             if (defModif === "immuneFromRange" || defModif === "immuneFromMelee") {
                 dmg = 0;
+                return { status: "failure", msg: "flash msg", data: { msgText: 'immune' } }
                 rooms[this.roomName].sendTo(player, 'flash msg', { msgText: "immune" });
                 return
 
@@ -370,24 +347,19 @@ Game.prototype = {
                     path = findMeleePath(victimPlace);
                     if (path) {
                         // melee path free, attack action
-
                         if (dmg > 0) {
                             victimPlace.card.blood += dmg;
-
                             if (reflectDmg) {
                                 attackerPlace.card.blood += reflectDmg;
                             }
-
                         }
 
-                        io.in(this.roomName).emit('table update B', {
-                            gameTable: this.getTable()
-                        });
-                        return;
+                        return { status: "success" };
                     }
                 }
                 let liveStatus = (blockedBy.isAlive) ? "" : "Труп";
                 text = 'can\'t get target \n\r' + liveStatus + ' ' + Cards[blockedBy.id - 1].name + ' stand on the way (' + blockedBy.line + ' ' + blockedBy.side + ')';
+                return { status: "failure", msg: "flash msg", data: { msgText: text } }
                 rooms[this.roomName].sendTo(player, 'flash msg', { msgText: text });
                 return;
 
@@ -397,34 +369,26 @@ Game.prototype = {
                     path = findRangePath(victimPlace);
                 } catch (error) {
                     console.log(error);
+                    console.log("fix me!!!");
                     path = 1;
                 }
 
                 if (path) {
-                    if (dmg > 0) {
-                        victimPlace.card.blood += dmg;
-                    }
-                    io.in(this.roomName).emit('table update B', {
-                        gameTable: this.getTable()
-                    });
-                    return;
+                    if (dmg > 0) {  victimPlace.card.blood += dmg;  }
+                    return { status: "success" };
                 } else {
                     victimPlace = enemyPlayer.board.getNodeByCardId(blockedBy.id);
-
-                    if (dmg > 0) {
-                        victimPlace.card.blood += dmg;
-                    }
+                    if (dmg > 0) {  victimPlace.card.blood += dmg;  }
 
                     text = Cards[blockedBy.id - 1].name + ' (' + blockedBy.line + ' ' + blockedBy.side + ') intercept ranged attack!';
-
+                    
+                    return { status: "success" }
                     io.in(this.roomName).emit('table update B', {
                         gameTable: this.getTable()
                     });
-
                     // rooms[this.roomName].sendTo(player, 'flash msg', {msgText: text}) 
-
                 }
-                rooms[this.roomName].sendTo(player, 'flash msg', { msgText: text });
+                // rooms[this.roomName].sendTo(player, 'flash msg', { msgText: text });
             }
 
             // preattack
@@ -432,18 +396,17 @@ Game.prototype = {
             // postattack  
 
         } else {
+            return { status: "failure", msg: "flash msg", data: { msgText: 'no action point!' } }
             rooms[this.roomName].sendTo(player, 'flash msg', { msgText: 'no action point!' });
         }
 
-        this.isPlayerTurnOver(player);
+        // this.isPlayerTurnOver(player);
     },
     heroMove: function (playerId, data) {
         //data {card_id: card id, targetField: field num}
-        if (this.finish) { io.in(this.roomName).emit('END game', { lose: this.lose, win: this.win }); return; }
         let player = this.getUserBySocketId(playerId);
         if (data.targetField === "5") {
-            rooms[this.roomName].sendTo(player, 'flash msg', { msgText: 'Can\'t switch with leader!' });
-            return;
+            return { status: "failure", data: { msgText: 'Can\'t switch with leader!'} }
         }
         let node = player.board.getNodeByCardId(data.card_id);
         let [line, side] = getLineSideByFieldNum(data.targetField)
@@ -451,95 +414,77 @@ Game.prototype = {
             // "switch";
             let switchCard = player.board.fields[data.targetField - 1];
             if (player.actionPoint < 2) {
-                rooms[this.roomName].sendTo(player, 'flash msg', { msgText: 'Not enough action points to switch!' });
-                return;
+                return { status: "failure", data: { msgText: 'Not enough action points to switch!'} }
             } else {
                 //switch heroes
-
                 player.board.removeAbility(Number(switchCard.card.id), Number(switchCard.num));
                 player.board.removeAbility(Number(data.card_id), Number(node.num));
-
                 let temp = Object.assign({}, player.board.fields[data.targetField - 1].card);
-
                 player.board.fields[data.targetField - 1].card = node.card;
                 player.board.fields[node.num - 1].card = temp;
-
                 player.board.addAbility(Number(switchCard.card.id), Number(switchCard.num));
                 player.board.addAbility(Number(node.card.id), Number(node.num));
-
                 player.actionPoint += -2;
-
             }
         } else {
             // "move";
 
             //remove buffs
             player.board.removeAbility(Number(node.card.id), Number(node.num));
-
             [node.card.line, node.card.side] = [line, side]; // todo: future remove line side in card
             player.board.fields[data.targetField - 1].card = node.card;
-
             player.board.addAbility(Number(data.card_id), Number(data.targetField));
             player.board.fields[node.num - 1].card = null;
             player.actionPoint--;
-
         }
-
-        io.in(this.roomName).emit('table update B', {
-            gameTable: this.getTable()
-        });
-        this.isPlayerTurnOver(player);
+        let ans = []
+        let turn = this.isPlayerTurnOver(player)
+        if(turn){
+            ans.push(turn)
+        }
+        return {status: "success", data: ans }
     },
     bodyRemove: function (playerId, data) {
-        if (this.finish) {
-            io.in(this.roomName).emit('END game', { lose: this.lose, win: this.win });
-            return;
+        let player = this.getUserBySocketId(playerId)
+        let node = player.board.getNodeByCardId(data.card_id)
+        player.board.discard.push(node.card)
+        node.card = null
+        let ans = []
+        player.actionPoint--
+        let turn = this.isPlayerTurnOver(player)
+        if(turn){
+            ans.push(turn)
         }
-        let player = this.getUserBySocketId(playerId);
-        let node = player.board.getNodeByCardId(data.card_id);
-        player.board.discard.push(node.card);
-        node.card = null;
-        io.in(this.roomName).emit('table update B', {
-            gameTable: this.getTable()
-        });
+        return {status: "success", data: ans }
+        
     },
-    giveCard: function (player) {
-        if (this.finish) {
-            return "end game";
-            io.in(this.roomName).emit('END game', { lose: this.lose, win: this.win });
-            return;
-        }
-
-        // let player = this.getUserBySocketId(playerId);
+    requestCard: function (playerId) {
+        let player = this.getUserBySocketId(playerId);
         if (player.actionPoint) {
             if (player.board.deck.length > 0) {
                 if (player.board.hand.length < 5) {
-                    let answerData = "";
-                    answerData = player.board.pushCardsFromDeckToHand();
-                    player.actionPoint--;
-
-                    answerData.actionPoint = player.actionPoint; answerData.actionName = "giveCard";
-                    rooms[this.roomName].sendTo(player, 'giveCard', answerData);
-                    //   gameLog.push(`player ${player.name} [Draw a Card] card id#${answerData.id}`);
-                    //   console.log(`player ${player.name} [Draw a Card] card id#${answerData.id}`);
-                    return true;
+                    let result = null
+                    let getedCard = player.board.pushCardsFromDeckToHand()
+                    result = {reciver: "socket", msg: 'giveCard', cardId: getedCard.id }
+                    player.actionPoint--
+                    let turn = this.isPlayerTurnOver(player)
+                    if(turn){
+                        return {status: "success", data: turn }
+                    }
+                    return {status: "success", data: result }
                 } else {
-                    return "To much cards in hand!"
-                    rooms[this.roomName].sendTo(player, 'flash msg', { msgText: `To much cards in hand! (${player.board.hand.length})` });
+                    return { status: "failure", data: { msgText: `To much cards in hand! (${player.board.hand.length})` } }
                 }
             } else {
-                return "No more cards in your deck!"
-                rooms[this.roomName].sendTo(player, 'flash msg', { msgText: 'No more cards in your deck!' });
+                return { status: "failure", data: { msgText: "No more cards in your deck!" } }
             }
         } else {
-            return "No action point!"
-            rooms[this.roomName].sendTo(player, 'flash msg', { msgText: 'No action point!' });
+            return { status: "failure", data: { msgText: "No action point!" } }
         }
-        this.isPlayerTurnOver(player);
     },
-
-    
 }
+
+
 function shuffleArray(array) {
     var m = array.length, t, i;
     while (m) {

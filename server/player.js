@@ -1,5 +1,6 @@
 const Board = require("./board")
 const Cards = require('../card_revisions/cards_data_2012.js');
+
 Cards.forEach(c => {
     c["blood"] = 0;
     c["isAlive"] = 1;
@@ -11,7 +12,7 @@ function Player(userId, user) {
     // 
     this.userName = user.name
     // 
-    this.board = new Board(Cards);
+    this.board = new Board(user.name, Cards);
     this.board.shuffleDeck();
     this.actionPoint = 0;
     this.inRoom = 1;
@@ -26,6 +27,13 @@ Player.prototype ={
     getActionPoints: function(){
         return this.actionPoint
     },
+    getTable: function(){
+        let obj = []
+        this.board.fields.forEach( (item, i) => {
+            obj[i + 1] = !item.card ? "" : item.card
+        })
+        return JSON.stringify(Object.assign({}, obj))
+    }
 }
 
 module.exports = Player

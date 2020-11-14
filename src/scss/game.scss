@@ -5,16 +5,9 @@
 } */
 body{
     min-width: 640px;
+    padding-top: 100px;
 }
-#control-panel{
-    visibility: hidden;
-    display: flex;
-    flex-direction: column;
-    left: 0;
-    top: 0;
-    position: fixed;
-    justify-content: center;
-}
+
 .ico{
     background-position: center;
     background-repeat: no-repeat;
@@ -32,7 +25,7 @@ body{
 }
 .ico:hover::before {
     content: attr(data-title);
-    position: absolute;
+    // position: absolute;
     left: 50px;
     width: 75px;
     text-align: center;
@@ -71,12 +64,12 @@ $imgpath: '../img/icon';
     border: 1px solid purple;
     cursor: pointer;
 }
-.card.attack{
+// .card.attack{
 
-}
-.card.move{
+// }
+// .card.move{
 
-}
+// }
 .body-remove{
     display: none;
 }
@@ -89,17 +82,55 @@ $imgpath: '../img/icon';
 .secondplayer{
     background-image: url('../img/secondplayer.jpg');
 }
-.hand{
+
+.player-panel__self{
     bottom: 0;
     position: fixed; 
     width: 100%;
     background-color: #e2f7f0;
 }
-#player-hand{
+.player-panel__enemy{
+    top: 0;
+    position: fixed; 
+    width: 100%;
+    background-color: #e2f7f0;
+}
+.player__actions{
+    width: 100%;
+}
+.player__cards{
+    width: 100%;
+    max-width: 700px;
+    margin: 0 auto;
+    display: flex;
+}
+.hand-cards{
+    max-width: 550px;
+    width: 100%;
+}
+.other-cards{
+    display: flex;
+}
+.deck{
+    width: 70px;
+    margin: 0 10px;
+    background-color: red;
+}
+.discard{
+    width: 70px;
+    margin: 0 10px;
+    background-color: red;
+}
+#control-panel{
+    visibility: hidden;
+}
+.control-panel{
+    display: flex;
+    justify-content: center;
+}
+.hand{
     display: flex;
     position: relative; 
-    width: 600px;
-    height: 110px;
     justify-content: space-around; 
     align-items: center;
     margin: 0 auto;   
@@ -288,7 +319,7 @@ $imgpath: '../img/icon';
     100% { background-color: #ffffff; font-size: 1em}            
 }
 
-#messageBoard, #infoBoard{
+#messageBoard{
     height: 100px;
     display: flex;
     justify-content: center;
@@ -302,9 +333,7 @@ $imgpath: '../img/icon';
 }
 
 
-#infoBoard{
-    margin-bottom: 100px;
-}
+
 .characteristic__attack{
     color: red;
 }
@@ -447,8 +476,12 @@ $imgpath: '../img/icon';
 }
 
 
-.button{
-    width: 160px;
-    height: 45px;
-    background-color: green;
+.ready-window{
+    width: 100%;
+    height: 100%;
+    z-index: 10;
+    position: absolute;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }

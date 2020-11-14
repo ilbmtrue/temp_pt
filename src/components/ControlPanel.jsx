@@ -2,15 +2,6 @@ import React from 'react';
 import ReactDOM from "react-dom";
 
 export default class ControlPanel extends React.Component{ 
-    gameWaveInfo(){
-        return (
-            <div className="game-flow-info">
-                <span className="game-round">round: 1</span>
-                <span className="game-wave">wave: 1</span>
-                <span className="game-turn">turn: 0</span>
-            </div>
-        )
-    }
     icoAction(itemclass, action){
         return (
             <div 
@@ -22,10 +13,10 @@ export default class ControlPanel extends React.Component{
     };
     render(){
         return(
-            <div className="control-panel">HOLLA!!!
-                {this.gameWaveInfo()}
+            <div className="control-panel">
                 {this.icoAction("player-action ico ico__pick-card", "pickCard")}
                 {this.icoAction("player-action ico ico__special", "pass")}
+                <div id="infoBoard"></div>
             </div>
         );
     }
