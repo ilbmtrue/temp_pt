@@ -1,5 +1,5 @@
 const Player = require("./player")
-
+const Cards = require('../card_revisions/cards_data_2012.js');
 function Game(gameId) {
     this.gameId = gameId
     this.players = []
@@ -9,7 +9,10 @@ Game.prototype = {
     getUserBySocketId: function (id) {
         return this.players.find(player => player.socketId === id);
     },
-    preparation: function () {
+    getUserByUserId: function(userId){
+        return this.players.find(player => player.userId === userId);
+    },
+    preparation: function (test = false) {
         this.playersReady = 0
         this.firstPlayer
         this.secondPlayer
@@ -25,17 +28,29 @@ Game.prototype = {
         this.perks = []
         this.perksBeforeCheckloss = []
         this.roundForPlayer = ""
-
+        this.playerTurn = ""
+        this.playerIdTurn = ""
         let room = this.roomName;
         // rework this moment
         [this.players[0].actionPoint, this.players[1].actionPoint] = [2, 2];
-        Array.prototype.forEach.call(this.players, function (player) {
-            player.board.pushCardsFromDeckToHand(5);
-            // rooms[room].sendTo(player, 'battle preparation', {cards: player.cardsRoadMap.hand });  
-        });
+        if(!test){
+            Array.prototype.forEach.call(this.players, function(player) {
+                player.board.pushCardsFromDeckToHand(5)
+            });
+        }
     },
     hireLeader: function (playerId, cardId) {
         let player = this.getUserBySocketId(playerId);
+        // -1 - random
+        if(cardId === -1){
+            let hand_cards = player.board.hand.filter( c => c.id)
+            let random = Math.floor(Math.random() * hand_cards.length)
+            cardId = player.board.hand[random].id
+        }
+        
+        if(player.board.hand.filter(c => c.id === cardId).length === 0){
+            return { status: "failure", msg: "flash msg", data: { msgText: 'this card is not in hand' } } 
+        }
         let sideEffects = player.board.addCardOnTable(+cardId, +5);
         if (sideEffects) {
             if (sideEffects.gameEvent === "perksBeforeCheckloss") {
@@ -58,13 +73,17 @@ Game.prototype = {
         if (player.actionPoint) {
             let result
             let turn
+
             if (player.board.fields[+field - 1].card === null) {
                 player.board.addCardOnTable(+cardId, +field);
                 player.actionPoint--;
                 result = { status: "success" }
             } else {
                 return { status: "failure", msg: "flash msg", data: { msgText: 'Pick another field!' } }
-            }
+            } 
+            
+            
+
             this.isPlayerTurnOver(player)
             return result
             
@@ -130,6 +149,7 @@ Game.prototype = {
                 this.win = anotherUser.userName;
                 this.lose = u.userName;
                 this.finish = true;
+                return "END game"
                 io.in(this.roomName).emit('END game', { lose: u.userName, win: anotherUser.userName });
                 console.log('END');
                 return
@@ -151,27 +171,26 @@ Game.prototype = {
                 if (this.wave === 3) {   
                     this.round++
                     this.wave = 1
-                    this.roundForPlayer = user.userName
+                    this.roundForPlayer = user.userName;
                     [this.firstPlayer, this.secondPlayer] = [this.secondPlayer, this.firstPlayer]
                     if (this.ceasefire) {
                         this.ceasefire = false
                     }
 
-                    // return {msg: "next round", data: {player: this.roundForPlayer , round: this.round, wave: this.wave} } // + return table
-                    return true //{msg: "next game step", data: {player: this.roundForPlayer , round: this.round, wave: this.wave} } // + return table
+                    return true
                 }
                 this.wave++;
                 this.turn = 1;
                 this.playerTurn = anotherUser.userName;
-
-                return true // {msg: "next game step", data: {player: this.roundForPlayer , round: this.round, wave: this.wave} } // + return table
-                // return {msg: "next wave", data: {player: this.playerTurn, wave: this.wave} } // + return table
+                this.playerIdTurn = anotherUser.userId;
+                
+                return true 
             }
             this.turn++
             this.playerTurn = anotherUser.userName;
+            this.playerIdTurn = anotherUser.userId;
 
-            return true // {msg: "next game step", data: {player: this.roundForPlayer , round: this.round, wave: this.wave}}
-            // return {msg: "next turn", data: {player: this.playerTurn}}
+            return true
         }
         return false
     },
@@ -199,11 +218,8 @@ Game.prototype = {
         return playerGameTable;
     },
     battleBegin: function () {
-
-        // get players name 
         let arr = []
-        this.players.forEach(player => arr.push(player.userName))
-
+        this.players.forEach(player => arr.push(player))       
         let m = arr.length, t, i;
         while (m) {
             i = Math.floor(Math.random() * m--);
@@ -211,52 +227,40 @@ Game.prototype = {
             arr[m] = arr[i];
             arr[i] = t;
         }
-
-        [this.firstPlayer, this.secondPlayer] = [...arr]
+        [this.firstPlayer, this.secondPlayer] = [arr[0].userName, arr[1].userName]
 
         this.playerTurn = this.firstPlayer;
+        this.playerIdTurn = arr[0].userId;
         this.roundForPlayer = this.firstPlayer;
 
-        console.log("battlebegin")
-
-        // return 
-        //io.in(this.roomName).emit('battle begin', );
         return { msg: 'battle begin', data: { firstPlayer: this.firstPlayer, secondPlayer: this.secondPlayer, gameTable: this.getTable() } }
     },
-    // battlePrepare: function () {
-    //     let room = this.roomName;
-    //     //this.users = [users[0], users[1]];
-    //     [this.players[0].actionPoint, this.players[1].actionPoint] = [2, 2];
-    //     // first cards issued
-    //     Array.prototype.forEach.call(this.players, function (player) {
-    //         player.board.pushCardsFromDeckToHand(5);
-    //         rooms[room].sendTo(player, 'prepare new battle', { cards: player.board.hand });
-    //     });
-    // },
-    heroAttack: function (playerId, data) {
+
+    heroAttack: function (playerId, cardId, victim) {
         if (this.finish) {
-            io.in(this.roomName).emit('END game', { lose: this.lose, win: this.win });
-            return;
+            // io.in(this.roomName).emit('END game', { lose: this.lose, win: this.win });
+            return 'END game';
         }
         let text = "";
         let player = this.getUserBySocketId(playerId);
         let enemyPlayer = this.players.find(player => player.socketId !== playerId);
         if (player.actionPoint) {
-            let attackerPlace = player.board.getNodeByCardId(data.cardId);
-            let victimPlace = enemyPlayer.board.getNodeByCardId(data.victim);
+            let ans = [];
+            let attackerPlace = player.board.getNodeByCardId(cardId);
+            let victimPlace = enemyPlayer.board.getNodeByCardId(victim);
             let path = 1;
             let blockedBy = "";
             let atkModif = 0;
             let defModif = 0;
             let reflectDmg = 0;
             atkType = "melee";
-
+            let lifelink = false;
             if (attackerPlace.buffs.length > 0) {
                 attackerPlace.buffs.forEach(buff => {
                     if (buff[1] === "ranged") {
                         atkType = "ranged";
                     }
-                    // witch vanguard perk 
+                    // hero witch vanguard perk 
                     if (buff[1] === "moreDmgFromBodies") {
                         let mod;
 
@@ -267,6 +271,10 @@ Game.prototype = {
                                     !field.card.isAlive ? corpsCount + 1 : 0;
                                 }, 0);
                         }, 0);
+                    }
+                    // hero vampire vanguard perk
+                    if(buff[1].match(/lifelink/g)) {
+                        lifelink = true
                     }
                     if (buff[1].match(/moreDmg:/g)) {
                         let mod = buff[1].split(':');
@@ -328,18 +336,19 @@ Game.prototype = {
             }
 
             let dmg;
-            if (defModif === "immuneFromRange" || defModif === "immuneFromMelee") {
-                dmg = 0;
-                return { status: "failure", msg: "flash msg", data: { msgText: 'immune' } }
-                rooms[this.roomName].sendTo(player, 'flash msg', { msgText: "immune" });
-                return
-
-            } else {
+            // if (defModif === "immuneFromRange" || defModif === "immuneFromMelee") {
+            //     dmg = 0;
+            //     return { status: "failure", msg: "flash msg", data: { msgText: 'immune' } }
+            // } else {
                 dmg = attackerPlace.card.atk + (atkModif - defModif);
-            }
+            // }
 
 
             if (atkType === "melee") {
+                if (defModif === "immuneFromMelee"){
+                    return { status: "failure", msg: "flash msg", data: { msgText: 'immune for melee' } }
+                }
+
                 //from attacker
                 path = findMeleePath(attackerPlace);
                 if (path) {
@@ -348,23 +357,39 @@ Game.prototype = {
                     if (path) {
                         // melee path free, attack action
                         if (dmg > 0) {
-                            victimPlace.card.blood += dmg;
+                            victimPlace.card.blood += Number(dmg);
                             if (reflectDmg) {
                                 attackerPlace.card.blood += reflectDmg;
+                                ans.push({specialEvent: "reflectDmg"})
+                            }
+                            // hero vampire vanguard perk
+                            if(lifelink){
+                                if(attackerPlace.card.blood > 0){
+                                    attackerPlace.card.blood = (attackerPlace.card.blood > Number(dmg)) ? attackerPlace.card.blood - Number(dmg) : 0;
+                                }
+                                ans.push({specialEvent: "lifelink"})
                             }
                         }
-
+                        player.actionPoint--
+                        
+                        let turn = this.isPlayerTurnOver(player)
+                        if(turn){
+                            ans.push(turn)
+                        }
+                        return {status: "success", data: ans }
                         return { status: "success" };
                     }
                 }
                 let liveStatus = (blockedBy.isAlive) ? "" : "Труп";
-                text = 'can\'t get target \n\r' + liveStatus + ' ' + Cards[blockedBy.id - 1].name + ' stand on the way (' + blockedBy.line + ' ' + blockedBy.side + ')';
+                text = 'can\'t get target ' + liveStatus + ' ' + Cards[blockedBy.id - 1].name + '(' + blockedBy.id + ') ' + ' stand on the way (' + blockedBy.line + ' ' + blockedBy.side + ')';
                 return { status: "failure", msg: "flash msg", data: { msgText: text } }
                 rooms[this.roomName].sendTo(player, 'flash msg', { msgText: text });
                 return;
 
             } else if (atkType === "ranged") {
-
+                if (defModif === "immuneFromRange"){
+                    return { status: "failure", msg: "flash msg", data: { msgText: 'immune for range' } }
+                }
                 try {
                     path = findRangePath(victimPlace);
                 } catch (error) {
@@ -374,15 +399,25 @@ Game.prototype = {
                 }
 
                 if (path) {
-                    if (dmg > 0) {  victimPlace.card.blood += dmg;  }
-                    return { status: "success" };
+                    if (dmg > 0) {  victimPlace.card.blood += Number(dmg);  }
+                    if (reflectDmg) {
+                        attackerPlace.card.blood += reflectDmg;
+                        ans.push({specialEvent: "reflectDmg"})
+                    }
+                    player.actionPoint--
+                    let turn = this.isPlayerTurnOver(player)
+                    if(turn){
+                        ans.push(turn)
+                    }
+
+                    return {status: "success", data: ans }
                 } else {
                     victimPlace = enemyPlayer.board.getNodeByCardId(blockedBy.id);
-                    if (dmg > 0) {  victimPlace.card.blood += dmg;  }
+                    if (Number(dmg) > 0) {  victimPlace.card.blood += Number(dmg);  }
 
                     text = Cards[blockedBy.id - 1].name + ' (' + blockedBy.line + ' ' + blockedBy.side + ') intercept ranged attack!';
                     
-                    return { status: "success" }
+                    return { status: "failure", msg: "flash msg", data: { msgText: text } }
                     io.in(this.roomName).emit('table update B', {
                         gameTable: this.getTable()
                     });
@@ -444,9 +479,9 @@ Game.prototype = {
         }
         return {status: "success", data: ans }
     },
-    bodyRemove: function (playerId, data) {
+    bodyRemove: function (playerId, card_id) {
         let player = this.getUserBySocketId(playerId)
-        let node = player.board.getNodeByCardId(data.card_id)
+        let node = player.board.getNodeByCardId(card_id)
         player.board.discard.push(node.card)
         node.card = null
         let ans = []
@@ -481,6 +516,42 @@ Game.prototype = {
         } else {
             return { status: "failure", data: { msgText: "No action point!" } }
         }
+    },
+
+    // for testing
+    showGameTableToConsole: function (){
+        let str = "" 
+        this.players.forEach( p => {
+            p.board.fields.forEach( f => {
+                if(f.card !== null){
+                    if(f.card.isAlive){
+                        if(f.card.id.length > 2){
+                            str += '+' + f.card.id + ' ;'
+                        } else {
+                            str += ' +' + f.card.id + ';'
+                        }
+                    } else {
+                        if(f.card.id.length > 2){
+                            str += '-' + f.card.id+ ' ;'
+                        } else {
+                            str += ' -' + f.card.id+ ';'
+                        }
+                    }
+                } else {
+                    str += '  x;'
+                }
+            })
+            str += '$'
+        })
+        let f_arr = str.split('$')
+        let gameTable = "" 
+        let f1 = f_arr[0].split(';')
+        let f2 = f_arr[1].split(';')
+        gameTable += `\n${f1[0]} ${f1[3]} ${f1[6]}  ${f2[8]} ${f2[5]} ${f2[2]}   \r\n`;
+        gameTable += `${f1[1]} ${f1[4]} ${f1[7]}  ${f2[7]} ${f2[4]} ${f2[1]}   \r\n`;
+        gameTable += `${f1[2]} ${f1[5]} ${f1[8]}  ${f2[6]} ${f2[3]} ${f2[0]}   `;
+
+        return gameTable
     },
 }
 

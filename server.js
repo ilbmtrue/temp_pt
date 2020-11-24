@@ -181,19 +181,17 @@ function handleSocket(socket) {
       console.log('PROBLEMS')
     }
   });
-
   socket.on('Move Hero', function (data) {
     game.heroMove(socket.id, data);
   });
   socket.on('Remove body', function (data) {
-    game.bodyRemove(socket.id, data);
+    game.bodyRemove(socket.id, data.card_id);
   });
   socket.on('Draw a Card', function () {
     sendAnswer(game.requestCard(socket.id));
   });
-
   socket.on('Character Attack', function (data) {
-    sendAnswer(game.heroAttack(socket.id, data));
+    sendAnswer(game.heroAttack(socket.id, data.cardId, data.victim));
   });
   socket.on('Recruit a Hero', function (data) {
     sendAnswer(game.hireCard(socket.id, data.cardId, data.field, data.un));

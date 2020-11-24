@@ -75,6 +75,10 @@ Board.prototype = {
         }
         return [line, side];
     },
+    getFieldNumByLineSide: function (line, side){
+        let field = this.fields.find( f => ((f.side === side)&&(f.line === line)) )
+        return field.num
+    },
     shuffleDeck: function () {
         let m = this.deck.length, t, i;
         while (m) {
@@ -86,6 +90,25 @@ Board.prototype = {
         return true;
     },
 
+    pushCurrentCardsFromDeckToHand: function (cardId) {
+        let index_card = this.deck.findIndex( c => c.id === cardId)
+        let card = this.deck.splice(index_card, 1)[0];
+        this.hand.push(card)
+
+        return
+    },
+    getBodiesArray: function (){
+        return this.fields.filter( f => {
+            if(f.card !== null){
+                if(f.num !== 5){
+                    return f.card.isAlive === 0
+                }
+                return false
+            } else {
+                return false
+            }
+        });
+    },
     pushCardsFromDeckToHand: function (count = 1) {
         let arrLength = 0;
         for (let i = 0; i < count; i++) {
@@ -108,7 +131,12 @@ Board.prototype = {
         }
         return false;
     },
-
+    canRangeAtk(field){
+        // if (field.buffs.length > 0) {
+            return field.buffs.some(buff => buff[1] === "ranged");
+        // }
+        // return false
+    },
     removeCardFromHandById: function (cardId) {
         this.hand.splice(this.hand.findIndex(card => card.id === cardId), 1);
     },

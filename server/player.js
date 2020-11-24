@@ -13,7 +13,7 @@ function Player(userId, user) {
     this.userName = user.name
     // 
     this.board = new Board(user.name, Cards);
-    this.board.shuffleDeck();
+    this.board.shuffleDeck();  
     this.actionPoint = 0;
     this.inRoom = 1;
 }
