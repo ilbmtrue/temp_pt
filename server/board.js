@@ -180,7 +180,7 @@ Board.prototype = {
         }
     },
 
-    removeAbility: function (cardId, field_num) {
+    removeAbility: function (Cards, cardId, field_num) {
         let lineAbil = null;
         let c = Cards[cardId - 1];
         [line, side] = this.getLineSideByFieldNum(field_num);

@@ -120,6 +120,8 @@ class ActionController
         [].forEach.call(rotatedCards, el => {
             el.classList.remove('rotate-card');
         });
+        let btn = document.querySelector('.action__hireLeader')
+        btn.classList.remove('--show')
         actionController.chosen = "";
         actionController.chosenDOMElem = "";
  
@@ -465,7 +467,11 @@ socket.on("battle begin", function(data){
     gameRoundEl = document.querySelector('.game-round');
     gameWaveEl = document.querySelector('.game-wave');
     gameTurnEl = document.querySelector('.game-turn');
-    document.querySelectorAll('.action').forEach(e => e.classList.toggle('--show'));
+    document.querySelectorAll('.action').forEach(e => {
+        if(!e.classList.contains('action__hireLeader')){
+            e.classList.toggle('--show')
+        }
+    });
 });
 
 socket.on("battle preparation", function(data){
@@ -559,15 +565,24 @@ socket.on("next game step", function(data){
 });
 
 socket.on("update", function(data){
+    let msg = ""
     if(data.turnFor === userName){
-        messageBoard.innerText = "Your turn";
-        messageBoardAnimation();
+        if(data.msg){
+            msg = data.msg
+        }
+        msg += '\n Your turn'
         playerTurn = true;
     } else {
-        messageBoard.innerText = "Enemy turn";
-        messageBoardAnimation();
+        if(data.msg){
+            msg = data.msg    
+        }
+        msg += '\n Enemy turn'
         playerTurn = false;
     }
+
+    messageBoard.innerText = msg;
+    messageBoardAnimation();
+
     infoBoard.innerText = `Action points: ${data.self.actionPoint}`;
     roundForPlayer = data.roundFor;
     gameRound = data.round;

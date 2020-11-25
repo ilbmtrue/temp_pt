@@ -19,8 +19,36 @@ let testerA = "playerA"
 let testerB = "playerB"
 let moves = 0;
 let room = null;
+let game_logs = []
+const logger = {
+    get(target, prop, receiver) {    
+        if (typeof target[prop] === 'function') {
+            return function() {
+                if((prop === 'hireLeader')||(prop ==='bodyRemove')){
+                    game_logs.push({prop, playerId: arguments[0], card_id: arguments[1]})
+                }
+                if(prop ==='hireCard'){
+                    game_logs.push({prop, playerId: arguments[0], cardId: arguments[1], field: arguments[2]})
+                }
+                if(prop ==='heroAttack'){
+                    game_logs.push({prop, playerId: arguments[0], cardId: arguments[1], victim: arguments[2]})
+                }
+                if(prop ==='heroMove'){
+                    game_logs.push({prop, playerId: arguments[0], card_id: arguments[1], target_field: arguments[2]})
+                }
+                if((prop ==='requestCard')||(prop ==='pass')){
+                    game_logs.push({prop, playerId: arguments[0]})
+                }
+                // console.log(`Called ${prop} method with`, arguments);
+                return target[prop].apply(receiver, arguments);
+            }
+        }
+   
+      return target[prop];
+    }
+}
 
-
+let proxy = null;
 function prepa(test_num){
     room = new Room("testing room"+test_num);
     userA = new User(testerA, "testerAid", null)
@@ -28,12 +56,15 @@ function prepa(test_num){
     room.addUser(userA, null);
     room.addUser(userB, null);
     game = room.game = new Game(test_num)
-    game.players.push(new Player(userA.getId(), userA));
-    game.players.push(new Player(userB.getId(), userB));
-    game.preparation()
 
-    sresult = game.hireLeader(userA.getId(), -1)
-    sresult = game.hireLeader(userB.getId(), -1)
+    proxy = new Proxy(game, logger);
+
+    proxy.players.push(new Player(userA.getId(), userA));
+    proxy.players.push(new Player(userB.getId(), userB));
+    proxy.preparation()
+
+    sresult = proxy.hireLeader(userA.getId(), -1)
+    sresult = proxy.hireLeader(userB.getId(), -1)
 
     game.players[0].action_atk = 0
     game.players[0].action_remove_body = 0
@@ -45,7 +76,6 @@ function prepa(test_num){
 
 // const arrCards = Array(25).fill().map((e, i) => i + 1)
 // let playerField = { 7: "", 8: "", 9: "", 4: "", 5: "", 6: "", 1: "", 2: "", 3: "", }
-
 
 
 
@@ -71,7 +101,7 @@ function promiseThis(action){
         resolve(action)    
     })
 }
-function fillGameTable(){
+function fillGameTable(cons_log = false){
     sresult = ""
     let action = ""
     let playersHaveCards = 2
@@ -83,10 +113,10 @@ function fillGameTable(){
         if(playerForWhichTurn.board.hand.length === 0){
             if(playerForWhichTurn.board.deck.length === 0) {
                 action = "pass turn"
-                sresult = game.pass(playerForWhichTurn.userId)
+                sresult = proxy.pass(playerForWhichTurn.userId)
             }
             action = "pick card"
-            sresult = game.requestCard(playerForWhichTurn.userId)
+            sresult = proxy.requestCard(playerForWhichTurn.userId)
         } else {
             randomCard = playerForWhichTurn.board.hand[Math.floor( Math.random()*(Object.keys(playerForWhichTurn.board.hand).length))].id          
             possibleFields = playerForWhichTurn.board.fields.filter( f => f.card === null)
@@ -95,29 +125,29 @@ function fillGameTable(){
                 action = "game field is fulled"
             } else {
                 r = Math.floor(Math.random()*possibleFields.length)
-
                 randomField = possibleFields[r].num
                 if(randomField == 999){
                     console.log(12131)
                 }
                 action = "hire card"
-                sresult = game.hireCard(playerForWhichTurn.userId, randomCard, randomField)
+                sresult = proxy.hireCard(playerForWhichTurn.userId, randomCard, randomField)
             }
         }
-        let colorParam = (playerForWhichTurn.userName === "playerA") ? '\x1b[32m%s\x1b[0m' : '\x1b[33m%s\x1b[0m'         
-        if(sresult.status === 'failure'){
-            console.log(`r${game.round} w${game.wave} t${game.turn} ${playerForWhichTurn.userName} ${action}: ${randomCard} field: ${randomField} | ${sresult.data.msgText}`)
-            if(sresult.data.msgText === "No action point!"){
-                console.log(123)
+        if(cons_log){
+            let colorParam = (playerForWhichTurn.userName === "playerA") ? '\x1b[32m%s\x1b[0m' : '\x1b[33m%s\x1b[0m'         
+            if(sresult.status === 'failure'){
+                console.log(`r${game.round} w${game.wave} t${game.turn} ${playerForWhichTurn.userName} ${action}: ${randomCard} field: ${randomField} | ${sresult.data.msgText}`)        
+            } else {
+                if(action === "pick card"){
+                    console.log(colorParam, `r${game.round} w${game.wave} t${game.turn} ${playerForWhichTurn.userName} ${action}`)   
+                } 
+                if(action === "hire card") {
+                    console.log(colorParam, `r${game.round} w${game.wave} t${game.turn} ${playerForWhichTurn.userName} ${action}: ${randomCard} field: ${randomField}`)
+                } 
             }
-        } else {
-            if(action === "pick card"){
-                console.log(colorParam, `r${game.round} w${game.wave} t${game.turn} ${playerForWhichTurn.userName} ${action}`)   
-            } 
-            if(action === "hire card") {
-                console.log(colorParam, `r${game.round} w${game.wave} t${game.turn} ${playerForWhichTurn.userName} ${action}: ${randomCard} field: ${randomField}`)
-            } 
         }
+        
+
         iters++
         moves++
         if(iters > 100){
@@ -129,7 +159,7 @@ function fillGameTable(){
     return 1
 }
 
-function playersAction(){
+function playersAction(cons_log = false){
     let simpleAtk = 2000
     let iters = 0
     let useless_attacks = 0
@@ -137,7 +167,7 @@ function playersAction(){
     while(simpleAtk !== 0 ){
         if(iters > 1000){
             console.log(`iters countdown ***r${game.round} w${game.wave} t${game.turn}***`)
-            process.exit(1)
+            break
         }
 
         let playerForWhichTurn = game.getUserByUserId(game.playerIdTurn)
@@ -148,8 +178,10 @@ function playersAction(){
         if(bodies.length){
             let r = Math.floor(Math.random() * bodies.length)
             let cardId = bodies[r].card.id
-            sresult = game.bodyRemove(playerForWhichTurn.userId, cardId)
-            console.log(colorParam, `r${game.round} w${game.wave} t${game.turn} ${playerForWhichTurn.userName} remove corps, ${cardId}`)
+            sresult = proxy.bodyRemove(playerForWhichTurn.userId, cardId)
+            if(cons_log){
+                console.log(colorParam, `r${game.round} w${game.wave} t${game.turn} ${playerForWhichTurn.userName} remove corps, ${cardId}`)
+            }
             playerForWhichTurn.useless_attacks = 0
             iters++
             moves++
@@ -160,7 +192,9 @@ function playersAction(){
         if(playerForWhichTurn.useless_attacks < 5){
             let rndAttackCard = getRndCardFromWave(playerForWhichTurn)
             if(rndAttackCard === -1){
-                console.log(colorParam, `r${game.round} w${game.wave} t${game.turn} ${playerForWhichTurn.userName} pass1, no heroes on wave ${game.wave}`)
+                if(cons_log){
+                    console.log(colorParam, `r${game.round} w${game.wave} t${game.turn} ${playerForWhichTurn.userName} pass1, no heroes on wave ${game.wave}`)
+                }
                 game.pass(playerForWhichTurn.userId)
                 playerForWhichTurn.useless_attacks = 0
                 iters++
@@ -172,7 +206,9 @@ function playersAction(){
             let somes = ""
             let rndVictimCard = null
             if(temp_f === false){
-                console.log(colorParam, `r${game.round} w${game.wave} t${game.turn} ${playerForWhichTurn.userName} pass2, only bodies on wave ${game.wave}`)
+                if(cons_log){
+                    console.log(colorParam, `r${game.round} w${game.wave} t${game.turn} ${playerForWhichTurn.userName} pass2, only bodies on wave ${game.wave}`)
+                }
                 game.pass(playerForWhichTurn.userId)
                 playerForWhichTurn.useless_attacks = 0
                 iters++
@@ -188,31 +224,39 @@ function playersAction(){
                 // rndVictimCard = getRndCardFromWave(anotherUser) 
             }
             if(rndVictimCard === -1){
-                console.log(colorParam, `r${game.round} w${game.wave} t${game.turn} ${playerForWhichTurn.userName} pass3, only bodies on wave ${game.wave} ${somes}`)
-                game.pass(playerForWhichTurn.userId)
+                if(cons_log){
+                    console.log(colorParam, `r${game.round} w${game.wave} t${game.turn} ${playerForWhichTurn.userName} pass3, only bodies on wave ${game.wave} ${somes}`)
+                }
+                proxy.pass(playerForWhichTurn.userId)
                 playerForWhichTurn.useless_attacks = 0
                 iters++
                 moves++
                 continue
             }
            
-            let sresult = game.heroAttack(playerForWhichTurn.userId, rndAttackCard, rndVictimCard)
+            let sresult = proxy.heroAttack(playerForWhichTurn.userId, rndAttackCard, rndVictimCard)
             if(sresult.status === "success"){
                 simpleAtk--
                 playerForWhichTurn.useless_attacks = 0
-                if(sresult.data.some( e => e.specialEvent)){
-                    console.log(colorParam, `r${game.round} w${game.wave} t${game.turn} ${playerForWhichTurn.userName} ${rndAttackCard} -> ${anotherUser.userName} ${rndVictimCard} success!! ${somes} LIFELINK`)    
+
+                if(cons_log){
+                    if(sresult.data.some( e => e.specialEvent)){
+                        console.log(colorParam, `r${game.round} w${game.wave} t${game.turn} ${playerForWhichTurn.userName} ${rndAttackCard} -> ${anotherUser.userName} ${rndVictimCard} success!! ${somes} LIFELINK`)    
+                    }
+                    console.log(colorParam, `r${game.round} w${game.wave} t${game.turn} ${playerForWhichTurn.userName} ${rndAttackCard} -> ${anotherUser.userName} ${rndVictimCard} success!! ${somes}`)
                 }
-                console.log(colorParam, `r${game.round} w${game.wave} t${game.turn} ${playerForWhichTurn.userName} ${rndAttackCard} -> ${anotherUser.userName} ${rndVictimCard} success!! ${somes}`)
+
             } else if(sresult.status === "failure"){
                 playerForWhichTurn.useless_attacks++
-                console.log(colorParam, `r${game.round} w${game.wave} t${game.turn} ${playerForWhichTurn.userName} ${rndAttackCard} -> ${anotherUser.userName} ${rndVictimCard} ${sresult.data.msgText} useless_attacks #${playerForWhichTurn.useless_attacks}`)
-                if(sresult.data.msgText.match(/immune/g)){
-                    console.log(colorParam, `${playerForWhichTurn.userName} ${rndAttackCard} -> ${anotherUser.userName} ${rndVictimCard} ${sresult.data.msgText}`)
-                }
-                if(sresult.data.msgText.match(/can't get target/g)){
-                    // useless_attacks++ 
-                    // console.log(game.showGameTableToConsole()) 
+                if(cons_log){
+                    console.log(colorParam, `r${game.round} w${game.wave} t${game.turn} ${playerForWhichTurn.userName} ${rndAttackCard} -> ${anotherUser.userName} ${rndVictimCard} ${sresult.data.msgText} useless_attacks #${playerForWhichTurn.useless_attacks}`)
+                    if(sresult.data.msgText.match(/immune/g)){
+                        console.log(colorParam, `${playerForWhichTurn.userName} ${rndAttackCard} -> ${anotherUser.userName} ${rndVictimCard} ${sresult.data.msgText}`)
+                    }
+                    if(sresult.data.msgText.match(/can't get target/g)){
+                        // useless_attacks++ 
+                        // console.log(game.showGameTableToConsole()) 
+                    }
                 }
             } else if(sresult === 'END game') {
                 console.log(startTable)
@@ -227,20 +271,27 @@ function playersAction(){
         } else {
             playerForWhichTurn.useless_attacks = 0
             game.pass(playerForWhichTurn.userId)
-            console.log(`i: ${iters} ${playerForWhichTurn.userName} pass`)
+            if(cons_log){
+                console.log(`i: ${iters} ${playerForWhichTurn.userName} pass`)
+            }
         }
     }
-    console.log(`r${game.round} w${game.wave} t${game.turn}`)
-    console.log('test successful')
+    // console.log(`r${game.round} w${game.wave} t${game.turn}`)
+    
 }
 
-for(let i = 0;i<10;i++){
-    console.log(`\n\n\nTEST # ${i}\n`)
+
+for(let i = 0;i<100;i++){
+    moves = 0;
+    console.log(`\n\n\nTEST # ${i}`)
     prepa(i)
     fillGameTable()
-    playersAction()
+    playersAction()    
+    console.log(`test #${i} successful`)
+    // console.log(game_logs)
+    // console.log('test successful')
 }
-
+console.log('all test successful')
 
 
 
@@ -314,7 +365,6 @@ function getRndCardFromTable(player){
     let r = Math.floor(Math.random() * possibleAtkCards.length)
     return possibleAtkCards[r]
 }
-
 function shuffle(array) {
     var m = array.length, t, i;
     while (m) {
@@ -324,7 +374,7 @@ function shuffle(array) {
       array[i] = t;
     }
     return array;
-  }
+}
 
 
 

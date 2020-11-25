@@ -1,7 +1,12 @@
-10:16:29 0 rSr-n0EE4B7rq6tiAAAB  joined to room  {"userName":"t523345","room":"e3417c73e"} 
-10:16:29 1 ZxwNNIcbXhOhwQ6HAAAC  joined to room  {"userName":"t6yuet","room":"e3417c73e"} 
-10:16:30 2 ZxwNNIcbXhOhwQ6HAAAC  ready new game   
-10:16:31 3 rSr-n0EE4B7rq6tiAAAB  ready new game   
-10:16:34 4 ZxwNNIcbXhOhwQ6HAAAC  chosen leader  "3" 
-10:16:36 5 rSr-n0EE4B7rq6tiAAAB  chosen leader  "1" 
+15:59:10 0 rHMk5S-g5M0TA7n3AAAC  joined to room  {"userName":"3456","room":"e3417c73e"} 
+15:59:11 1 SWYyXNS6KcnoAtOwAAAD  joined to room  {"userName":"hjgre","room":"e3417c73e"} 
+15:59:12 2 SWYyXNS6KcnoAtOwAAAD  ready new game   
+15:59:12 3 rHMk5S-g5M0TA7n3AAAC  ready new game   
+15:59:14 4 rHMk5S-g5M0TA7n3AAAC  chosen leader  "1" 
+15:59:15 5 SWYyXNS6KcnoAtOwAAAD  chosen leader  "2" 
+15:59:18 6 SWYyXNS6KcnoAtOwAAAD  Recruit a Hero  {"cardId":"3","field":"7"} 
+15:59:20 7 SWYyXNS6KcnoAtOwAAAD  Move Hero  {"card_id":"3","targetField":"8"} 
+15:59:27 8 rHMk5S-g5M0TA7n3AAAC  Recruit a Hero  {"cardId":"8","field":"7"} 
+15:59:30 9 rHMk5S-g5M0TA7n3AAAC  Recruit a Hero  {"cardId":"9","field":"9"} 
+15:59:33 10 SWYyXNS6KcnoAtOwAAAD  Move Hero  {"card_id":"3","targetField":"2"} 
 

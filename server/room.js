@@ -10,6 +10,7 @@ function Room(room_name) {
     this.sockets = {}
     this.gameId = 0;
     // this.lastUserId = 0;
+    
 }
 Room.prototype = {
     getName: function () { return this.roomName; },

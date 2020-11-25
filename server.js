@@ -104,6 +104,7 @@ function getDateTime() {
 
 let logCount = 0
 const fs = require("fs");
+const { data } = require('jquery');
 fs.writeFile('loglast.txt', "", (err) => {
   if (err) throw err;
 });
@@ -182,10 +183,10 @@ function handleSocket(socket) {
     }
   });
   socket.on('Move Hero', function (data) {
-    game.heroMove(socket.id, data);
+    sendAnswer(game.heroMove(socket.id, data.card_id, data.targetField))
   });
   socket.on('Remove body', function (data) {
-    game.bodyRemove(socket.id, data.card_id);
+    sendAnswer(game.bodyRemove(socket.id, data.card_id))
   });
   socket.on('Draw a Card', function () {
     sendAnswer(game.requestCard(socket.id));
@@ -230,8 +231,6 @@ function handleSocket(socket) {
     room.broadcastFrom(user, 'user_leave', user.getName());
   }
   function sendAnswer(messages) {
-    
-    
     if (messages.status === "failure") {
       socket.emit("flash msg", messages.data)
     } else if (messages.status === "success") {
@@ -241,13 +240,20 @@ function handleSocket(socket) {
       let currentPlayerTable = currentPlayer.getTable()
       let enemyPlayerTable = enemyUser.getTable()
       let enemySocket = room.sockets[enemyUser.socketId]
-
+      let specialMsg = ""
+      if(messages.data){
+        if(messages.data.specialMsg){
+          specialMsg = messages.data.specialMsg
+        }
+      }
+      
       socket.emit("update", {
         turnFor: game.playerTurn,
         roundFor: game.roundForPlayer,
         round: game.round,
         wave: game.wave,
         turn: game.turn,
+        msg: specialMsg,
 
         self: {
           name: currentPlayer.userName,
@@ -263,7 +269,8 @@ function handleSocket(socket) {
           deck: enemyUser.board.deck.length,
           discard: enemyUser.board.discard,
           table: enemyPlayerTable,
-        }
+        },
+        
       });
       enemySocket.emit("update", {
         turnFor: game.playerTurn,

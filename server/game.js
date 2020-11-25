@@ -47,10 +47,13 @@ Game.prototype = {
             let random = Math.floor(Math.random() * hand_cards.length)
             cardId = player.board.hand[random].id
         }
-        
-        if(player.board.hand.filter(c => c.id === cardId).length === 0){
+        if(player.board.fields[4].card){
+            return { status: "failure", msg: "flash msg", data: { msgText: 'You already pick a leader!' } } 
+        }
+        if(player.board.hand.filter(c => c.id === Number(cardId)).length === 0){
             return { status: "failure", msg: "flash msg", data: { msgText: 'this card is not in hand' } } 
         }
+
         let sideEffects = player.board.addCardOnTable(+cardId, +5);
         if (sideEffects) {
             if (sideEffects.gameEvent === "perksBeforeCheckloss") {
@@ -149,12 +152,13 @@ Game.prototype = {
                 this.win = anotherUser.userName;
                 this.lose = u.userName;
                 this.finish = true;
-                return "END game"
-                io.in(this.roomName).emit('END game', { lose: u.userName, win: anotherUser.userName });
-                console.log('END');
-                return
+                // return "END game"
+                return {status: "failure", msg: "flash msg", data: { msgText: 'END game' } };
+
             }
         }
+
+        
     },
     isPlayerTurnOver: function (user) {
         if (user.actionPoint === 0) {
@@ -239,7 +243,9 @@ Game.prototype = {
     heroAttack: function (playerId, cardId, victim) {
         if (this.finish) {
             // io.in(this.roomName).emit('END game', { lose: this.lose, win: this.win });
-            return 'END game';
+            return {status: "failure", msg: "flash msg", data: { msgText: 'END game' } };
+            return { status: "failure",  }
+
         }
         let text = "";
         let player = this.getUserBySocketId(playerId);
@@ -256,6 +262,7 @@ Game.prototype = {
             atkType = "melee";
             let lifelink = false;
             if (attackerPlace.buffs.length > 0) {
+                let attacker = attackerPlace
                 attackerPlace.buffs.forEach(buff => {
                     if (buff[1] === "ranged") {
                         atkType = "ranged";
@@ -263,7 +270,6 @@ Game.prototype = {
                     // hero witch vanguard perk 
                     if (buff[1] === "moreDmgFromBodies") {
                         let mod;
-
                         mod = this.players.reduce((sum, user) => {
                             user.board.fields
                                 .filter(field => field.card !== null)
@@ -271,6 +277,19 @@ Game.prototype = {
                                     !field.card.isAlive ? corpsCount + 1 : 0;
                                 }, 0);
                         }, 0);
+                        if(mod){
+                            atkModif += mod
+                        }
+                        // atkModif = (mod > 0)? atkModif + mod : atkModif;
+                    }
+                    if(buff[1] === "moreDmgIfForerunnerDead"){     
+                        if(attacker.aheadNeighbor){
+                            if(attacker.aheadNeighbor.card){
+                                if(!attacker.aheadNeighbor.card.isAlive){
+                                    atkModif += 4 //which flank
+                                }
+                            }
+                        }
                     }
                     // hero vampire vanguard perk
                     if(buff[1].match(/lifelink/g)) {
@@ -319,20 +338,28 @@ Game.prototype = {
                 }
                 while (temp.card === null) {
                     temp = temp.behindNeighbor;
-                    if (temp.card.isAlive) break;
+                    if(temp.card){
+                        if (temp.card.isAlive) break;
+                    } 
                 }
-                while (temp.card.id !== node.card.id) {
-                    if (temp.card.isAlive && temp.buffs.length > 0) {
-                        for (let i = 0; i < temp.buffs.length; i++) {
-                            if (temp.buffs[i][1] === "intercept") {
-                                blockedBy = temp.card;
-                                return 0;
+                
+                while (1) {
+                    if(temp.card){
+                        if(temp.card.id !== node.card.id){
+                            if (temp.card.isAlive && temp.buffs.length > 0) {
+                                for (let i = 0; i < temp.buffs.length; i++) {
+                                    if (temp.buffs[i][1] === "intercept") {
+                                        blockedBy = temp.card;
+                                        return 0;
+                                    }
+                                }
                             }
+                        } else {
+                            return path
                         }
                     }
                     temp = temp.behindNeighbor;
                 }
-                return path;
             }
 
             let dmg;
@@ -393,7 +420,9 @@ Game.prototype = {
                 try {
                     path = findRangePath(victimPlace);
                 } catch (error) {
+                    console.log(this.showGameTableToConsole())
                     console.log(error);
+                    path = findRangePath(victimPlace);
                     console.log("fix me!!!");
                     path = 1;
                 }
@@ -417,7 +446,7 @@ Game.prototype = {
 
                     text = Cards[blockedBy.id - 1].name + ' (' + blockedBy.line + ' ' + blockedBy.side + ') intercept ranged attack!';
                     
-                    return { status: "failure", msg: "flash msg", data: { msgText: text } }
+                    return { status: "failure", msg: "flash msg", data: { specialMsg: text } }
                     io.in(this.roomName).emit('table update B', {
                         gameTable: this.getTable()
                     });
@@ -437,25 +466,25 @@ Game.prototype = {
 
         // this.isPlayerTurnOver(player);
     },
-    heroMove: function (playerId, data) {
+    heroMove: function (playerId, card_id, target_field) {
         //data {card_id: card id, targetField: field num}
         let player = this.getUserBySocketId(playerId);
-        if (data.targetField === "5") {
+        if (target_field === "5") {
             return { status: "failure", data: { msgText: 'Can\'t switch with leader!'} }
         }
-        let node = player.board.getNodeByCardId(data.card_id);
-        let [line, side] = getLineSideByFieldNum(data.targetField)
-        if (player.board.fields[data.targetField - 1].card) {
+        let node = player.board.getNodeByCardId(card_id);
+        let [line, side] = player.board.getLineSideByFieldNum(target_field)
+        if (player.board.fields[target_field - 1].card) {
             // "switch";
-            let switchCard = player.board.fields[data.targetField - 1];
+            let switchCard = player.board.fields[target_field - 1];
             if (player.actionPoint < 2) {
                 return { status: "failure", data: { msgText: 'Not enough action points to switch!'} }
             } else {
                 //switch heroes
-                player.board.removeAbility(Number(switchCard.card.id), Number(switchCard.num));
-                player.board.removeAbility(Number(data.card_id), Number(node.num));
-                let temp = Object.assign({}, player.board.fields[data.targetField - 1].card);
-                player.board.fields[data.targetField - 1].card = node.card;
+                player.board.removeAbility(Cards, Number(switchCard.card.id), Number(switchCard.num));
+                player.board.removeAbility(Cards, Number(card_id), Number(node.num));
+                let temp = Object.assign({}, player.board.fields[target_field - 1].card);
+                player.board.fields[target_field - 1].card = node.card;
                 player.board.fields[node.num - 1].card = temp;
                 player.board.addAbility(Number(switchCard.card.id), Number(switchCard.num));
                 player.board.addAbility(Number(node.card.id), Number(node.num));
@@ -465,10 +494,10 @@ Game.prototype = {
             // "move";
 
             //remove buffs
-            player.board.removeAbility(Number(node.card.id), Number(node.num));
+            player.board.removeAbility(Cards, Number(node.card.id), Number(node.num));
             [node.card.line, node.card.side] = [line, side]; // todo: future remove line side in card
-            player.board.fields[data.targetField - 1].card = node.card;
-            player.board.addAbility(Number(data.card_id), Number(data.targetField));
+            player.board.fields[target_field - 1].card = node.card;
+            player.board.addAbility(Number(card_id), Number(target_field));
             player.board.fields[node.num - 1].card = null;
             player.actionPoint--;
         }
@@ -547,9 +576,9 @@ Game.prototype = {
         let gameTable = "" 
         let f1 = f_arr[0].split(';')
         let f2 = f_arr[1].split(';')
-        gameTable += `\n${f1[0]} ${f1[3]} ${f1[6]}  ${f2[8]} ${f2[5]} ${f2[2]}   \r\n`;
+        gameTable += `${f1[0]} ${f1[3]} ${f1[6]}  ${f2[8]} ${f2[5]} ${f2[2]}   \r\n`;
         gameTable += `${f1[1]} ${f1[4]} ${f1[7]}  ${f2[7]} ${f2[4]} ${f2[1]}   \r\n`;
-        gameTable += `${f1[2]} ${f1[5]} ${f1[8]}  ${f2[6]} ${f2[3]} ${f2[0]}   `;
+        gameTable += `${f1[2]} ${f1[5]} ${f1[8]}  ${f2[6]} ${f2[3]} ${f2[0]}   \n`;
 
         return gameTable
     },
