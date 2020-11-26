@@ -1,12 +1,10 @@
-15:59:10 0 rHMk5S-g5M0TA7n3AAAC  joined to room  {"userName":"3456","room":"e3417c73e"} 
-15:59:11 1 SWYyXNS6KcnoAtOwAAAD  joined to room  {"userName":"hjgre","room":"e3417c73e"} 
-15:59:12 2 SWYyXNS6KcnoAtOwAAAD  ready new game   
-15:59:12 3 rHMk5S-g5M0TA7n3AAAC  ready new game   
-15:59:14 4 rHMk5S-g5M0TA7n3AAAC  chosen leader  "1" 
-15:59:15 5 SWYyXNS6KcnoAtOwAAAD  chosen leader  "2" 
-15:59:18 6 SWYyXNS6KcnoAtOwAAAD  Recruit a Hero  {"cardId":"3","field":"7"} 
-15:59:20 7 SWYyXNS6KcnoAtOwAAAD  Move Hero  {"card_id":"3","targetField":"8"} 
-15:59:27 8 rHMk5S-g5M0TA7n3AAAC  Recruit a Hero  {"cardId":"8","field":"7"} 
-15:59:30 9 rHMk5S-g5M0TA7n3AAAC  Recruit a Hero  {"cardId":"9","field":"9"} 
-15:59:33 10 SWYyXNS6KcnoAtOwAAAD  Move Hero  {"card_id":"3","targetField":"2"} 
+15:05:09 0 bQ9fQTWAzQvuLkOCAAAB  joined to room  {"userName":"12345","room":"e3417c73e"} 
+15:05:12 1 CpCNX1pOxWFCkQJiAAAC  joined to room  {"userName":"qwerty","room":"e3417c73e"} 
+15:05:13 2 CpCNX1pOxWFCkQJiAAAC  ready new game   
+15:05:13 3 bQ9fQTWAzQvuLkOCAAAB  ready new game   
+15:05:17 4 bQ9fQTWAzQvuLkOCAAAB  chosen leader  "7" 
+15:05:19 5 CpCNX1pOxWFCkQJiAAAC  chosen leader  "2" 
+15:05:23 6 kHVXKHuMau-vTaljAAAD  joined to room  {"userName":"qwerty","room":"e3417c73e"} 
+15:05:28 7 2joD6pRuNUA8igXLAAAE  joined to room  {"userName":"qwerty","room":"e3417c73e"} 
+15:05:28 8 bgcSc_NH1qVUg3NPAAAF  joined to room  {"userName":"12345","room":"e3417c73e"} 
 

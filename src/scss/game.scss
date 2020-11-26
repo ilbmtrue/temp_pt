@@ -485,3 +485,40 @@ $imgpath: '../img/icon';
     justify-content: center;
     align-items: center;
 }
+#game-log{
+    position: absolute;
+    opacity: 1;
+    left: 20px;
+    z-index: 2;
+    top: 200px;
+}
+.game-log-holder{
+    position: relative;
+}
+.window-game-log{  
+    display: none;
+    margin: 0px;
+    width: 194px;
+    height: 294px;
+    min-width: 200px;
+    min-height: 300px;
+    border: 1px solid black;
+    border-radius: 10px;
+    z-index: 20;
+    &.--show{
+        display: block;
+    }
+}
+.game-log-btn{
+    text-align: center;
+    line-height: 30px;
+    width: 30px;
+    height: 30px;
+    background-color: #a8a8a8;
+    position: absolute;
+    top: -15px;
+    right: -15px;
+    border-radius: 50%;
+    z-index: 30;
+    cursor: pointer;
+}

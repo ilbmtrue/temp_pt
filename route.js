@@ -11,6 +11,9 @@ module.exports = function(app) {
     app.get('/', (req,res) => {
         res.sendFile(__dirname + '/dist/join-page.html');
     });
+    app.get('/:room', (req,res) => {
+        res.sendFile(__dirname + '/dist/battle.html');
+    });
     
     app.post('/joingame', (req,res) => {
         if((req.body.room !== undefined) || (req.body.name !== undefined)){

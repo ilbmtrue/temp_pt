@@ -17,6 +17,7 @@ export default class ControlPanel extends React.Component{
                 {this.icoAction("player-action ico ico__pick-card", "pickCard")}
                 {this.icoAction("player-action ico ico__special", "pass")}
                 <div id="infoBoard"></div>
+                
             </div>
         );
     }

@@ -10,6 +10,9 @@ User.prototype = {
   getName: function () {
     return this.name;
   },
+  updateSocket: function(socket){
+    this.socket = socket
+  }
 }
 
 module.exports = User

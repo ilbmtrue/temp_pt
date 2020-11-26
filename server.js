@@ -110,9 +110,9 @@ fs.writeFile('loglast.txt', "", (err) => {
 });
 
 function handleSocket(socket) {
-  var user = null;
-  var room = null;
-  var game = null;
+  let user = null;
+  let room = null;
+  let game = null;
 
   let onevent = socket.onevent;
   socket.onevent = function (packet) {
@@ -136,15 +136,58 @@ function handleSocket(socket) {
     let userName = data.userName || 'undefined user';
     let roomName = data.room || 'waiting room';
     room = getOrCreateRoom(roomName);
+    let returnedUser = room.getUsers().find(user => user.name === data.userName);
+    
+    if(returnedUser){
+      returnedUser.updateSocket(socket)
+      console.log(`User ${userName} recconect ${socket.id}`)
+      returnedUser.leaveRoom = 0
+      game = room.getOrCreateGame(returnedUser)
+      returnedUser.socket = socket.id
+      let player = game.players.find( user => user.userName === data.userName)
+      player.userId = socket.id
+      player.socketId = socket.id
+      room.sockets[returnedUser.getId()] = socket
+      user = returnedUser
+      socket.join(roomName)
+
+      let currentPlayer = game.getUserBySocketId(socket.id);
+      let enemyUser = game.players.filter(p => p.socketId !== socket.id)[0];
+      
+      socket.emit("reconnect", {
+        turnFor: game.playerTurn,
+        roundFor: game.roundForPlayer,
+        round: game.round,
+        wave: game.wave,
+        turn: game.turn,
+        msg: 'reconnect',
+        self: {
+          name: currentPlayer.userName,
+          actionPoint: currentPlayer.actionPoint,
+          hand: currentPlayer.board.hand.map(c => c.id),
+          deck: currentPlayer.board.deck.length,
+          discard: currentPlayer.board.discard,
+          table: currentPlayer.getTable(),
+        },
+        enemy: {
+          name: enemyUser.userName,
+          hand: enemyUser.board.hand.length,
+          deck: enemyUser.board.deck.length,
+          discard: enemyUser.board.discard,
+          table: enemyUser.getTable(),
+        },     
+      });
+      
+      return 
+    }
+
     room.addUser(user = new User(userName, socket.id, socket), socket);
     socket.join(roomName);
 
     if (room.users.length <= 2) {
       let arr = []
       room.users.forEach(player => arr.push(player.name))
-      // let enemyPlayerName = room.users.find(player => player.name !== data.userName) || "unknown"
       try {
-        // io.in(room.roomName).emit('player join room', { player: data.userName, enemy: enemyPlayerName.name});  
         io.in(room.roomName).emit('player join room', { players: arr });
       } catch (error) {
         console.log(error)
@@ -174,10 +217,15 @@ function handleSocket(socket) {
     }
   })
   socket.on('disconnect', onLeave);
+
   socket.on('chosen leader', function (card) {
     let call = game.hireLeader(socket.id, card)
     if (call) {
-      io.in(room.roomName).emit(call.msg, call.data);
+      if(call.msg === 'battle begin'){
+        sendAnswer({status: 'success', data:{specialMsg: 'battle begin'}})
+      } else {
+        io.in(room.roomName).emit(call.msg, call.data);
+      }
     } else {
       console.log('PROBLEMS')
     }
@@ -213,23 +261,24 @@ function handleSocket(socket) {
 
     return rooms[roomName];
   }
+
   function onLeave() {
     if (room === null) {
       return;
     }
-    user.inRoom = 0;
-    console.log(socket.id + ' - is leave');
+    user.leaveRoom = 1;
+    console.log(`${socket.id} : ${user.name} - is leave`);
+
     room.removeUser(user.getId());
-    let ar = room.users.filter(user => user.inRoom === 1)
-    if (ar.length === 0) {
+    let ar = room.users.filter(user => user.leaveRoom === 1)
+    if (ar.length === room.users.length) {
       console.log('Room is empty - dropping room %s', room.getName());
       delete rooms[room.getName()];
-    } else {
-      console.log('Users in room: %d', room.numUsers());
-    }
-
+    } 
     room.broadcastFrom(user, 'user_leave', user.getName());
   }
+
+
   function sendAnswer(messages) {
     if (messages.status === "failure") {
       socket.emit("flash msg", messages.data)
@@ -269,8 +318,7 @@ function handleSocket(socket) {
           deck: enemyUser.board.deck.length,
           discard: enemyUser.board.discard,
           table: enemyPlayerTable,
-        },
-        
+        },     
       });
       enemySocket.emit("update", {
         turnFor: game.playerTurn,
@@ -278,7 +326,7 @@ function handleSocket(socket) {
         round: game.round,
         wave: game.wave,
         turn: game.turn,
-
+        msg: specialMsg,
         self: {
           name: enemyUser.userName,
           actionPoint: enemyUser.actionPoint,

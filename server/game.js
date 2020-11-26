@@ -67,7 +67,6 @@ Game.prototype = {
         } else {
             playerName = this.players.find(player => player.socketId === playerId).userName;
             return { msg: 'pick leader', data: { player: playerName } }
-            //io.in(this.roomName).emit('pick leader', { player: playerName });
         }
     },
 
@@ -242,10 +241,7 @@ Game.prototype = {
 
     heroAttack: function (playerId, cardId, victim) {
         if (this.finish) {
-            // io.in(this.roomName).emit('END game', { lose: this.lose, win: this.win });
             return {status: "failure", msg: "flash msg", data: { msgText: 'END game' } };
-            return { status: "failure",  }
-
         }
         let text = "";
         let player = this.getUserBySocketId(playerId);
@@ -447,12 +443,8 @@ Game.prototype = {
                     text = Cards[blockedBy.id - 1].name + ' (' + blockedBy.line + ' ' + blockedBy.side + ') intercept ranged attack!';
                     
                     return { status: "failure", msg: "flash msg", data: { specialMsg: text } }
-                    io.in(this.roomName).emit('table update B', {
-                        gameTable: this.getTable()
-                    });
-                    // rooms[this.roomName].sendTo(player, 'flash msg', {msgText: text}) 
+                   
                 }
-                // rooms[this.roomName].sendTo(player, 'flash msg', { msgText: text });
             }
 
             // preattack
@@ -461,7 +453,6 @@ Game.prototype = {
 
         } else {
             return { status: "failure", msg: "flash msg", data: { msgText: 'no action point!' } }
-            rooms[this.roomName].sendTo(player, 'flash msg', { msgText: 'no action point!' });
         }
 
         // this.isPlayerTurnOver(player);

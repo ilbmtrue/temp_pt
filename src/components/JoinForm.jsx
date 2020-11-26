@@ -6,7 +6,7 @@ export default class JoinForm extends React.Component{
         super(props);
         this.state = {
             room: '1339', //default
-            name: ''
+            user: ''
         };
         this.handleRoomChange = this.handleRoomChange.bind(this);
         this.handleNameChange = this.handleNameChange.bind(this);
@@ -16,14 +16,19 @@ export default class JoinForm extends React.Component{
         this.setState({room:e.target.value})
     }
     handleNameChange(e){
-        this.setState({name:e.target.value})
+        this.setState({user:e.target.value})
     }
-
+    componentDidMount() {
+        const user = localStorage.getItem('user');
+        if(user){
+            this.setState({ user });
+        }
+    }
     joinRoom(event) {
         console.log('room: ' + this.state.room + ' name: ' + this.state.name);
         event.preventDefault();
         let xhr = new XMLHttpRequest();
-        let userName = this.state.name;
+        let userName = this.state.user;
         let json = JSON.stringify({ room: this.state.room, name: this.state.name });  
         xhr.open("POST", '/joingame', true)
         xhr.setRequestHeader('Content-type', 'application/json; charset=utf-8');
@@ -46,7 +51,7 @@ export default class JoinForm extends React.Component{
                 </label>
                 <label>
                     Имя
-                    <input type="text" name="player-name" placeholder="Имя" value={this.state.name}  onChange={this.handleNameChange} required autoFocus />
+                    <input type="text" name="player-name" placeholder="Имя" value={this.state.user}  onChange={this.handleNameChange} required autoFocus />
                 </label>
                 <div className="button">
                     <div className="button_submit" onClick={this.joinRoom}>GO</div>

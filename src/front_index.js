@@ -7,6 +7,7 @@ const playerHand = document.querySelector('.player-panel__self').querySelector('
 const enemyHand = document.querySelector('.player-panel__enemy').querySelector('.hand');
 const messageBoard =  document.getElementById('messageBoard');  
 let infoBoard = null  
+let logWindow = null;
 const gameTable = document.getElementById('gameTable'); 
 
 
@@ -25,6 +26,9 @@ class ActionController
         this.chosenDOMElem = null;
         this.possibleTarget = null;
         this.playerAction = null; // имя действия
+        this.spellName = ""
+        this.chosenTargetCount = 0
+        this.chosenTargetArray = [];
     }
 
     getPossibleField(player_action){
@@ -79,9 +83,21 @@ class ActionController
                     gameTable.style.opacity = 1;
                     modalShow = false;
                     break;
-                case 'body-remove':
-
-
+                case 'spell':
+                    if(this.spellName === "spell_1_r"){
+                        this.chosenTargetCount = 5
+                        this.select = true;
+                        document.querySelector('body').style.cursor = "alias"; 
+                        this.possibleTarget = document.querySelector('#enemy-player').querySelectorAll('.card-holder');
+                        [].forEach.call(this.possibleTarget, el => {
+                            if(el.children[0].getAttribute('data-card-id')){
+                                if(el.children[0].getAttribute('data-field-num') !== 4){
+                                    el.classList.add('card_posable-target');
+                                }
+                            }  
+                        });
+                    }
+                    
                     break;
                 default:
                     break;
@@ -109,7 +125,6 @@ class ActionController
         socket.emit('chosen leader', this.chosen);
         let card = cardsCollection.find(c => c.id == this.chosen);
         let a = document.querySelector('#player').querySelector('.flank.middle');
-
         //  TODO debug this
         a.style['background-image'] = 'url(\'./img/cards/s-'+ actionController.chosen + imageFormat + '\')';
         this.chosenDOMElem.remove();
@@ -145,6 +160,13 @@ class ActionController
         this.playerAction = "";
         this.chosenDOMElem = "";    
     }
+    castSpell(spell){
+        if(spell === "spell_1_r"){
+            // rear: 'Атака: до 5 разных героев получают по 1 повреждению.',
+
+        }
+    }
+    
 }
 let actionController = new ActionController();
 
@@ -255,135 +277,53 @@ function getMapKeyByValue(map, searchValue) {
         return key;
     }
 }
-function fillGameTableB(player, data){
-    let playerUnitElem = document.getElementsByClassName(player)[0];
-    let playerTable = data.gameTable.find(user => user.name === player).table;
-    playerTable = JSON.parse(playerTable);
-    // let e = a.querySelectorAll('.table__field');
-    for(f in playerTable){
-        if(playerTable[f]){
-            let line, side = "";
-            [line, side] = getLineSideByFieldNum(f);
-            let card = cardsCollection.find(c => c.id == playerTable[f].id);
-            let cardElem = playerUnitElem.querySelectorAll(`[data-field-num=\"${f}\"`)[0];
-            
-            let cardAbility = card['ability'][line];
 
-            if(playerTable[f].isAlive){
-                if(cardElem.classList.contains('corps')){
-                    cardElem.classList.remove('corps')
-                }
-                cardElem.style['background-image'] = 'url(\'./img/cards/s-'+ card.img + imageFormat + '\')';
-                cardElem.dataset.cardId = playerTable[f].id;
-                if(player === userName){
-                    cardElem.querySelector('.card-action').style.display = 'flex';
-                    cardElem.querySelector('.card-action').querySelector('.body-remove').style.display = 'none';
-                    cardElem.querySelector('.card-action').querySelector('.attack').style.display = 'flex';
-                    if(f !== "5"){
-                        cardElem.querySelector('.card-action').querySelector('.move').style.display = 'flex';
-                    }
-                    if(cardAbility.type === "spell"){
-                        cardElem.querySelector('.spell').style.display = 'flex';
-                    }
-                }
-                
-                cardElem.querySelector('.characteristic').style.display = 'flex';
-                cardElem.querySelector('.characteristic__attack').innerText = (f == 5) ? card.leader_atk : card.atk;
-                cardElem.querySelector('.characteristic__defence').innerText = (f == 5) ? card.leader_def : card.def;
-                if(playerTable[f].blood){
-                    cardElem.querySelector('.blood-token').style.display = 'flex';
-                    cardElem.querySelector('.token').innerText = playerTable[f].blood;
-                }
-                
-            } else {
-                cardElem.dataset.cardId = playerTable[f].id;
-                if(!cardElem.classList.contains('corps')){
-                    cardElem.classList.add('corps')
-                }
-             
-                cardElem.style['background-image'] = 'url(\'./img/shirt-3.jpg\')';
-                if(player === userName){
-                    cardElem.querySelector('.attack').style.display = 'none';
-                    cardElem.querySelector('.move').style.display = 'none';
-                    cardElem.querySelector('.body-remove').style.display = 'flex';                   
-                }
-                cardElem.querySelector('.blood-token').style.display = 'none';
-                cardElem.querySelector('.characteristic').style.display = 'none';
-            }
-        } else {
-            let cardElem = playerUnitElem.querySelectorAll(`[data-field-num=\"${f}\"`)[0];
-            if(cardElem.hasAttribute('data-card-id')){
-                cardElem.removeAttribute('data-card-id');
-                cardElem.style.removeProperty('background-image');
-                cardElem.querySelector('.characteristic').style.removeProperty('display');
-                if(player === userName){
-                    cardElem.querySelector('.card-action').style.removeProperty('display');
-                }
-            }
-            
-        }
-    }
-    console.log('fillGameTableB');
-}
 
-socket.on('rejoin', function(data){
+// socket.on('rejoin', function(data){
+//     console.log('rejoined');console.log(data);
+//     enemyName = data.enemy;
+//     gameRoundEl = document.querySelector('.game-round');gameWaveEl = document.querySelector('.game-wave');
+//     gameTurnEl = document.querySelector('.game-turn');let fieldPlayer = document.getElementById('player');
+//     let fieldPlayerName = fieldPlayer.getElementsByClassName("user-name")[0];
+//     let fieldEnemyPlayer = document.getElementById('enemy-player');
+//     let fieldEnemyPlayerName = fieldEnemyPlayer.getElementsByClassName("user-name")[0];
+//     fieldPlayer.classList.add(data.player);fieldPlayerName.innerHTML = data.player;fieldEnemyPlayer.classList.add(data.enemy);
+//     fieldEnemyPlayerName.innerHTML = data.enemy;players.push(data.player, data.enemy);
+//     players.forEach(player => {fillGameTableB(player, data)});
 
-    console.log('rejoined');
-    console.log(data);
-    cardsImage = data.cards;
-    enemyName = data.enemy;
-    gameRoundEl = document.querySelector('.game-round');
-    gameWaveEl = document.querySelector('.game-wave');
-    gameTurnEl = document.querySelector('.game-turn');
-    let fieldPlayer = document.getElementById('player');
-    let fieldPlayerName = fieldPlayer.getElementsByClassName("user-name")[0];
-    let fieldEnemyPlayer = document.getElementById('enemy-player');
-    let fieldEnemyPlayerName = fieldEnemyPlayer.getElementsByClassName("user-name")[0];
+//     roundForPlayer = data.roundForPlayer;
+//     gameRound = data.round;
+//     gameWave = data.wave;
+//     moveWaveCard(roundForPlayer);
     
-    
+//     for (let i = 0; i < data.hand.length; i++) {
+//         var new_card = document.createElement('div');
+//         new_card.className = 'hand-card';
+//         new_card.setAttribute('data-card-id', data.hand[i].id);
+//         new_card.style['background-image'] = 'url(\'./img/cards/'+ cardsImage[data.hand[i].img] + imageFormat + '\')';
+//         // new_card.classList.add('rotate-card');
+//         playerHand.append(new_card);
+//     }
 
-    fieldPlayer.classList.add(data.player);
-    fieldPlayerName.innerHTML = data.player;      
-    fieldEnemyPlayer.classList.add(data.enemy);
-    fieldEnemyPlayerName.innerHTML = data.enemy;  
-    players.push(data.player, data.enemy);
-    players.forEach(player => {
-        fillGameTableB(player, data)
-    });
-
-    roundForPlayer = data.roundForPlayer;
-    gameRound = data.round;
-    gameWave = data.wave;
-    moveWaveCard(roundForPlayer);
-    
-    for (let i = 0; i < data.hand.length; i++) {
-        var new_card = document.createElement('div');
-        new_card.className = 'hand-card';
-        new_card.setAttribute('data-card-id', data.hand[i].id);
-        new_card.style['background-image'] = 'url(\'./img/cards/'+ cardsImage[data.hand[i].img] + imageFormat + '\')';
-        // new_card.classList.add('rotate-card');
-        playerHand.append(new_card);
-    }
-
-    infoBoard.innerText = `Action point: ${data.actionPoint}`;
-    controlPanel.style.visibility = "visible";
-    new PanelAction(controlPanel);
-    document.querySelectorAll('.action').forEach(e => e.classList.toggle('--show'));
-    if(data.playerTurn === userName){   
-        messageBoard.innerText += ". Your turn";messageBoardAnimation();
-        playerTurn = true;
-    } else {
-        messageBoard.innerText += ". Enemy turn";messageBoardAnimation();
-        playerTurn = false;
-    }
-});
-socket.on('table update B', function(data){
-    console.log("from server action: 'table update B'");
-    data.gameTable.forEach(player => {
-        fillGameTableB(player.name, data)
-    });
-    infoBoard.innerText = `Action point: ${data.gameTable.find(player => player.name === userName).actionPoints}`;
-});
+//     infoBoard.innerText = `Action point: ${data.actionPoint}`;
+//     controlPanel.style.visibility = "visible";
+//     new PanelAction(controlPanel);
+//     document.querySelectorAll('.action').forEach(e => e.classList.toggle('--show'));
+//     if(data.playerTurn === userName){   
+//         messageBoard.innerText += ". Your turn";messageBoardAnimation();
+//         playerTurn = true;
+//     } else {
+//         messageBoard.innerText += ". Enemy turn";messageBoardAnimation();
+//         playerTurn = false;
+//     }
+// });
+// socket.on('table update B', function(data){
+//     console.log("from server action: 'table update B'");
+//     data.gameTable.forEach(player => {
+//         fillGameTableB(player.name, data)
+//     });
+//     infoBoard.innerText = `Action point: ${data.gameTable.find(player => player.name === userName).actionPoints}`;
+// });
 
 socket.on("giveCard", function(data){
     let card = cardsCollection.find(c => c.id == data.cardId);
@@ -436,56 +376,12 @@ socket.on("flash msg", function(data){
     messageBoard.innerText = data.msgText;  
     messageBoardAnimation();
 });
-socket.on("battle begin", function(data){
-    messageBoard.innerText = "battle begin";
-    messageBoardAnimation();
-    infoBoard.innerText = "Action 2";
-    player_table = data.gameTable.find(user => user.name === userName).table;
-    enemy_table = data.gameTable.find(user => user.name === enemyName).table;
 
-    roundForPlayer = data.firstPlayer;
-
-    if(data.firstPlayer === userName){   
-        messageBoard.innerText += ". Your turn";messageBoardAnimation();
-        playerTurn = true;
-        wavePrefere = 0;
-    } 
-    if(data.secondPlayer === userName){
-        messageBoard.innerText += ". Enemy turn";messageBoardAnimation();
-        wavePrefere = 1;
-        playerTurn = false;
-    }
-    console.log('round for: ' + roundForPlayer)
-    moveWaveCard(roundForPlayer)
-
-    players.forEach(player => {
-        fillGameTableB(player, data);
-    });
-
-    controlPanel.style.visibility = "visible";
-    new PanelAction(controlPanel);
-    gameRoundEl = document.querySelector('.game-round');
-    gameWaveEl = document.querySelector('.game-wave');
-    gameTurnEl = document.querySelector('.game-turn');
-    document.querySelectorAll('.action').forEach(e => {
-        if(!e.classList.contains('action__hireLeader')){
-            e.classList.toggle('--show')
-        }
-    });
-});
 
 socket.on("battle preparation", function(data){
     updateHand(playerHand, data.selfCards)
     updateHand(enemyHand, data.enemyCards)
-
-    // for (let i = 0; i < data.cards.length; i++) {
-    //     var new_card = document.createElement('div');
-    //     new_card.className = 'hand-card';
-    //     new_card.setAttribute('data-card-id', data.cards[i].id);
-    //     new_card.style['background-image'] = 'url(\'./img/cards/'+ data.cards[i].img + imageFormat + '\')';
-    //     new_card.classList.add('rotate-card');
-    //     playerHand.append(new_card);
-    // } 
+    document.querySelector('.action__hireLeader').classList.add('--show')    
 });
 socket.on("pick leader", function(data){
     if(userName !== data.player){
@@ -494,76 +390,54 @@ socket.on("pick leader", function(data){
     }
 });
 
-socket.on("next round", function(data){
-    if(data.player === userName){
-        messageBoard.innerText = "Your turn";
-        messageBoardAnimation();
-        playerTurn = true;
-    } else {
-        messageBoard.innerText = "Enemy turn";
-        messageBoardAnimation();
-        playerTurn = false;
-    }
-    infoBoard.innerText = "Action points: 2";
-    roundForPlayer = data.player;
-    gameRound = data.round;
-    gameWave = data.wave;
-    gameRoundEl.innerHTML = 'round: ' + data.round;
-    gameWaveEl.innerHTML = 'wave: ' + data.wave;
-    gameTurnEl.innerHTML = 'turn: ' + data.player;
-    moveWaveCard(roundForPlayer);
-});
-socket.on("next wave", function(data){
-    gameWave = data.wave;
-    if(data.player === userName){
-        messageBoard.innerText = "Your turn";
-        messageBoardAnimation();
-        playerTurn = true;
-    } else {
-        messageBoard.innerText = "Enemy turn";
-        messageBoardAnimation();
-        playerTurn = false;
-    }
-    gameWaveEl.innerHTML = 'wave: ' + data.wave;
-    gameTurnEl.innerHTML = 'turn: ' + data.player;
-    infoBoard.innerText = "Action points: 2";
-    moveWaveCard(roundForPlayer);
-});
-socket.on("next turn", function(data){
-    if(data.player === userName){
-        messageBoard.innerText = "Your turn";
-        messageBoardAnimation();
-        playerTurn = true;
-    } else {
-        messageBoard.innerText = "Enemy turn";
-        messageBoardAnimation();
-        playerTurn = false;
-    }
-        
-    gameTurnEl.innerHTML = 'turn: ' + data.player;
-    infoBoard.innerText = "Action points: 2";
-    // moveWaveCard(roundForPlayer);
-});
-socket.on("next game step", function(data){
-    if(data.player === userName){
-        messageBoard.innerText = "Your turn";
-        messageBoardAnimation();
-        playerTurn = true;
-    } else {
-        messageBoard.innerText = "Enemy turn";
-        messageBoardAnimation();
-        playerTurn = false;
-    }
-    infoBoard.innerText = "Action points: 2";
-    roundForPlayer = data.player;
-    gameRound = data.round;
-    gameWave = data.wave;
-    gameRoundEl.innerHTML = 'round: ' + data.round;
-    gameWaveEl.innerHTML = 'wave: ' + data.wave;
-    gameTurnEl.innerHTML = 'turn: ' + data.player;
-    moveWaveCard(roundForPlayer);
-});
 
+
+socket.on("reconnect", function(data){
+    if(data.turnFor === userName){
+        if(data.msg){
+            msg = data.msg
+        }
+        msg += '\n Your turn'
+        playerTurn = true;
+    } else {
+        if(data.msg){
+            msg = data.msg    
+        }
+        msg += '\n Enemy turn'
+        playerTurn = false;
+    }
+    messageBoard.innerText = msg;
+    messageBoardAnimation();
+    let fieldPlayer = document.getElementById('player');
+    let fieldPlayerName = fieldPlayer.getElementsByClassName("user-name")[0];
+    let fieldEnemyPlayer = document.getElementById('enemy-player');
+    let fieldEnemyPlayerName = fieldEnemyPlayer.getElementsByClassName("user-name")[0];
+    fieldPlayer.classList.add(data.self.name);
+    fieldPlayerName.innerHTML = data.self.name;      
+    fieldEnemyPlayer.classList.add(data.enemy.name);
+    fieldEnemyPlayerName.innerHTML = data.enemy.name;  
+    players.push(data.self.name, data.enemy.name);
+    let r = document.querySelector('.ready-window')
+    r.style.display = 'none';
+    controlPanel.style.visibility = "visible";
+    new PanelAction(controlPanel);
+    document.querySelectorAll('.action').forEach(e => {
+        if(!e.classList.contains('action__hireLeader')){
+            e.classList.toggle('--show')
+        }
+    });
+    infoBoard.innerText = `Action points: ${data.self.actionPoint}`;
+    roundForPlayer = data.roundFor;
+    gameRound = data.round;
+    gameWave = data.wave;
+    gameTurn = data.turn;
+    gameRoundEl.innerHTML = 'round: ' + data.round;
+    gameWaveEl.innerHTML = 'wave: ' + data.wave;
+    gameTurnEl.innerHTML = 'turn: ' + data.turn;
+    moveWaveCard(roundForPlayer);
+    updateSelf(data.self)
+    updateEnemy(data.enemy)
+})
 socket.on("update", function(data){
     let msg = ""
     if(data.turnFor === userName){
@@ -579,10 +453,18 @@ socket.on("update", function(data){
         msg += '\n Enemy turn'
         playerTurn = false;
     }
-
     messageBoard.innerText = msg;
     messageBoardAnimation();
-
+    
+    if(data.msg === 'battle begin'){
+        controlPanel.style.visibility = "visible";
+        new PanelAction(controlPanel);
+        document.querySelectorAll('.action').forEach(e => {
+            if(!e.classList.contains('action__hireLeader')){
+                e.classList.toggle('--show')
+            }
+        });
+    }
     infoBoard.innerText = `Action points: ${data.self.actionPoint}`;
     roundForPlayer = data.roundFor;
     gameRound = data.round;
@@ -643,10 +525,11 @@ function updateTable(user, table){
                     cardElem.querySelector('.card-action').querySelector('.attack').style.display = 'flex';
                     if(f !== "5"){
                         cardElem.querySelector('.card-action').querySelector('.move').style.display = 'flex';
+                        if(cardAbility[0].type === "spell"){
+                            cardElem.querySelector('.spell').style.display = 'flex';
+                        }
                     }
-                    if(cardAbility.type === "spell"){
-                        cardElem.querySelector('.spell').style.display = 'flex';
-                    }
+                    
                 }
                 
                 cardElem.querySelector('.characteristic').style.display = 'flex';
@@ -707,15 +590,6 @@ function updateEnemy(data){
 function updateSelf(data){
     // hand
     updateHand(playerHand, data.hand)
-    // playerHand.innerHTML = "";
-    // for (let i = 0; i < data.hand.length; i++) {
-    //     let new_card = document.createElement('div');
-    //     new_card.className = 'hand-card';
-    //     new_card.setAttribute('data-card-id', data.hand[i]);
-    //     new_card.style['background-image'] = 'url(\'./img/cards/'+ data.hand[i] + imageFormat + '\')';
-    //     new_card.classList.add('rotate-card');
-    //     playerHand.append(new_card);
-    // }
     
     // discard
     let playerDiscardEl = document.querySelector('.player-panel__self').querySelector('.discard');
@@ -730,7 +604,6 @@ function updateSelf(data){
     // playerTable = JSON.parse(data.table);
    
 }
-
 
 socket.on("END game", function(data){
     messageBoard.innerText = 'battle is over: ' + data.win + " win! " + data.lose + " lose";
@@ -762,9 +635,20 @@ socket.on("player join room", function(data){
     players = data.players.slice()
 });
 
-$(document).ready(function () {
+
+function init(){
     joinroom = window.location.pathname.slice(1);
     infoBoard = document.querySelector('#infoBoard');  
+    logWindow = document.querySelector('.window-game-log');
+    gameRoundEl = document.querySelector('.game-round');
+    gameWaveEl = document.querySelector('.game-wave');
+    gameTurnEl = document.querySelector('.game-turn');
+}
+
+
+
+$(document).ready(function () {
+    init()
     socket.open();
     if(cardsCollection.length == 0){
         socket.emit('requestCardsInfo');
@@ -790,6 +674,15 @@ $(document).ready(function () {
         if(event.button == 0){        
             let elem = event.target;
 
+
+            if(elem.classList.contains("game-log-btn")){
+                if (logWindow.classList.contains("--show")) {
+                    logWindow.classList.remove("--show")
+                } else {
+                    logWindow.classList.add("--show")      
+                }
+                return
+            }
             if(elem.classList.contains("btn-ready")){
                 console.log("btn-ready");
                 socket.emit('ready new game')
@@ -798,6 +691,12 @@ $(document).ready(function () {
                 return
             }
 
+            if(elem.classList.contains("btn-spell-confirm")){
+                console.log("btn-spell-confirm");
+                socket.emit('cast spell', data)
+                
+                return
+            }
             if(playerTurn){
                 if(actionController.chosen){
                     if(actionController.playerAction === 'attack'){
@@ -814,7 +713,6 @@ $(document).ready(function () {
                                     messageBoardAnimation();
                                     return;
                                 }
-
                             } else {
                                 messageBoard.innerText = 'Select correct field!';
                                 messageBoardAnimation();
@@ -844,6 +742,40 @@ $(document).ready(function () {
                         }
                           
                     } 
+                    if(actionController.playerAction === 'spell'){
+                        if(elem.closest('#enemy-player')){
+                            if(elem.classList.contains('card') && elem.getAttribute('data-card-id')){
+                                if(!elem.classList.contains('corps')){
+                                    console.log(event.target);
+                                    let target = elem.getAttribute('data-card-id');
+                                    let num =elem.getAttribute('data-field-num');
+                                    if(num !== 4){
+                                        actionController.chosenTargetArray.push(target)
+                                        if(actionController.chosenTargetArray.length === actionController.chosenTargetCount){
+                                            actionController.characterAttack();
+                                            document.querySelector('body').style.cursor = "inherit";
+                                            return;
+                                        }
+                                    }
+                                    
+                                    
+                                    
+
+                                } else {
+                                    messageBoard.innerText = 'Select something alive!';
+                                    messageBoardAnimation();
+                                    return;
+                                }
+                            } else {
+                                messageBoard.innerText = 'Select correct field!';
+                                messageBoardAnimation();
+                                return;
+                            }       
+                        } else {
+                            messageBoard.innerText = 'Select enemy field!';
+                            messageBoardAnimation(); 
+                        }
+                    }
                     // hire hero to field
                     if(!modalShow && elem.classList.contains('card')){    
                         if(elem.closest('#player')){
@@ -931,6 +863,28 @@ $(document).ready(function () {
                 actionController.playerAction = 'body-remove';
                 actionController.removeBody();
                 return;
+            }
+
+
+            if(elem.classList.contains('spell')){
+               // check current wave
+               let card_s = elem.closest('.card');
+               let wave = elem.closest('.c-wave').classList[1];
+               if(gameWaveDic.get(gameWave) === wave){
+                   let card_id = card_s.getAttribute('data-card-id');
+                   actionController.chosen = card_id
+                   actionController.chosenDOMElem = card_s;
+                   actionController.playerAction = 'spell';
+                   let num = card_s.getAttribute('data-field-num')
+                   let spellName = Cards[card_id - 1]['ability'][wave][0];
+                   actionController.spellName = spellName.spell
+                   console.log(actionController.spellName)
+                   actionController.getPossibleField('spell');
+               } else {
+                   messageBoard.innerText = "hero spell only from current wave";
+                   messageBoardAnimation();
+               }
+               return
             }
             if(elem.classList.contains('move')){
                 let card = elem.closest('.card')
@@ -1047,3 +1001,181 @@ $(document).ready(function () {
         }
     });
 });
+// socket.on("battle begin", function(data){
+//     infoBoard.innerText = "Action 2";
+//     player_table = data.gameTable.find(user => user.name === userName).table;
+//     enemy_table = data.gameTable.find(user => user.name === enemyName).table;
+//     roundForPlayer = data.firstPlayer;
+
+//     if(data.firstPlayer === userName){   
+//         messageBoard.innerText += "battle begin \n Your turn";messageBoardAnimation();
+//         playerTurn = true;
+//         wavePrefere = 0;
+//     } 
+//     if(data.secondPlayer === userName){
+//         messageBoard.innerText += "battle begin \n Enemy turn";messageBoardAnimation();
+//         wavePrefere = 1;
+//         playerTurn = false;
+//     }
+//     console.log('round for: ' + roundForPlayer)
+//     moveWaveCard(roundForPlayer)
+
+//     updateSelf(data.self)
+//     updateEnemy(data.enemy)
+
+//     players.forEach(player => {
+//         fillGameTableB(player, data);
+//     });
+
+//     controlPanel.style.visibility = "visible";
+//     new PanelAction(controlPanel);
+//     gameRoundEl = document.querySelector('.game-round');
+//     gameWaveEl = document.querySelector('.game-wave');
+//     gameTurnEl = document.querySelector('.game-turn');
+//     document.querySelectorAll('.action').forEach(e => {
+//         if(!e.classList.contains('action__hireLeader')){
+//             e.classList.toggle('--show')
+//         }
+//     });
+// });
+// socket.on("next round", function(data){
+//     if(data.player === userName){
+//         messageBoard.innerText = "Your turn";
+//         messageBoardAnimation();
+//         playerTurn = true;
+//     } else {
+//         messageBoard.innerText = "Enemy turn";
+//         messageBoardAnimation();
+//         playerTurn = false;
+//     }
+//     infoBoard.innerText = "Action points: 2";
+//     roundForPlayer = data.player;
+//     gameRound = data.round;
+//     gameWave = data.wave;
+//     gameRoundEl.innerHTML = 'round: ' + data.round;
+//     gameWaveEl.innerHTML = 'wave: ' + data.wave;
+//     gameTurnEl.innerHTML = 'turn: ' + data.player;
+//     moveWaveCard(roundForPlayer);
+// });
+// socket.on("next wave", function(data){
+//     gameWave = data.wave;
+//     if(data.player === userName){
+//         messageBoard.innerText = "Your turn";
+//         messageBoardAnimation();
+//         playerTurn = true;
+//     } else {
+//         messageBoard.innerText = "Enemy turn";
+//         messageBoardAnimation();
+//         playerTurn = false;
+//     }
+//     gameWaveEl.innerHTML = 'wave: ' + data.wave;
+//     gameTurnEl.innerHTML = 'turn: ' + data.player;
+//     infoBoard.innerText = "Action points: 2";
+//     moveWaveCard(roundForPlayer);
+// });
+// socket.on("next turn", function(data){
+//     if(data.player === userName){
+//         messageBoard.innerText = "Your turn";
+//         messageBoardAnimation();
+//         playerTurn = true;
+//     } else {
+//         messageBoard.innerText = "Enemy turn";
+//         messageBoardAnimation();
+//         playerTurn = false;
+//     }
+        
+//     gameTurnEl.innerHTML = 'turn: ' + data.player;
+//     infoBoard.innerText = "Action points: 2";
+//     // moveWaveCard(roundForPlayer);
+// });
+
+// socket.on("next game step", function(data){
+//     if(data.player === userName){
+//         messageBoard.innerText = "Your turn";
+//         messageBoardAnimation();
+//         playerTurn = true;
+//     } else {
+//         messageBoard.innerText = "Enemy turn";
+//         messageBoardAnimation();
+//         playerTurn = false;
+//     }
+//     infoBoard.innerText = "Action points: 2";
+//     roundForPlayer = data.player;
+//     gameRound = data.round;
+//     gameWave = data.wave;
+//     gameRoundEl.innerHTML = 'round: ' + data.round;
+//     gameWaveEl.innerHTML = 'wave: ' + data.wave;
+//     gameTurnEl.innerHTML = 'turn: ' + data.player;
+//     moveWaveCard(roundForPlayer);
+// });
+
+// function fillGameTableB(player, data){
+//     let playerUnitElem = document.getElementsByClassName(player)[0];
+//     let playerTable = data.gameTable.find(user => user.name === player).table;
+//     playerTable = JSON.parse(playerTable);
+//     // let e = a.querySelectorAll('.table__field');
+//     for(f in playerTable){
+//         if(playerTable[f]){
+//             let line, side = "";
+//             [line, side] = getLineSideByFieldNum(f);
+//             let card = cardsCollection.find(c => c.id == playerTable[f].id);
+//             let cardElem = playerUnitElem.querySelectorAll(`[data-field-num=\"${f}\"`)[0];
+            
+//             let cardAbility = card['ability'][line];
+
+//             if(playerTable[f].isAlive){
+//                 if(cardElem.classList.contains('corps')){
+//                     cardElem.classList.remove('corps')
+//                 }
+//                 cardElem.style['background-image'] = 'url(\'./img/cards/s-'+ card.img + imageFormat + '\')';
+//                 cardElem.dataset.cardId = playerTable[f].id;
+//                 if(player === userName){
+//                     cardElem.querySelector('.card-action').style.display = 'flex';
+//                     cardElem.querySelector('.card-action').querySelector('.body-remove').style.display = 'none';
+//                     cardElem.querySelector('.card-action').querySelector('.attack').style.display = 'flex';
+//                     if(f !== "5"){
+//                         cardElem.querySelector('.card-action').querySelector('.move').style.display = 'flex';
+//                     }
+//                     if(cardAbility.type === "spell"){
+//                         cardElem.querySelector('.spell').style.display = 'flex';
+//                     }
+//                 }
+                
+//                 cardElem.querySelector('.characteristic').style.display = 'flex';
+//                 cardElem.querySelector('.characteristic__attack').innerText = (f == 5) ? card.leader_atk : card.atk;
+//                 cardElem.querySelector('.characteristic__defence').innerText = (f == 5) ? card.leader_def : card.def;
+//                 if(playerTable[f].blood){
+//                     cardElem.querySelector('.blood-token').style.display = 'flex';
+//                     cardElem.querySelector('.token').innerText = playerTable[f].blood;
+//                 }
+                
+//             } else {
+//                 cardElem.dataset.cardId = playerTable[f].id;
+//                 if(!cardElem.classList.contains('corps')){
+//                     cardElem.classList.add('corps')
+//                 }
+             
+//                 cardElem.style['background-image'] = 'url(\'./img/shirt-3.jpg\')';
+//                 if(player === userName){
+//                     cardElem.querySelector('.attack').style.display = 'none';
+//                     cardElem.querySelector('.move').style.display = 'none';
+//                     cardElem.querySelector('.body-remove').style.display = 'flex';                   
+//                 }
+//                 cardElem.querySelector('.blood-token').style.display = 'none';
+//                 cardElem.querySelector('.characteristic').style.display = 'none';
+//             }
+//         } else {
+//             let cardElem = playerUnitElem.querySelectorAll(`[data-field-num=\"${f}\"`)[0];
+//             if(cardElem.hasAttribute('data-card-id')){
+//                 cardElem.removeAttribute('data-card-id');
+//                 cardElem.style.removeProperty('background-image');
+//                 cardElem.querySelector('.characteristic').style.removeProperty('display');
+//                 if(player === userName){
+//                     cardElem.querySelector('.card-action').style.removeProperty('display');
+//                 }
+//             }
+            
+//         }
+//     }
+//     console.log('fillGameTableB');
+// }

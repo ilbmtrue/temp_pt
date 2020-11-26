@@ -43,8 +43,10 @@ Room.prototype = {
         // this.room.removeUser(socket.id);
     },
     sendTo: function (user, message, data) {
-        var socket = this.sockets[user.getId()];
-        socket.emit(message, data);
+        if(!user.leaveRoom){
+            let socket = this.sockets[user.getId()];
+            socket.emit(message, data);
+        }
     },
     sendToId: function (userId, message, data) {
         return this.sendTo(this.getUserById(userId), message, data);
@@ -71,7 +73,6 @@ Room.prototype = {
         if (this.game.players.length < 2) {
             this.game.players.push(new Player(user.getId(), user)); 
             if (this.game.players.length === 2) {
-                console.log('preparation')
                 this.game.preparation()
                 return "new game preparation"
             }    
