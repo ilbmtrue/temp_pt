@@ -12,6 +12,7 @@ User.prototype = {
   },
   updateSocket: function(socket){
     this.socket = socket
+    this.userId = socket.id
   }
 }
 

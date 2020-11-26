@@ -140,14 +140,19 @@ function handleSocket(socket) {
     
     if(returnedUser){
       returnedUser.updateSocket(socket)
-      console.log(`User ${userName} recconect ${socket.id}`)
+      console.log(`User ${userName} reconnect ${socket.id}`)
       returnedUser.leaveRoom = 0
-      game = room.getOrCreateGame(returnedUser)
-      returnedUser.socket = socket.id
+      returnedUser.socket.id = socket.id
+      returnedUser.socket = socket
+
+      game = room.getOrCreateGame()
+
       let player = game.players.find( user => user.userName === data.userName)
       player.userId = socket.id
       player.socketId = socket.id
+
       room.sockets[returnedUser.getId()] = socket
+      room.sockets
       user = returnedUser
       socket.join(roomName)
 
@@ -199,7 +204,7 @@ function handleSocket(socket) {
   socket.on('ready new game', () => {
     let user = room.getUserBySocket(socket)
     let state
-    game = room.getOrCreateGame(user)
+    game = room.getOrCreateGame()
     state = room.userReady(user)
     if (state === "new game preparation") {
       Array.prototype.forEach.call(game.players, function (player) {
