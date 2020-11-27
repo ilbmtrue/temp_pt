@@ -1,7 +1,10 @@
 //  imgSource/2012/
 module.exports = [
     {
-        id: 1, name: 'Алхимик', img: '1', atk: 2, def: 4,
+        id: 1, name: 'Алхимик', 
+        img: '1', 
+        atk: 2, 
+        def: 4,
         ability: {
             vanguard: [
                 {    type: "passive", target: "self", action: "lessDmg:2"},
@@ -56,6 +59,7 @@ module.exports = [
         leader_s: 'Отряд камикадзе',
         leader_atk: 4,
         leader_def: 19,
+        // Whenever a hero in this unit is defeated, that hero immediately makes a free melee attack. ( The damage from this attack occurs after checking all casualties if it happens during the end of a wave. )
         leader_special: 'Если герой в этом отряде получает смертельные раны, то этот герой незамедлительно проводит атаку ближнего боя. повреждения от этой атаки проходят после проверки потерь в текущей фазе.'       
     },
     {
@@ -261,17 +265,8 @@ module.exports = [
                 {   type: "spell", spell: "spell_8_r"}
             ],            
         },
-        order: "Воскресить мертвое тело, полностью восстановив ему здоровье.",
-            
+        order: "Воскресить мертвое тело, полностью восстановив ему здоровье.",      
         leader_perk: "#priestsess",
-        // leader:{
-        //     title: "В конце каждого полного раунда, за исключением первого, положите маркер уровня на эту карту. Все герои в этом отряде получают +1 к силе за каждый маркер.",
-        //     type: "trigger",
-        //     property: {
-        //         target: "unk",
-        //         cast: ["unk"],
-        //     },
-        // }
         vanguard: 'Атака: восстановить до 4 повреждений на любом герое.',
         flank: 'Атака: восстановить до 2 повреждений на своем лидере.',
         rear: 'Атака: воскресить мертвое тело. Этот герой получает повреждения, равные здоровью воскрешенного.',
@@ -297,7 +292,7 @@ module.exports = [
         // "Впередистоящий получает перехват. Позадистоящий получает дальнюю атаку.",
             flank: [
                 {   type: "passive", target: "forerunner", action: "intercept" },
-                {   type: "passive", target: "supporter", action: "rangeAtk" }
+                {   type: "passive", target: "supporter", action: "ranged" }
             ],
         // "Атака: противник должен сбросить случайную карту.",                
             rear: [
@@ -348,14 +343,6 @@ module.exports = [
         order: "Случайно взять карту из руки противника и разыграть ее приказ. Сбросить карту.",
             
         leader_perk: "#illusionist",
-        // leader:{
-        //     title: "Когда противник использует ближнюю атаку, Вы решаете, какую цель он достигнет. Цель должна быть доступна для ближней атаки.",
-        //     type: "trigger",
-        //     property: {
-        //         target: "unk",
-        //         cast: ["unk"],
-        //     },
-        // } 
         vanguard: 'Атака: вернуть своего героя в руку.',
         flank: 'Атака: противник должен показать карту из своей руки. Вы разыгрываете приказ этой карты.',
         rear: 'Атака: нанять героя из своей руки, провести им атаку, а затем сбросить его.',
@@ -367,7 +354,7 @@ module.exports = [
         leader_special: 'Когда противник использует ближнюю атаку, Вы решаете, какую цель он достигнет. Цель должна быть доступна для ближней атаки.'
     },
     
-    /*
+    
     {
         id: 11,
         name: 'Маг-дракон',
@@ -409,12 +396,12 @@ module.exports = [
         ability: {
         // "Перехват. Атака: убрать все повреждения с этого героя.",
             vanguard: [
-                {   type: "passive", target: "self", action: "intercept" }
+                {   type: "passive", target: "self", action: "intercept" },
                 {   type: "spell", spell: "spell_12_v" }
             ],
         // "Впередистоящий получает +2 к силе и получает на 1 повреждение меньше от ближних или дальних атак.",
             flank: [
-                {   type: "passive", target: "forerunner", action: "moreDmg:2" }
+                {   type: "passive", target: "forerunner", action: "moreDmg:2" },
                 {   type: "passive", target: "forerunner", action: "lessDmg:1" }
             ],  
         // "Атака: взять карту из колоды. Можно разыграть приказ с этой карты, не затрачивая действие.",
@@ -511,12 +498,12 @@ module.exports = [
             ],
         // "Дальняя атака. Впередистоящий получает дальнюю атаку.",
             flank: [
-                {   type: "passive", target: "self", action: "rangeAtk" }
-                {   type: "passive", target: "forerunner", action: "rangeAtk" }
+                {   type: "passive", target: "self", action: "range" },
+                {   type: "passive", target: "forerunner", action: "range" }
             ],  
         // "Дальняя атака.",
             rear: [
-                {   type: "passive", target: "self", action: "rangeAtk" }
+                {   type: "passive", target: "self", action: "range" }
 
             ],
         },  
@@ -605,8 +592,8 @@ module.exports = [
         ability: {
         // "Перехват. Герой, атакующий этого героя ближней или дальней атакой, получает 2 повреждения.",
             vanguard: [
-                {   type: "passive", target: "self", action: "intercept" }
-                {   type: "passive", target: "self", action: "reflectOnMeleeAttack:2" }
+                {   type: "passive", target: "self", action: "intercept" },
+                {   type: "passive", target: "self", action: "reflectOnMeleeAttack:2" },
                 {   type: "passive", target: "self", action: "reflectOnRangeAttack:2" }
             ],
         // "Лидер в этом отряде не получает повреждений от дальних атак.",
@@ -639,17 +626,17 @@ module.exports = [
         ability: {
         // "Перехват. Дальняя атака.",
             vanguard: [
-                {   type: "passive", target: "self", action: "intercept" }
-                {   type: "passive", target: "self", action: "rangeAtk" }
+                {   type: "passive", target: "self", action: "intercept" },
+                {   type: "passive", target: "self", action: "range" }
             ],
         // "Впередистоящий и позадистоящий получают дальнюю атаку.",
             flank: [
-                {   type: "passive", target: "forerunner", action: "rangeAtk" },
-                {   type: "passive", target: "supporter", action: "rangeAtk" }
+                {   type: "passive", target: "forerunner", action: "range" },
+                {   type: "passive", target: "supporter", action: "range" }
             ],  
         // "Дальняя атака.",
             rear: [
-                {   type: "passive", target: "self", action: "rangeAtk" },
+                {   type: "passive", target: "self", action: "range" },
             ],
         },  
         order: "Нанести 5 повреждений каждому герою во фланге обоих отрядов.",
@@ -673,17 +660,17 @@ module.exports = [
         ability: {
         // "Дальняя атака. +3 к силе против героев с перехватом.",
             vanguard: [
-                {   type: "passive", target: "self", action: "toInterceptMore-Dmg:3" }
-                {   type: "passive", target: "self", action: "rangeAtk" }
+                {   type: "passive", target: "self", action: "toInterceptMoreDmg:3" },
+                {   type: "passive", target: "self", action: "range" }
             ],
         // "Дальняя атака. Позадистоящий получает дальнюю атаку.",
             flank: [
-                {   type: "passive", target: "self", action: "rangeAtk" },
-                {   type: "passive", target: "supporter", action: "rangeAtk" }
+                {   type: "passive", target: "self", action: "range" },
+                {   type: "passive", target: "supporter", action: "range" }
             ],  
         // "Дальняя атака.",
             rear: [
-                {   type: "passive", target: "self", action: "rangeAtk" },
+                {   type: "passive", target: "self", action: "range" },
             ],
         },  
         order: "Нанести 5 повреждений каждому герою во фланге обоих отрядов.",
@@ -739,7 +726,7 @@ module.exports = [
         ability: {
         // "+1 к силе за каждое повреждение на этом герое",
             vanguard: [
-                {   type: "passive", target: "self",  action: "someaction" }
+                {   type: "passive", target: "self",  action: "bloodrage" }
             ],
         // "Позадистоящий не получает повреждений от нацеленных на него атак.",
             flank: [
@@ -772,11 +759,11 @@ module.exports = [
         ability: {
         // "Удвоенная сила против лидера.",
             vanguard: [
-                {   type: "passive", target: "self",  action: "someaction" }
+                {   type: "passive", target: "self",  action: "doubleDmgToLeader" }
             ],
         // "Впередистоящий получает удвоенную базовую силу против героя.",
             flank: [
-                {   type: "passive", target: "forerunner", action: "someaction" },
+                {   type: "passive", target: "forerunner", action: "basicDoubleDmgToLeader" },
                 
             ],  
         // "Атака: нанести 3 повреждения лидеру противника.",
@@ -838,7 +825,7 @@ module.exports = [
         ability: {
         // "Перехват. Получает на 2 повреждения меньше от ближних или дальних атак.",
             vanguard: [
-                {   type: "passive", target: "self",  action: "intercept" }
+                {   type: "passive", target: "self",  action: "intercept" },
                 {   type: "passive", target: "self",  action: "lessDmg:2" }
             ],
         // "Атака: восстановить до 4 повреждений на любом герое.",
@@ -862,6 +849,5 @@ module.exports = [
         leader_def: 15,
         leader_special: 'В конце каждой фазы все герои и лидер, стоящие в этой фазе, исцеляют 2 повреждения. Это действие выполняется перед проверкой потерь.'
     },
-    */
     
 ];

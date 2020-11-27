@@ -14,6 +14,7 @@ function Player(userId, user) {
     // 
     this.board = new Board(user.name, Cards);
     this.board.shuffleDeck();  
+    this.defaultActionPoint = 2;
     this.actionPoint = 0;
     this.inRoom = 1;
 }

@@ -1,46 +1,11 @@
-15:38:32 0 bsiMrKq4bKhr5yq4AAAF  joined to room  {"userName":"12345","room":"e3417c73e"} 
-15:38:33 1 -kxCS_1KA6OBZw6CAAAG  joined to room  {"userName":"qwerty","room":"e3417c73e"} 
-15:38:34 2 -kxCS_1KA6OBZw6CAAAG  ready new game   
-15:38:34 3 bsiMrKq4bKhr5yq4AAAF  ready new game   
-15:38:35 4 bsiMrKq4bKhr5yq4AAAF  chosen leader  "3" 
-15:38:37 5 -kxCS_1KA6OBZw6CAAAG  chosen leader  "1" 
-15:38:41 6 bsiMrKq4bKhr5yq4AAAF  Recruit a Hero  {"cardId":"1","field":"7"} 
-15:38:43 7 nWIV8EW5s8inhaAvAAAH  joined to room  {"userName":"qwerty","room":"e3417c73e"} 
-15:38:45 8 bsiMrKq4bKhr5yq4AAAF  Recruit a Hero  {"cardId":"9","field":"9"} 
-15:38:49 9 nWIV8EW5s8inhaAvAAAH  Recruit a Hero  {"cardId":"4","field":"7"} 
-15:38:51 10 nWIV8EW5s8inhaAvAAAH  Recruit a Hero  {"cardId":"5","field":"9"} 
-15:38:53 11 r9kxG9afpy6ZIiWcAAAI  joined to room  {"userName":"qwerty","room":"e3417c73e"} 
-15:38:56 12 bsiMrKq4bKhr5yq4AAAF  Recruit a Hero  {"cardId":"5","field":"6"} 
-15:38:57 13 pYw-0XAjkqalVN1KAAAJ  joined to room  {"userName":"12345","room":"e3417c73e"} 
-15:39:00 14 pYw-0XAjkqalVN1KAAAJ  Recruit a Hero  {"cardId":"4","field":"4"} 
-15:39:05 15 r9kxG9afpy6ZIiWcAAAI  Pass   
-15:39:06 16 pYw-0XAjkqalVN1KAAAJ  Draw a Card   
-15:39:07 17 pYw-0XAjkqalVN1KAAAJ  Draw a Card   
-15:39:14 18 r9kxG9afpy6ZIiWcAAAI  Draw a Card   
-15:39:15 19 r9kxG9afpy6ZIiWcAAAI  Draw a Card   
-15:39:16 20 r9kxG9afpy6ZIiWcAAAI  Pass   
-15:39:18 21 pYw-0XAjkqalVN1KAAAJ  Draw a Card   
-15:39:19 22 pYw-0XAjkqalVN1KAAAJ  Draw a Card   
-15:39:23 23 r9kxG9afpy6ZIiWcAAAI  Pass   
-15:39:23 24 pYw-0XAjkqalVN1KAAAJ  Pass   
-15:39:24 25 r9kxG9afpy6ZIiWcAAAI  Pass   
-15:39:26 26 pYw-0XAjkqalVN1KAAAJ  Pass   
-15:39:28 27 pYw-0XAjkqalVN1KAAAJ  Pass   
-15:39:29 28 r9kxG9afpy6ZIiWcAAAI  Pass   
-15:39:31 29 pYw-0XAjkqalVN1KAAAJ  Pass   
-15:39:33 30 r9kxG9afpy6ZIiWcAAAI  Pass   
-15:39:34 31 pYw-0XAjkqalVN1KAAAJ  Pass   
-15:39:36 32 r9kxG9afpy6ZIiWcAAAI  Pass   
-15:39:38 33 r9kxG9afpy6ZIiWcAAAI  Pass   
-15:39:46 34 pYw-0XAjkqalVN1KAAAJ  Pass   
-15:39:47 35 r9kxG9afpy6ZIiWcAAAI  Pass   
-15:39:50 36 pYw-0XAjkqalVN1KAAAJ  Character Attack  {"cardId":"3","victim":"5"} 
-15:39:52 37 pYw-0XAjkqalVN1KAAAJ  Character Attack  {"cardId":"3","victim":"5"} 
-15:39:57 38 r9kxG9afpy6ZIiWcAAAI  Remove body  {"card_id":"5","field_num":"9"} 
-15:40:00 39 r9kxG9afpy6ZIiWcAAAI  Draw a Card   
-15:40:14 40 pYw-0XAjkqalVN1KAAAJ  Pass   
-15:40:16 41 pYw-0XAjkqalVN1KAAAJ  Pass   
-15:40:17 42 r9kxG9afpy6ZIiWcAAAI  Draw a Card   
-15:40:20 43 r9kxG9afpy6ZIiWcAAAI  Recruit a Hero  {"cardId":"9","field":"9"} 
-15:40:27 44 r9kxG9afpy6ZIiWcAAAI  Draw a Card   
+20:36:13 0 IjdE8CcRWFzjbi3nAAAN  joined to room  {"userName":"qwerty","room":"e3417c73e"} 
+20:36:13 1 DSN4Vds2QV5zUuRfAAAO  joined to room  {"userName":"12345","room":"e3417c73e"} 
+20:36:14 2 DSN4Vds2QV5zUuRfAAAO  ready new game   
+20:36:14 3 IjdE8CcRWFzjbi3nAAAN  ready new game   
+20:36:27 4 3V3a-puvHQayrrUqAAAP  joined to room  {"userName":"12345","room":"e3417c73e"} 
+20:36:28 5 lNeExXYTT0j4F-GtAAAQ  joined to room  {"userName":"qwerty","room":"e3417c73e"} 
+20:36:28 6 3V3a-puvHQayrrUqAAAP  ready new game   
+20:36:29 7 lNeExXYTT0j4F-GtAAAQ  ready new game   
+20:36:32 8 lNeExXYTT0j4F-GtAAAQ  chosen leader  "5" 
+20:36:35 9 3V3a-puvHQayrrUqAAAP  chosen leader  "21" 
 

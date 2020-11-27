@@ -15,6 +15,8 @@ function Board(userName, Cards) {
     this.deck = [...Cards],
     this.discard = [],
     this.hand = [],
+    this.deadBodiesCanAttack = false,
+    this.showFirstCardOnDeck = false,
     this.fields = [
         new Field(1, "rear", "left"),
         new Field(2, "rear", "middle"),
@@ -147,22 +149,74 @@ Board.prototype = {
         [line, side] = this.getLineSideByFieldNum(field_num);
         lineAbil = (field_num == 5) ? c['leader_perk'] : c['ability'][line];
         if (field_num === 5) {
-            if (lineAbil === "#alchemist" || lineAbil === "#healer") {
-
-                return { gameEvent: "perksBeforeCheckloss", perk: { user: this.owner, cardId: c.id, action: lineAbil } }
-                // let room = getRoomByUserName(this.userName);
-                //room.perksBeforeCheckloss.push({ user: this.userName, cardId: c.id, action: lineAbil });
-            } else if (lineAbil === "#planestalker") {
-                this.fields.forEach(field => {
-                    if (field.num === 5) {
-                        this.fields[4].buffs.push([c.id, "ranged"]);
-                    } else {
-                        field.buffs.push([c.id, "intercept"]);
-                    }
-                });
-            } else {
-                this.fields[4].buffs.push([c.id, lineAbil]);
+            switch (lineAbil) {
+                case "#alchemist":
+                case "#healer":
+                    return { gameEvent: "perksBeforeCheckloss", perk: { user: this.owner, cardId: c.id, action: lineAbil } }
+                case "#planestalker":
+                    this.fields.forEach(field => {
+                        if (field.num === 5) {
+                            this.fields[4].buffs.push([c.id, "ranged"]);
+                        } else {
+                            field.buffs.push([c.id, "intercept"]);
+                        }
+                    });
+                    break;
+                case "#scientist":
+                    return { gameEvent: "addActionPoint" }
+                case "#fighter":
+                    this.fields.forEach(field => {
+                        if (field.num !== 5) {  
+                            field.buffs.push([c.id, "moreMeleeDmg:3"]);
+                        }
+                    });
+                    break
+                case "#priestsess":
+                    this.fields.forEach(field => field.buffs.push([c.id, "specialMarker"]));
+                    break
+                case "#doppelganger":
+                    return { gameEvent: "mirrorLeader", perk: { user: this.owner, cardId: c.id, action: lineAbil } }
+                case "#berserk":
+                    // this.fields.forEach(field => {
+                    //     if (field.num !== 5) {
+                    //         field.buffs.push([c.id, "revenge"]);
+                    //     }
+                    // });
+                    break
+                case "#vampire":
+                    this.fields.forEach(field => {
+                        field.buffs.push([c.id, "lifelink"]);
+                    });
+                    break
+                case "#witch":
+                    this.deadBodiesCanAttack = true
+                    break
+                case "#homunculus":
+                    this.fields.forEach(field => {
+                        if (field.num !== 5) {  
+                            field.buffs.push([c.id, "preventLethalDmg"]);
+                        }
+                    });
+                    break
+                default:
+                    this.fields[4].buffs.push([c.id, lineAbil]);
+                    break;
             }
+            // if (lineAbil === "#alchemist" || lineAbil === "#healer") {
+            //     return { gameEvent: "perksBeforeCheckloss", perk: { user: this.owner, cardId: c.id, action: lineAbil } }
+            // } else if (lineAbil === "#planestalker") {
+            //     this.fields.forEach(field => {
+            //         if (field.num === 5) {
+            //             this.fields[4].buffs.push([c.id, "ranged"]);
+            //         } else {
+            //             field.buffs.push([c.id, "intercept"]);
+            //         }
+            //     });
+            // } else if(lineAbil === "#scientist"){
+            //     return { gameEvent: "addActionPoint" }
+            // } else {
+            //     this.fields[4].buffs.push([c.id, lineAbil]);
+            // }
         } else {
             lineAbil.forEach(abil => {
                 if (abil.type === "spell") {
@@ -174,6 +228,14 @@ Board.prototype = {
                     }
                     if (abil.target === "leader") {
                         this.fields[4].buffs.push([c.id, abil.action]);
+                    }
+                    // "#oracle" rear
+                    if(abil.target === "player unit"){
+                        this.fields[field_num - 1].buffs.push([c.id, abil.action]);
+                        this.showFirstCardOnDeck = true
+                    }
+                    if(abil.target === "forerunner"){
+                        this.fields[field_num - 1].aheadNeighbor.buffs.push([c.id, abil.action]);
                     }
                 }
             });
@@ -195,6 +257,15 @@ Board.prototype = {
                 }
                 if (abil.target === "leader") {
                     this.fields[4].buffs = this.fields[4].buffs.filter(buff => buff[0] !== cardId);
+                }
+                //  "#oracle" rear
+                if(abil.target === "player unit"){
+                    this.fields[field_num - 1].buffs = this.fields[field_num - 1].buffs.filter(buff => buff[0] !== cardId);
+                    this.showFirstCardOnDeck = false
+                }
+
+                if(abil.target === "forerunner"){
+                    this.fields[field_num - 1].aheadNeighbor.buffs = this.fields[field_num - 1].aheadNeighbor.buffs.filter(buff => buff[0] !== cardId);                
                 }
             }
         });

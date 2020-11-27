@@ -15,6 +15,41 @@ const { IgnorePlugin } = require('webpack');
 // case 8: line = "vanguard"; side = "middle"; break;
 // case 9: line = "vanguard"; side = "right"; break;
 
+// let def, blood, dmg
+// let colorRed = '\x1b[31m%s\x1b[0m';
+// let colorGreen = '\x1b[32m%s\x1b[0m';
+
+
+// function check(def, blood, dmg){
+//     if((def - blood) <= dmg){
+//         let lead = dmg - ((def - blood) - 1)
+//         let vic = dmg - lead
+//         console.log(`def ${def} blood ${blood} dmg ${dmg}  |||   vic ${vic} lead ${lead} `)
+//         return [vic, lead]
+//     }
+// }
+// for (let def = 0; def < 36; def++) {
+//     for (let blood = 0; blood < def; blood++) {
+//         for (let dmg = 1; dmg < 10; dmg++) {
+//             check(def, blood, dmg)
+//         }
+//     }
+// }
+// process.exit(1)
+
+// assigmentCheck(1,0,1,0,1)
+// assigmentCheck(1,0,1,0,2)
+
+// function assigmentCheck(def, blood, dmg, vic, lead) {
+//     let [res_vic, res_lead] = check(def, blood, dmg)
+//     if((res_vic === vic)&&(res_lead === lead)){
+//         console.log(colorGreen, `def ${def} blood ${blood} dmg ${dmg}  |||   vic ${vic} lead ${lead} `)
+//     } else {
+//         console.log(colorRed, `def ${def} blood ${blood} dmg ${dmg}  |||   vic ${vic} lead ${lead} `)
+//     }
+// }
+
+
 let testerA = "playerA"
 let testerB = "playerB"
 let moves = 0;
@@ -165,11 +200,21 @@ function playersAction(cons_log = false){
     let useless_attacks = 0
     let startTable = game.showGameTableToConsole()
     while(simpleAtk !== 0 ){
-        if(iters > 1000){
-            console.log(`iters countdown ***r${game.round} w${game.wave} t${game.turn}***`)
+        if(iters > 20000){
+            console.log(startTable)
+            console.log(game.showGameTableToConsole())
+            return "iters(10000) countdown"
             break
         }
-
+        if(game.finish){
+            if(cons_log){
+                console.log(startTable)
+                console.log(game.showGameTableToConsole())
+                console.log(`moves ${moves}`)
+                console.log( `lose: ${game.lose}, win: ${game.win} `)
+            }
+            return `END GAME lose: ${game.lose}, win: ${game.win}`
+        }
         let playerForWhichTurn = game.getUserByUserId(game.playerIdTurn)
         let colorParam = (playerForWhichTurn.userName === "playerA") ? '\x1b[32m%s\x1b[0m' : '\x1b[33m%s\x1b[0m'    
         
@@ -195,7 +240,7 @@ function playersAction(cons_log = false){
                 if(cons_log){
                     console.log(colorParam, `r${game.round} w${game.wave} t${game.turn} ${playerForWhichTurn.userName} pass1, no heroes on wave ${game.wave}`)
                 }
-                game.pass(playerForWhichTurn.userId)
+                proxy.pass(playerForWhichTurn.userId)
                 playerForWhichTurn.useless_attacks = 0
                 iters++
                 moves++
@@ -219,7 +264,6 @@ function playersAction(cons_log = false){
                 somes = "RANGED ATACK"    
                 rndVictimCard = getRndCardFromTable(anotherUser) 
             } else {
-
                 rndVictimCard = getRndVictimCardFromWave(anotherUser) 
                 // rndVictimCard = getRndCardFromWave(anotherUser) 
             }
@@ -234,19 +278,32 @@ function playersAction(cons_log = false){
                 continue
             }
            
+            
             let sresult = proxy.heroAttack(playerForWhichTurn.userId, rndAttackCard, rndVictimCard)
             if(sresult.status === "success"){
                 simpleAtk--
                 playerForWhichTurn.useless_attacks = 0
-
                 if(cons_log){
                     if(sresult.data.some( e => e.specialEvent)){
                         console.log(colorParam, `r${game.round} w${game.wave} t${game.turn} ${playerForWhichTurn.userName} ${rndAttackCard} -> ${anotherUser.userName} ${rndVictimCard} success!! ${somes} LIFELINK`)    
                     }
                     console.log(colorParam, `r${game.round} w${game.wave} t${game.turn} ${playerForWhichTurn.userName} ${rndAttackCard} -> ${anotherUser.userName} ${rndVictimCard} success!! ${somes}`)
                 }
-
             } else if(sresult.status === "failure"){
+                if(sresult.msg === 'critical'){
+                    console.log('bug')
+                }
+                if(sresult.data.msgText === 'END game'){
+                    if(cons_log){
+                        console.log(startTable)
+                        console.log(game.showGameTableToConsole())
+                        console.log(`moves ${moves}`)
+                        console.log( `lose: ${game.lose}, win: ${game.win} `)
+                    }
+                    return `END GAME lose: ${game.lose}, win: ${game.win}`
+                    break
+                }
+
                 playerForWhichTurn.useless_attacks++
                 if(cons_log){
                     console.log(colorParam, `r${game.round} w${game.wave} t${game.turn} ${playerForWhichTurn.userName} ${rndAttackCard} -> ${anotherUser.userName} ${rndVictimCard} ${sresult.data.msgText} useless_attacks #${playerForWhichTurn.useless_attacks}`)
@@ -258,14 +315,7 @@ function playersAction(cons_log = false){
                         // console.log(game.showGameTableToConsole()) 
                     }
                 }
-            } else if(sresult === 'END game') {
-                console.log(startTable)
-                console.log(game.showGameTableToConsole())
-                console.log(`moves ${moves}`)
-                console.log( `lose: ${game.lose}, win: ${game.win} `)
-
-                break
-            }
+            } 
             iters++
             moves++
         } else {
@@ -276,22 +326,25 @@ function playersAction(cons_log = false){
             }
         }
     }
-    // console.log(`r${game.round} w${game.wave} t${game.turn}`)
-    
+    console.log(startTable)
+    console.log(game.showGameTableToConsole())
+    game_logs;
+    return "unexpected return --- possibly stalemate"
 }
 
 
-for(let i = 0;i<100;i++){
+for(let i = 0;i<1000;i++){
     moves = 0;
-    console.log(`\n\n\nTEST # ${i}`)
+    // console.log(`TEST # ${i}`)
     prepa(i)
     fillGameTable()
-    playersAction()    
-    console.log(`test #${i} successful`)
+    let test_result = playersAction()    
+    console.log(`TEST #${i} ${test_result}`)
+    game_logs = [];
     // console.log(game_logs)
     // console.log('test successful')
 }
-console.log('all test successful')
+console.log('all random test successful')
 
 
 
@@ -365,16 +418,16 @@ function getRndCardFromTable(player){
     let r = Math.floor(Math.random() * possibleAtkCards.length)
     return possibleAtkCards[r]
 }
-function shuffle(array) {
-    var m = array.length, t, i;
-    while (m) {
-      i = Math.floor(Math.random() * m--);
-      t = array[m];
-      array[m] = array[i];
-      array[i] = t;
-    }
-    return array;
-}
+// function shuffle(array) {
+//     var m = array.length, t, i;
+//     while (m) {
+//       i = Math.floor(Math.random() * m--);
+//       t = array[m];
+//       array[m] = array[i];
+//       array[i] = t;
+//     }
+//     return array;
+// }
 
 
 

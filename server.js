@@ -295,12 +295,15 @@ function handleSocket(socket) {
       let enemyPlayerTable = enemyUser.getTable()
       let enemySocket = room.sockets[enemyUser.socketId]
       let specialMsg = ""
+      let specialAction = []
       if(messages.data){
         if(messages.data.specialMsg){
           specialMsg = messages.data.specialMsg
         }
       }
-      
+      if((currentPlayer.board.deadBodiesCanAttack) || enemyUser.board.deadBodiesCanAttack){
+        specialAction.push([currentPlayer.userName, "deadBodiesCanAttack"]) 
+      }
       socket.emit("update", {
         turnFor: game.playerTurn,
         roundFor: game.roundForPlayer,
@@ -308,7 +311,7 @@ function handleSocket(socket) {
         wave: game.wave,
         turn: game.turn,
         msg: specialMsg,
-
+        specialAction: specialAction,
         self: {
           name: currentPlayer.userName,
           actionPoint: currentPlayer.actionPoint,
@@ -332,6 +335,7 @@ function handleSocket(socket) {
         wave: game.wave,
         turn: game.turn,
         msg: specialMsg,
+        specialAction: specialAction,
         self: {
           name: enemyUser.userName,
           actionPoint: enemyUser.actionPoint,

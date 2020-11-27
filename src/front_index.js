@@ -241,7 +241,7 @@ let gameWaveDic = new Map([[1, 'vanguard'], [2, 'flank'], [3, 'rear']]);
 // let gameFieldDic = new Map([[1, "vanguard__l"], [2, "vanguard__m"], [3, "vanguard__r"], 
 //                             [4, "flank__l"], [5, "flank__m"], [6, "flank__r"], 
 //                             [7, "rear__l"], [8, "rear__m"], [9, "rear__r"]]);
-let wavePrefere = -1;
+let battle = 0;
 let gameRound = 1;
 let gameTurn = 1;
 let gameWave = 1;
@@ -279,51 +279,6 @@ function getMapKeyByValue(map, searchValue) {
 }
 
 
-// socket.on('rejoin', function(data){
-//     console.log('rejoined');console.log(data);
-//     enemyName = data.enemy;
-//     gameRoundEl = document.querySelector('.game-round');gameWaveEl = document.querySelector('.game-wave');
-//     gameTurnEl = document.querySelector('.game-turn');let fieldPlayer = document.getElementById('player');
-//     let fieldPlayerName = fieldPlayer.getElementsByClassName("user-name")[0];
-//     let fieldEnemyPlayer = document.getElementById('enemy-player');
-//     let fieldEnemyPlayerName = fieldEnemyPlayer.getElementsByClassName("user-name")[0];
-//     fieldPlayer.classList.add(data.player);fieldPlayerName.innerHTML = data.player;fieldEnemyPlayer.classList.add(data.enemy);
-//     fieldEnemyPlayerName.innerHTML = data.enemy;players.push(data.player, data.enemy);
-//     players.forEach(player => {fillGameTableB(player, data)});
-
-//     roundForPlayer = data.roundForPlayer;
-//     gameRound = data.round;
-//     gameWave = data.wave;
-//     moveWaveCard(roundForPlayer);
-    
-//     for (let i = 0; i < data.hand.length; i++) {
-//         var new_card = document.createElement('div');
-//         new_card.className = 'hand-card';
-//         new_card.setAttribute('data-card-id', data.hand[i].id);
-//         new_card.style['background-image'] = 'url(\'./img/cards/'+ cardsImage[data.hand[i].img] + imageFormat + '\')';
-//         // new_card.classList.add('rotate-card');
-//         playerHand.append(new_card);
-//     }
-
-//     infoBoard.innerText = `Action point: ${data.actionPoint}`;
-//     controlPanel.style.visibility = "visible";
-//     new PanelAction(controlPanel);
-//     document.querySelectorAll('.action').forEach(e => e.classList.toggle('--show'));
-//     if(data.playerTurn === userName){   
-//         messageBoard.innerText += ". Your turn";messageBoardAnimation();
-//         playerTurn = true;
-//     } else {
-//         messageBoard.innerText += ". Enemy turn";messageBoardAnimation();
-//         playerTurn = false;
-//     }
-// });
-// socket.on('table update B', function(data){
-//     console.log("from server action: 'table update B'");
-//     data.gameTable.forEach(player => {
-//         fillGameTableB(player.name, data)
-//     });
-//     infoBoard.innerText = `Action point: ${data.gameTable.find(player => player.name === userName).actionPoints}`;
-// });
 
 socket.on("giveCard", function(data){
     let card = cardsCollection.find(c => c.id == data.cardId);
@@ -464,6 +419,7 @@ socket.on("update", function(data){
                 e.classList.toggle('--show')
             }
         });
+        battle = 1
     }
     infoBoard.innerText = `Action points: ${data.self.actionPoint}`;
     roundForPlayer = data.roundFor;
@@ -474,6 +430,11 @@ socket.on("update", function(data){
     gameWaveEl.innerHTML = 'wave: ' + data.wave;
     gameTurnEl.innerHTML = 'turn: ' + data.turn;
     moveWaveCard(roundForPlayer);
+
+    if(data.specialAction.length > 0){
+        console.log('implement this!')
+        console.log(data.specialAction)
+    }
 
     updateSelf(data.self)
     updateEnemy(data.enemy)
@@ -807,7 +768,7 @@ $(document).ready(function () {
                 actionController.chosenDOMElem = elem;
                 let img = document.querySelector('.review-img');                
                 img.style.backgroundImage = 'url(\'./img/cards/'+ card_id + imageFormat + '\')';
-                if(img.classList.contains('--rotate') && (wavePrefere !== -1)){ 
+                if(img.classList.contains('--rotate') && (battle !== 1)){ 
                     img.classList.toggle('--rotate');
                 }
                 gameTable.style.opacity = 0.3;
@@ -1179,3 +1140,49 @@ $(document).ready(function () {
 //     }
 //     console.log('fillGameTableB');
 // }
+
+// socket.on('rejoin', function(data){
+//     console.log('rejoined');console.log(data);
+//     enemyName = data.enemy;
+//     gameRoundEl = document.querySelector('.game-round');gameWaveEl = document.querySelector('.game-wave');
+//     gameTurnEl = document.querySelector('.game-turn');let fieldPlayer = document.getElementById('player');
+//     let fieldPlayerName = fieldPlayer.getElementsByClassName("user-name")[0];
+//     let fieldEnemyPlayer = document.getElementById('enemy-player');
+//     let fieldEnemyPlayerName = fieldEnemyPlayer.getElementsByClassName("user-name")[0];
+//     fieldPlayer.classList.add(data.player);fieldPlayerName.innerHTML = data.player;fieldEnemyPlayer.classList.add(data.enemy);
+//     fieldEnemyPlayerName.innerHTML = data.enemy;players.push(data.player, data.enemy);
+//     players.forEach(player => {fillGameTableB(player, data)});
+
+//     roundForPlayer = data.roundForPlayer;
+//     gameRound = data.round;
+//     gameWave = data.wave;
+//     moveWaveCard(roundForPlayer);
+    
+//     for (let i = 0; i < data.hand.length; i++) {
+//         var new_card = document.createElement('div');
+//         new_card.className = 'hand-card';
+//         new_card.setAttribute('data-card-id', data.hand[i].id);
+//         new_card.style['background-image'] = 'url(\'./img/cards/'+ cardsImage[data.hand[i].img] + imageFormat + '\')';
+//         // new_card.classList.add('rotate-card');
+//         playerHand.append(new_card);
+//     }
+
+//     infoBoard.innerText = `Action point: ${data.actionPoint}`;
+//     controlPanel.style.visibility = "visible";
+//     new PanelAction(controlPanel);
+//     document.querySelectorAll('.action').forEach(e => e.classList.toggle('--show'));
+//     if(data.playerTurn === userName){   
+//         messageBoard.innerText += ". Your turn";messageBoardAnimation();
+//         playerTurn = true;
+//     } else {
+//         messageBoard.innerText += ". Enemy turn";messageBoardAnimation();
+//         playerTurn = false;
+//     }
+// });
+// socket.on('table update B', function(data){
+//     console.log("from server action: 'table update B'");
+//     data.gameTable.forEach(player => {
+//         fillGameTableB(player.name, data)
+//     });
+//     infoBoard.innerText = `Action point: ${data.gameTable.find(player => player.name === userName).actionPoints}`;
+// });

@@ -27,12 +27,16 @@ Game.prototype = {
         this.perksPostAttack = []
         this.perks = []
         this.perksBeforeCheckloss = []
+        this.perksBeforeBattleBegin = []
+        this.canSpecialAction = []
         this.roundForPlayer = ""
         this.playerTurn = ""
         this.playerIdTurn = ""
         let room = this.roomName;
+       
+        let revenge_heroes = [];
         // rework this moment
-        [this.players[0].actionPoint, this.players[1].actionPoint] = [2, 2];
+        [this.players[0].actionPoint, this.players[1].actionPoint] = [this.players[0].defaultActionPoint, this.players[1].defaultActionPoint];
         if(!test){
             Array.prototype.forEach.call(this.players, function(player) {
                 player.board.pushCardsFromDeckToHand(5)
@@ -56,11 +60,20 @@ Game.prototype = {
 
         let sideEffects = player.board.addCardOnTable(+cardId, +5);
         if (sideEffects) {
-            if (sideEffects.gameEvent === "perksBeforeCheckloss") {
+            if(sideEffects.gameEvent === "perksBeforeCheckloss"){
                 this.perksBeforeCheckloss.push({ user: sideEffects.perk.user, cardId: sideEffects.perk.cardId, action: sideEffects.perk.action });
             }
-            // gameEvent: "perksBeforeCheckloss", action: { user: this.userName, card_id: c.id, action: lineAbil }
-        }
+            if(sideEffects.gameEvent === "addActionPoint"){
+                player.board.defaultActionPoint++
+            }
+            if(sideEffects.gameEvent === "mirrorLeader"){
+                // if another leader picked
+                this.perksBeforeBattleBegin.push({ user: sideEffects.perk.user, cardId: sideEffects.perk.cardId, action: sideEffects.perk.action });
+            }
+
+            // any clone in battleBegin for doppelganger
+        }   
+
         this.playersReady++;
         if (this.playersReady == 2) {
             return this.battleBegin();
@@ -112,36 +125,43 @@ Game.prototype = {
                             if (item.num !== 5) {
                                 item.card.blood += 1;
                             }
-
                         }
                     });
                 }
                 if (perk["action"] === "#healer") {
                     let currentUser = this.players.filter(p => p.userName === perk.user)[0];
-                    for (let item of currentUser.board.row[wave - 1]) {
-                        if (item.card && item.card.isAlive) {
-                            if (item.card.blood) {
-                                if (item.card.blood < 2) {
-                                    item.card.blood -= 1;
-                                } else {
-                                    item.card.blood -= 2;
+                    let row = (game.wave === 1) ? [7,8,9] : (game.wave === 2) ? [4,5,6] : [1,2,3];
+                    row.forEach( num => {
+                        let field = currentUser.board.fields[num - 1];
+                        if(field.card !== null){
+                            if(field.card.isAlive){
+                                if (field.card.blood) {
+                                    if (field.card.blood < 2) {
+                                        field.card.blood -= 1;
+                                    } else {
+                                        field.card.blood -= 2;
+                                    }
                                 }
                             }
                         }
-                    }
+                    })                    
                 }
-
             });
         }
         return
     },
     checkLoss: function () {
         for (let u of this.players) {
+
             for (let c of u.board.fields.values()) {
                 if (c.card) {
                     c.card.isAlive = (c.card.blood >= c.card.def) ? 0 : 1;
+                    // if(revenge){
+                    //     revenge_heroes.push(c.card.id)
+                    // }
                 }
             }
+
         }
     },
     afterCheckLoss: function () {
@@ -152,8 +172,7 @@ Game.prototype = {
                 this.lose = u.userName;
                 this.finish = true;
                 // return "END game"
-                return {status: "failure", msg: "flash msg", data: { msgText: 'END game' } };
-
+                // return {status: "failure", msg: "flash msg", data: { msgText: 'END game' } };
             }
         }
 
@@ -164,7 +183,7 @@ Game.prototype = {
             let anotherUser = this.players.filter(p => p.userName !== user.userName)[0];
             // NEXT WAVE?
             if (anotherUser.actionPoint === 0) {
-                this.players.forEach(player => player.actionPoint = 2);
+                this.players.forEach(player => player.actionPoint = player.defaultActionPoint);
                 if (!this.ceasefire) {
                     this.perksBefore();
                     this.checkLoss();
@@ -236,6 +255,37 @@ Game.prototype = {
         this.playerIdTurn = arr[0].userId;
         this.roundForPlayer = this.firstPlayer;
 
+        if(this.perksBeforeBattleBegin.length){
+            this.perksBeforeBattleBegin.forEach(perk => {
+                let player = this.players.filter(p => p.userName === perk.user)[0];
+                
+                if (perk["action"] === "#doppelganger") {
+                    let enemy = this.players.filter(p => p.userName !== perk.user)[0];
+                    player.board.fields[4].card = new Object({
+                        id: player.board.fields[4].card.id,
+                        atk: enemy.board.fields[4].card.atk,
+                        def: enemy.board.fields[4].card.def,
+                        blood: 0,
+                        isAlive: 1,
+                        locate: 5,
+                        line: "flank", // not needed in future
+                        side: "middle", // not needed in future
+                        spell: "",
+                        buffs: [],
+                    })
+                    let sideEffects = player.board.addAbility(enemy.board.fields[4].card.id, 5);
+                    if (sideEffects) {
+                        if(sideEffects.gameEvent === "perksBeforeCheckloss"){
+                            this.perksBeforeCheckloss.push({ user: perk.user, cardId: sideEffects.perk.cardId, action: sideEffects.perk.action });
+                        }
+                        if(sideEffects.gameEvent === "addActionPoint"){
+                            player.board.defaultActionPoint++
+                        }
+                    }
+                }
+            })
+        }
+
         return { msg: 'battle begin', data: { firstPlayer: this.firstPlayer, secondPlayer: this.secondPlayer, gameTable: this.getTable() } }
     },
 
@@ -248,15 +298,25 @@ Game.prototype = {
         let enemyPlayer = this.players.find(player => player.socketId !== playerId);
         if (player.actionPoint) {
             let ans = [];
+            ans.push({test: "test"})
             let attackerPlace = player.board.getNodeByCardId(cardId);
             let victimPlace = enemyPlayer.board.getNodeByCardId(victim);
+
+            
             let path = 1;
             let blockedBy = "";
             let atkModif = 0;
             let defModif = 0;
             let reflectDmg = 0;
-            atkType = "melee";
+            let atkType = "melee";
             let lifelink = false;
+            let rangeImmune = false;
+            let meleeImmune = false;
+            let moreDmgToIntercept = 0;
+            let doubleDmgToLeader = false;
+            let basicDoubleDmgToLeader = false;
+            let preventLethalDmg = false;
+
             if (attackerPlace.buffs.length > 0) {
                 let attacker = attackerPlace
                 attackerPlace.buffs.forEach(buff => {
@@ -287,13 +347,38 @@ Game.prototype = {
                             }
                         }
                     }
-                    // hero vampire vanguard perk
-                    if(buff[1].match(/lifelink/g)) {
+                    // hero vampire vanguard perk / or leader
+                    
+                    if(buff[1] === "lifelink"){
+                        //.match(/lifelink/g)) {
                         lifelink = true
                     }
                     if (buff[1].match(/moreDmg:/g)) {
                         let mod = buff[1].split(':');
-                        atkModif += mod[1];
+                        atkModif += Number(mod[1]);
+                    }
+                    if (buff[1].match(/moreMeleeDmg:/g)) {
+                        let mod = buff[1].split(':');
+                        atkModif += Number(mod[1]);
+                    }
+                    if (buff[1].match(/toInterceptMoreDmg:/g)) {
+                        let mod = buff[1].split(':');
+                        moreDmgToIntercept = mod[1];
+                    }
+                    if (buff[1] === "bloodrage") {
+                        atkModif += attacker.card.blood
+                    }
+                    if (buff[1] === "doubleDmgToLeader") {
+                        doubleDmgToLeader = true
+                    }
+                    if (buff[1] === "basicDoubleDmgToLeader") {
+                        basicDoubleDmgToLeader = true
+                    }
+                    // #priestsess leader special
+                    if (buff[1] === "specialMarker") {
+                        if(attackerPlace.num !== 4){
+                            atkModif += this.round -1
+                        }
                     }
                 });
             }
@@ -301,14 +386,20 @@ Game.prototype = {
                 victimPlace.buffs.forEach(buff => {
                     if (buff[1].match(/lessDmg:/g)) {
                         let mod = buff[1].split(':');
-                        defModif += mod[1];
+                        defModif += Number(mod[1]);
                     }
                     if (buff[1] === "immuneFromRange") {
-                        defModif = "immuneFromRange";
+                        rangeImmune = true;
+                    }
+                    if (buff[1] === "immuneFromMelee") {
+                        meleeImmune = true;
+                    }
+                    if (buff[1] === "preventLethalDmg") {
+                        preventLethalDmg = true;
                     }
                     if (buff[1].match(/reflectOnMeleeAttack/g)) {
                         let mod = buff[1].split(':');
-                        reflectDmg = mod[1];
+                        reflectDmg = Number(mod[1]);
                     }
                 });
             }
@@ -359,16 +450,10 @@ Game.prototype = {
             }
 
             let dmg;
-            // if (defModif === "immuneFromRange" || defModif === "immuneFromMelee") {
-            //     dmg = 0;
-            //     return { status: "failure", msg: "flash msg", data: { msgText: 'immune' } }
-            // } else {
-                dmg = attackerPlace.card.atk + (atkModif - defModif);
-            // }
-
+            dmg = attackerPlace.card.atk + (atkModif - defModif);
 
             if (atkType === "melee") {
-                if (defModif === "immuneFromMelee"){
+                if (meleeImmune){
                     return { status: "failure", msg: "flash msg", data: { msgText: 'immune for melee' } }
                 }
 
@@ -380,7 +465,24 @@ Game.prototype = {
                     if (path) {
                         // melee path free, attack action
                         if (dmg > 0) {
-                            victimPlace.card.blood += Number(dmg);
+                            if(victimPlace.num == 4){
+                                if(doubleDmgToLeader){
+                                    dmg += dmg
+                                }
+                                if(basicDoubleDmgToLeader){
+                                    dmg += attackerPlace.card.atk
+                                }
+                            }
+                            if(preventLethalDmg){
+                                if((victimPlace.card.def - victimPlace.card.blood) <= Number(dmg)){
+                                    let dmgLeaderGet = Number(dmg) - ((victimPlace.card.def - victimPlace.card.blood) - 1)
+                                    let dmgVictimGet = Number(dmg) - dmgLeaderGet
+                                    victimPlace.card.blood += Number(dmgVictimGet)
+                                    enemyPlayer.board.fields[4].card.blood += dmgLeaderGet
+                                }
+                            } else {
+                                victimPlace.card.blood += Number(dmg);
+                            }
                             if (reflectDmg) {
                                 attackerPlace.card.blood += reflectDmg;
                                 ans.push({specialEvent: "reflectDmg"})
@@ -400,17 +502,15 @@ Game.prototype = {
                             ans.push(turn)
                         }
                         return {status: "success", data: ans }
-                        return { status: "success" };
                     }
                 }
                 let liveStatus = (blockedBy.isAlive) ? "" : "Труп";
                 text = 'can\'t get target ' + liveStatus + ' ' + Cards[blockedBy.id - 1].name + '(' + blockedBy.id + ') ' + ' stand on the way (' + blockedBy.line + ' ' + blockedBy.side + ')';
                 return { status: "failure", msg: "flash msg", data: { msgText: text } }
-                rooms[this.roomName].sendTo(player, 'flash msg', { msgText: text });
-                return;
+               
 
             } else if (atkType === "ranged") {
-                if (defModif === "immuneFromRange"){
+                if (rangeImmune){
                     return { status: "failure", msg: "flash msg", data: { msgText: 'immune for range' } }
                 }
                 try {
@@ -424,7 +524,29 @@ Game.prototype = {
                 }
 
                 if (path) {
-                    if (dmg > 0) {  victimPlace.card.blood += Number(dmg);  }
+                    if (dmg > 0) {  
+                        if(victimPlace.num == 4){
+                            if(doubleDmgToLeader){
+                                dmg += dmg
+                            }
+                            if(basicDoubleDmgToLeader){
+                                dmg += attackerPlace.card.atk
+                            }
+                        }
+
+                        if(preventLethalDmg){
+                            if((victimPlace.card.def - victimPlace.card.blood) <= Number(dmg)){
+                                let dmgLeaderGet = dmg - ((victimPlace.card.def - victimPlace.card.blood) - 1)
+                                let dmgVictimGet = dmg - dmgLeaderGet
+                                victimPlace.card.blood += dmgVictimGet
+                                enemyPlayer.board.fields[4].card.blood += dmgLeaderGet
+                            }
+                        } else {
+                            victimPlace.card.blood += Number(dmg);
+                        }
+
+                    
+                    }
                     if (reflectDmg) {
                         attackerPlace.card.blood += reflectDmg;
                         ans.push({specialEvent: "reflectDmg"})
@@ -438,7 +560,7 @@ Game.prototype = {
                     return {status: "success", data: ans }
                 } else {
                     victimPlace = enemyPlayer.board.getNodeByCardId(blockedBy.id);
-                    if (Number(dmg) > 0) {  victimPlace.card.blood += Number(dmg);  }
+                    if (Number(dmg) > 0) {  victimPlace.card.blood += Number(dmg) + moreDmgToIntercept ;  }
 
                     text = Cards[blockedBy.id - 1].name + ' (' + blockedBy.line + ' ' + blockedBy.side + ') intercept ranged attack!';
                     
@@ -502,6 +624,7 @@ Game.prototype = {
     bodyRemove: function (playerId, card_id) {
         let player = this.getUserBySocketId(playerId)
         let node = player.board.getNodeByCardId(card_id)
+        player.board.removeAbility(Cards, Number(node.card.id), Number(node.num));
         player.board.discard.push(node.card)
         node.card = null
         let ans = []
