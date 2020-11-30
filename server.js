@@ -1,65 +1,25 @@
-// console.log(this)
-// const Cards = require('../card_revisions/cards_data_2012.js');
-
-// const Cards = require('./cards_data_2012.js');
-
-// Cards.splice(9, 15);
-// Object.freeze( Cards ); 
-
-// Cards.forEach(c => {
-//   c["blood"] = 0;
-//   c["isAlive"] = 1;
-// });
-
-// const gameLog = [];
-
-// const cardsImgArray = [];
-// for (let i = 0; i < Cards.length; i++) {
-//   cardsImgArray[Cards[i]['id']] = Cards[i]['img']; 
-// }
-
-// for (let i = 0; i < Cards.length; i++) {
-//   let a = Cards[i].ability;
-//   console.dir(Cards[i].id + ' ' + Cards[i].leader_perk);
-// console.dir(Cards[i].ability.vanguard);
-// console.dir(Cards[i].ability.flank);
-// console.dir(Cards[i].ability.rear);
-// }
-// process.exit(-1);
-
-var crypto = require('crypto');
+const crypto = require('crypto');
 const express = require("express");
 const { map } = require('./card_revisions/cards_data_2012.js');
 const { inflate } = require('zlib');
 const app = express();
-app.use(express.json()); // for parsing application/json
-// var path = require('path');
-var http = require('http').Server(app);
-var io = require('socket.io')(http);
+app.use(express.json());
+const http = require('http').Server(app);
+const io = require('socket.io')(http);
+const fs = require("fs");
+const { data } = require('jquery');
 
-var rooms = {};
-var games = {};
-var lastUserId = 0;
-var lastRoomId = 0;
-var numGame = 0;
+const Cards = require('./card_revisions/cards_data_2012.js');
+
+let rooms = {};
 
 app.use(express.static('dist/'));
 app.use('/img', express.static('dist/img'));
 
-
-// routes
 require('./route.js')(app);
 
-const Cards = require('./card_revisions/cards_data_2012.js');
-
-
-
-var game_token = '';
-
-// let Board = require('./board');
-// let Player = require('./player');
-let Room = require('./server/room');
-let User = require('./server/user');
+const Room = require('./server/room');
+const User = require('./server/user');
 
 
 function getRoomByUserName(userName) {
@@ -103,8 +63,7 @@ function getDateTime() {
 }
 
 let logCount = 0
-const fs = require("fs");
-const { data } = require('jquery');
+
 fs.writeFile('loglast.txt', "", (err) => {
   if (err) throw err;
 });
@@ -119,8 +78,8 @@ function handleSocket(socket) {
     let args = packet.data || [];
     let logPacket = Object.assign({}, packet)
     logPacket.data = ["*"].concat(args)
-    onevent.call(this, logPacket) // additional call to catch-all
-    onevent.call(this, packet);    // original call
+    onevent.call(this, logPacket) 
+    onevent.call(this, packet);
   };
   socket.on("*", function (event, data) {
     data = (typeof data === "undefined") ? "" : JSON.stringify(data)

@@ -532,20 +532,11 @@ function updateTable(user, table){
     console.log('updateSelf');
 }
 function updateEnemy(data){
-    
     let enemyDeck = document.querySelector('.player-panel__enemy').querySelector('.deck')
     let enemyDiscard = document.querySelector('.player-panel__enemy').querySelector('.discard')
     updateHand(enemyHand, data.hand)
-    // enemyHand.innerHTML = "";
-    // for (let i = 0; i < data.hand; i++) {
-    //     let new_card = document.createElement('div');
-    //     new_card.className = 'hand-card';
-    //     new_card.style['background-image'] = 'url(./img/shirt-3.jpg)';
-    //     enemyHand.append(new_card);
-    // }
     enemyDeck.innerText = `deck: ${data.deck}`
     enemyDiscard.innerText = `discard: ${data.discard}`
-    // temp.innerText = `hand: ${data.hand} |  deck: ${data.deck} |  discard: ${data.discard}`
     updateTable(data.name, data.table)
 }
 function updateSelf(data){
@@ -561,9 +552,7 @@ function updateSelf(data){
     playerDeckEl.innerText = 'deck ' +  data.deck;
     
     //table
-    updateTable(data.name, data.table)
-    // playerTable = JSON.parse(data.table);
-   
+    updateTable(data.name, data.table)   
 }
 
 socket.on("END game", function(data){
@@ -758,10 +747,8 @@ $(document).ready(function () {
                 }
             }
 
-            // if(elem.classList.contains('hand-card') && !modalShow){
+          
             if(elem.classList.contains('hand-card')){
-                // let card = cardsCollection.find(c => c.id == elem.dataset.cardId);
-
                 // TODO: change data card
                 let card_id = elem.getAttribute('data-card-id');
                 actionController.chosen = card_id; //card.id;
@@ -859,15 +846,8 @@ $(document).ready(function () {
                 elem.classList.toggle('--rotate');
                 return
             } 
-            /*
-                клик если
-            */     
-            //  была выбрана карта 
-            if(actionController.playerAction){
-                // тут выбор одной или нескольких из возможных целей ( в зависимости от действия)
-
-
-            }
+            
+           
         }
 
         if(event.button == 2){
@@ -962,227 +942,3 @@ $(document).ready(function () {
         }
     });
 });
-// socket.on("battle begin", function(data){
-//     infoBoard.innerText = "Action 2";
-//     player_table = data.gameTable.find(user => user.name === userName).table;
-//     enemy_table = data.gameTable.find(user => user.name === enemyName).table;
-//     roundForPlayer = data.firstPlayer;
-
-//     if(data.firstPlayer === userName){   
-//         messageBoard.innerText += "battle begin \n Your turn";messageBoardAnimation();
-//         playerTurn = true;
-//         wavePrefere = 0;
-//     } 
-//     if(data.secondPlayer === userName){
-//         messageBoard.innerText += "battle begin \n Enemy turn";messageBoardAnimation();
-//         wavePrefere = 1;
-//         playerTurn = false;
-//     }
-//     console.log('round for: ' + roundForPlayer)
-//     moveWaveCard(roundForPlayer)
-
-//     updateSelf(data.self)
-//     updateEnemy(data.enemy)
-
-//     players.forEach(player => {
-//         fillGameTableB(player, data);
-//     });
-
-//     controlPanel.style.visibility = "visible";
-//     new PanelAction(controlPanel);
-//     gameRoundEl = document.querySelector('.game-round');
-//     gameWaveEl = document.querySelector('.game-wave');
-//     gameTurnEl = document.querySelector('.game-turn');
-//     document.querySelectorAll('.action').forEach(e => {
-//         if(!e.classList.contains('action__hireLeader')){
-//             e.classList.toggle('--show')
-//         }
-//     });
-// });
-// socket.on("next round", function(data){
-//     if(data.player === userName){
-//         messageBoard.innerText = "Your turn";
-//         messageBoardAnimation();
-//         playerTurn = true;
-//     } else {
-//         messageBoard.innerText = "Enemy turn";
-//         messageBoardAnimation();
-//         playerTurn = false;
-//     }
-//     infoBoard.innerText = "Action points: 2";
-//     roundForPlayer = data.player;
-//     gameRound = data.round;
-//     gameWave = data.wave;
-//     gameRoundEl.innerHTML = 'round: ' + data.round;
-//     gameWaveEl.innerHTML = 'wave: ' + data.wave;
-//     gameTurnEl.innerHTML = 'turn: ' + data.player;
-//     moveWaveCard(roundForPlayer);
-// });
-// socket.on("next wave", function(data){
-//     gameWave = data.wave;
-//     if(data.player === userName){
-//         messageBoard.innerText = "Your turn";
-//         messageBoardAnimation();
-//         playerTurn = true;
-//     } else {
-//         messageBoard.innerText = "Enemy turn";
-//         messageBoardAnimation();
-//         playerTurn = false;
-//     }
-//     gameWaveEl.innerHTML = 'wave: ' + data.wave;
-//     gameTurnEl.innerHTML = 'turn: ' + data.player;
-//     infoBoard.innerText = "Action points: 2";
-//     moveWaveCard(roundForPlayer);
-// });
-// socket.on("next turn", function(data){
-//     if(data.player === userName){
-//         messageBoard.innerText = "Your turn";
-//         messageBoardAnimation();
-//         playerTurn = true;
-//     } else {
-//         messageBoard.innerText = "Enemy turn";
-//         messageBoardAnimation();
-//         playerTurn = false;
-//     }
-        
-//     gameTurnEl.innerHTML = 'turn: ' + data.player;
-//     infoBoard.innerText = "Action points: 2";
-//     // moveWaveCard(roundForPlayer);
-// });
-
-// socket.on("next game step", function(data){
-//     if(data.player === userName){
-//         messageBoard.innerText = "Your turn";
-//         messageBoardAnimation();
-//         playerTurn = true;
-//     } else {
-//         messageBoard.innerText = "Enemy turn";
-//         messageBoardAnimation();
-//         playerTurn = false;
-//     }
-//     infoBoard.innerText = "Action points: 2";
-//     roundForPlayer = data.player;
-//     gameRound = data.round;
-//     gameWave = data.wave;
-//     gameRoundEl.innerHTML = 'round: ' + data.round;
-//     gameWaveEl.innerHTML = 'wave: ' + data.wave;
-//     gameTurnEl.innerHTML = 'turn: ' + data.player;
-//     moveWaveCard(roundForPlayer);
-// });
-
-// function fillGameTableB(player, data){
-//     let playerUnitElem = document.getElementsByClassName(player)[0];
-//     let playerTable = data.gameTable.find(user => user.name === player).table;
-//     playerTable = JSON.parse(playerTable);
-//     // let e = a.querySelectorAll('.table__field');
-//     for(f in playerTable){
-//         if(playerTable[f]){
-//             let line, side = "";
-//             [line, side] = getLineSideByFieldNum(f);
-//             let card = cardsCollection.find(c => c.id == playerTable[f].id);
-//             let cardElem = playerUnitElem.querySelectorAll(`[data-field-num=\"${f}\"`)[0];
-            
-//             let cardAbility = card['ability'][line];
-
-//             if(playerTable[f].isAlive){
-//                 if(cardElem.classList.contains('corps')){
-//                     cardElem.classList.remove('corps')
-//                 }
-//                 cardElem.style['background-image'] = 'url(\'./img/cards/s-'+ card.img + imageFormat + '\')';
-//                 cardElem.dataset.cardId = playerTable[f].id;
-//                 if(player === userName){
-//                     cardElem.querySelector('.card-action').style.display = 'flex';
-//                     cardElem.querySelector('.card-action').querySelector('.body-remove').style.display = 'none';
-//                     cardElem.querySelector('.card-action').querySelector('.attack').style.display = 'flex';
-//                     if(f !== "5"){
-//                         cardElem.querySelector('.card-action').querySelector('.move').style.display = 'flex';
-//                     }
-//                     if(cardAbility.type === "spell"){
-//                         cardElem.querySelector('.spell').style.display = 'flex';
-//                     }
-//                 }
-                
-//                 cardElem.querySelector('.characteristic').style.display = 'flex';
-//                 cardElem.querySelector('.characteristic__attack').innerText = (f == 5) ? card.leader_atk : card.atk;
-//                 cardElem.querySelector('.characteristic__defence').innerText = (f == 5) ? card.leader_def : card.def;
-//                 if(playerTable[f].blood){
-//                     cardElem.querySelector('.blood-token').style.display = 'flex';
-//                     cardElem.querySelector('.token').innerText = playerTable[f].blood;
-//                 }
-                
-//             } else {
-//                 cardElem.dataset.cardId = playerTable[f].id;
-//                 if(!cardElem.classList.contains('corps')){
-//                     cardElem.classList.add('corps')
-//                 }
-             
-//                 cardElem.style['background-image'] = 'url(\'./img/shirt-3.jpg\')';
-//                 if(player === userName){
-//                     cardElem.querySelector('.attack').style.display = 'none';
-//                     cardElem.querySelector('.move').style.display = 'none';
-//                     cardElem.querySelector('.body-remove').style.display = 'flex';                   
-//                 }
-//                 cardElem.querySelector('.blood-token').style.display = 'none';
-//                 cardElem.querySelector('.characteristic').style.display = 'none';
-//             }
-//         } else {
-//             let cardElem = playerUnitElem.querySelectorAll(`[data-field-num=\"${f}\"`)[0];
-//             if(cardElem.hasAttribute('data-card-id')){
-//                 cardElem.removeAttribute('data-card-id');
-//                 cardElem.style.removeProperty('background-image');
-//                 cardElem.querySelector('.characteristic').style.removeProperty('display');
-//                 if(player === userName){
-//                     cardElem.querySelector('.card-action').style.removeProperty('display');
-//                 }
-//             }
-            
-//         }
-//     }
-//     console.log('fillGameTableB');
-// }
-
-// socket.on('rejoin', function(data){
-//     console.log('rejoined');console.log(data);
-//     enemyName = data.enemy;
-//     gameRoundEl = document.querySelector('.game-round');gameWaveEl = document.querySelector('.game-wave');
-//     gameTurnEl = document.querySelector('.game-turn');let fieldPlayer = document.getElementById('player');
-//     let fieldPlayerName = fieldPlayer.getElementsByClassName("user-name")[0];
-//     let fieldEnemyPlayer = document.getElementById('enemy-player');
-//     let fieldEnemyPlayerName = fieldEnemyPlayer.getElementsByClassName("user-name")[0];
-//     fieldPlayer.classList.add(data.player);fieldPlayerName.innerHTML = data.player;fieldEnemyPlayer.classList.add(data.enemy);
-//     fieldEnemyPlayerName.innerHTML = data.enemy;players.push(data.player, data.enemy);
-//     players.forEach(player => {fillGameTableB(player, data)});
-
-//     roundForPlayer = data.roundForPlayer;
-//     gameRound = data.round;
-//     gameWave = data.wave;
-//     moveWaveCard(roundForPlayer);
-    
-//     for (let i = 0; i < data.hand.length; i++) {
-//         var new_card = document.createElement('div');
-//         new_card.className = 'hand-card';
-//         new_card.setAttribute('data-card-id', data.hand[i].id);
-//         new_card.style['background-image'] = 'url(\'./img/cards/'+ cardsImage[data.hand[i].img] + imageFormat + '\')';
-//         // new_card.classList.add('rotate-card');
-//         playerHand.append(new_card);
-//     }
-
-//     infoBoard.innerText = `Action point: ${data.actionPoint}`;
-//     controlPanel.style.visibility = "visible";
-//     new PanelAction(controlPanel);
-//     document.querySelectorAll('.action').forEach(e => e.classList.toggle('--show'));
-//     if(data.playerTurn === userName){   
-//         messageBoard.innerText += ". Your turn";messageBoardAnimation();
-//         playerTurn = true;
-//     } else {
-//         messageBoard.innerText += ". Enemy turn";messageBoardAnimation();
-//         playerTurn = false;
-//     }
-// });
-// socket.on('table update B', function(data){
-//     console.log("from server action: 'table update B'");
-//     data.gameTable.forEach(player => {
-//         fillGameTableB(player.name, data)
-//     });
-//     infoBoard.innerText = `Action point: ${data.gameTable.find(player => player.name === userName).actionPoints}`;
-// });

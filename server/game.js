@@ -85,23 +85,21 @@ Game.prototype = {
 
     hireCard: function (playerId, cardId, field) {
         let player = this.getUserBySocketId(playerId);
-        if (player.actionPoint) {
+
+        if ((player.actionPoint) || (player.board.freeRecrut)){
             let result
-            let turn
 
             if (player.board.fields[+field - 1].card === null) {
                 player.board.addCardOnTable(+cardId, +field);
-                player.actionPoint--;
+                if(!player.board.freeRecrut){
+                    player.actionPoint--;
+                } 
                 result = { status: "success" }
             } else {
                 return { status: "failure", msg: "flash msg", data: { msgText: 'Pick another field!' } }
             } 
-            
-            
-
             this.isPlayerTurnOver(player)
             return result
-            
         } else {
             return { status: "failure", msg: "flash msg", data: { msgText: 'no action point!' } }
         }
@@ -112,7 +110,6 @@ Game.prototype = {
         let turn = this.isPlayerTurnOver(player)
 
         return {status: "success" }
-        // return this.isPlayerTurnOver(player)
     },
     perksBefore: function () {
         if (this.perksBeforeCheckloss.length) {
@@ -147,6 +144,8 @@ Game.prototype = {
                     })                    
                 }
             });
+
+
         }
         return
     },
@@ -170,9 +169,7 @@ Game.prototype = {
                 let anotherUser = this.players.filter(p => p.userName !== u.userName)[0];
                 this.win = anotherUser.userName;
                 this.lose = u.userName;
-                this.finish = true;
-                // return "END game"
-                // return {status: "failure", msg: "flash msg", data: { msgText: 'END game' } };
+                this.finish = true;                
             }
         }
 
@@ -296,6 +293,7 @@ Game.prototype = {
         let text = "";
         let player = this.getUserBySocketId(playerId);
         let enemyPlayer = this.players.find(player => player.socketId !== playerId);
+      
         if (player.actionPoint) {
             let ans = [];
             ans.push({test: "test"})
@@ -336,7 +334,7 @@ Game.prototype = {
                         if(mod){
                             atkModif += mod
                         }
-                        // atkModif = (mod > 0)? atkModif + mod : atkModif;
+                        
                     }
                     if(buff[1] === "moreDmgIfForerunnerDead"){     
                         if(attacker.aheadNeighbor){
@@ -350,7 +348,6 @@ Game.prototype = {
                     // hero vampire vanguard perk / or leader
                     
                     if(buff[1] === "lifelink"){
-                        //.match(/lifelink/g)) {
                         lifelink = true
                     }
                     if (buff[1].match(/moreDmg:/g)) {
@@ -373,6 +370,11 @@ Game.prototype = {
                     }
                     if (buff[1] === "basicDoubleDmgToLeader") {
                         basicDoubleDmgToLeader = true
+                    }
+                    if (buff[1] === "pyromancer_buff") {
+                        if(player.userName === this.roundForPlayer){
+                            atkModif += 3
+                        }
                     }
                     // #priestsess leader special
                     if (buff[1] === "specialMarker") {
@@ -401,6 +403,11 @@ Game.prototype = {
                         let mod = buff[1].split(':');
                         reflectDmg = Number(mod[1]);
                     }
+                    if (buff[1] === "pyromancer_buff") {
+                        if(player.userName === this.roundForPlayer){
+                            defModif += 1
+                        }
+                    }
                 });
             }
             function findMeleePath(node) {
@@ -417,7 +424,7 @@ Game.prototype = {
                 }
                 return path;
             }
-            function findRangePath(node) { // node only victim
+            function findRangePath(node) { // only victim
                 let temp = node;
                 //roll to vanguard line 
                 while (temp.aheadNeighbor !== null) {
@@ -474,15 +481,18 @@ Game.prototype = {
                                 }
                             }
                             if(preventLethalDmg){
-                                if((victimPlace.card.def - victimPlace.card.blood) <= Number(dmg)){
-                                    let dmgLeaderGet = Number(dmg) - ((victimPlace.card.def - victimPlace.card.blood) - 1)
-                                    let dmgVictimGet = Number(dmg) - dmgLeaderGet
-                                    victimPlace.card.blood += Number(dmgVictimGet)
+                                if((victimPlace.card.def - victimPlace.card.blood) <= dmg){
+                                    let dmgLeaderGet = dmg - ((victimPlace.card.def - victimPlace.card.blood) - 1)
+                                    let dmgVictimGet = dmg - dmgLeaderGet
+                                    victimPlace.card.blood += dmgVictimGet
                                     enemyPlayer.board.fields[4].card.blood += dmgLeaderGet
+                                } else {
+                                    victimPlace.card.blood += dmg;    
                                 }
                             } else {
-                                victimPlace.card.blood += Number(dmg);
+                                victimPlace.card.blood += dmg;
                             }
+
                             if (reflectDmg) {
                                 attackerPlace.card.blood += reflectDmg;
                                 ans.push({specialEvent: "reflectDmg"})
@@ -493,6 +503,11 @@ Game.prototype = {
                                     attackerPlace.card.blood = (attackerPlace.card.blood > Number(dmg)) ? attackerPlace.card.blood - Number(dmg) : 0;
                                 }
                                 ans.push({specialEvent: "lifelink"})
+                            }
+                        }
+                        if(player.board.instantKill){
+                            if(victimPlace.card.def - victimPlace.card.blood <= 0){
+                                victimPlace.card.isAlive = 0
                             }
                         }
                         player.actionPoint--
@@ -535,22 +550,36 @@ Game.prototype = {
                         }
 
                         if(preventLethalDmg){
-                            if((victimPlace.card.def - victimPlace.card.blood) <= Number(dmg)){
+                            if((victimPlace.card.def - victimPlace.card.blood) <= dmg){
                                 let dmgLeaderGet = dmg - ((victimPlace.card.def - victimPlace.card.blood) - 1)
                                 let dmgVictimGet = dmg - dmgLeaderGet
                                 victimPlace.card.blood += dmgVictimGet
                                 enemyPlayer.board.fields[4].card.blood += dmgLeaderGet
+                            } else {
+                                victimPlace.card.blood += dmg;    
                             }
                         } else {
-                            victimPlace.card.blood += Number(dmg);
-                        }
-
-                    
+                            victimPlace.card.blood += dmg;
+                        }           
                     }
                     if (reflectDmg) {
                         attackerPlace.card.blood += reflectDmg;
                         ans.push({specialEvent: "reflectDmg"})
                     }
+                    // hero vampire vanguard perk
+                    if(lifelink){
+                        if(attackerPlace.card.blood > 0){
+                            attackerPlace.card.blood = (attackerPlace.card.blood > Number(dmg)) ? attackerPlace.card.blood - Number(dmg) : 0;
+                        }
+                        ans.push({specialEvent: "lifelink"})
+                    }
+                    if(player.board.instantKill){
+                        if(victimPlace.card.def - victimPlace.card.blood <= 0){
+                            victimPlace.card.isAlive = 0
+                        }
+                    }
+                    
+                    
                     player.actionPoint--
                     let turn = this.isPlayerTurnOver(player)
                     if(turn){
@@ -569,18 +598,12 @@ Game.prototype = {
                 }
             }
 
-            // preattack
-            // attack
-            // postattack  
-
         } else {
             return { status: "failure", msg: "flash msg", data: { msgText: 'no action point!' } }
         }
 
-        // this.isPlayerTurnOver(player);
     },
     heroMove: function (playerId, card_id, target_field) {
-        //data {card_id: card id, targetField: field num}
         let player = this.getUserBySocketId(playerId);
         if (target_field === "5") {
             return { status: "failure", data: { msgText: 'Can\'t switch with leader!'} }
@@ -605,14 +628,16 @@ Game.prototype = {
             }
         } else {
             // "move";
-
             //remove buffs
             player.board.removeAbility(Cards, Number(node.card.id), Number(node.num));
             [node.card.line, node.card.side] = [line, side]; // todo: future remove line side in card
             player.board.fields[target_field - 1].card = node.card;
             player.board.addAbility(Number(card_id), Number(target_field));
             player.board.fields[node.num - 1].card = null;
-            player.actionPoint--;
+            if(!player.board.freeHeroMove){
+                player.actionPoint--;
+            }
+            
         }
         let ans = []
         let turn = this.isPlayerTurnOver(player)
@@ -623,12 +648,22 @@ Game.prototype = {
     },
     bodyRemove: function (playerId, card_id) {
         let player = this.getUserBySocketId(playerId)
+        let enemyPlayer = this.players.find(player => player.socketId !== playerId);
+
+        if(enemyPlayer.board.banEnemyRemovingBodies){
+            let leaderName = Cards[enemyPlayer.board.fields[4].card.id - 1].leader;
+            return { status: "failure", msg: "flash msg", data: { msgText: `enemy ${leaderName} prohibits removing bodies` } }
+        }
         let node = player.board.getNodeByCardId(card_id)
         player.board.removeAbility(Cards, Number(node.card.id), Number(node.num));
         player.board.discard.push(node.card)
         node.card = null
         let ans = []
-        player.actionPoint--
+
+        if(!player.board.freeClearCorpse){
+            player.actionPoint--
+        }
+        
         let turn = this.isPlayerTurnOver(player)
         if(turn){
             ans.push(turn)

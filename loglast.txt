@@ -1,11 +1,7 @@
-20:36:13 0 IjdE8CcRWFzjbi3nAAAN  joined to room  {"userName":"qwerty","room":"e3417c73e"} 
-20:36:13 1 DSN4Vds2QV5zUuRfAAAO  joined to room  {"userName":"12345","room":"e3417c73e"} 
-20:36:14 2 DSN4Vds2QV5zUuRfAAAO  ready new game   
-20:36:14 3 IjdE8CcRWFzjbi3nAAAN  ready new game   
-20:36:27 4 3V3a-puvHQayrrUqAAAP  joined to room  {"userName":"12345","room":"e3417c73e"} 
-20:36:28 5 lNeExXYTT0j4F-GtAAAQ  joined to room  {"userName":"qwerty","room":"e3417c73e"} 
-20:36:28 6 3V3a-puvHQayrrUqAAAP  ready new game   
-20:36:29 7 lNeExXYTT0j4F-GtAAAQ  ready new game   
-20:36:32 8 lNeExXYTT0j4F-GtAAAQ  chosen leader  "5" 
-20:36:35 9 3V3a-puvHQayrrUqAAAP  chosen leader  "21" 
+23:25:54 0 uc8JF5AYF0RV_xLNAAAA  joined to room  {"userName":"12345","room":"e3417c73e"} 
+23:25:55 1 TgoHECY9ASKrcpTKAAAB  joined to room  {"userName":"qwerty","room":"e3417c73e"} 
+23:25:55 2 uc8JF5AYF0RV_xLNAAAA  ready new game   
+23:25:56 3 TgoHECY9ASKrcpTKAAAB  ready new game   
+23:26:00 4 TgoHECY9ASKrcpTKAAAB  chosen leader  "21" 
+23:26:02 5 uc8JF5AYF0RV_xLNAAAA  chosen leader  "8" 
 

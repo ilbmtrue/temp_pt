@@ -1,54 +1,17 @@
+/* important note 
+
+All the responses so far are correct. To clarify, recruit, restructure, and attack are all considered exclusive actions - any given hero may only perform a maximum of 1 of these actions per wave (and yes, recruiting a hero is considered an action taken by that hero - which isn't super intuitive, but oh well). Actions taken via other abilities (if an attack power or order allows another hero to attack or restructure) do not count towards this maximum. However, for Vanaah, she does not provide an additional ability that can restructure heroes. Instead, she simply makes it a free action (meaning it does not count toward your 2 actions per wave). So while restructuring does not cost you an action, you may not restructure a single hero multiple times, you may not restructure a hero who was recruited or who attacked that wave, and you may not attack with a hero you restructured that wave.
+*/
+
+
+
+
 const Cards = require('./card_revisions/cards_data_2012.js');
 const Room = require('./server/room');
 const User = require('./server/user');
 const Game = require('./server/game');
 const Player = require('./server/player');
 const { IgnorePlugin } = require('webpack');
-
-// case 1: line = "rear"; side = "left"; break;
-// case 2: line = "rear"; side = "middle"; break;
-// case 3: line = "rear"; side = "right"; break;
-// case 4: line = "flank"; side = "left"; break;
-// case 5: line = "flank"; side = "middle"; break;
-// case 6: line = "flank"; side = "right"; break;
-// case 7: line = "vanguard"; side = "left"; break;
-// case 8: line = "vanguard"; side = "middle"; break;
-// case 9: line = "vanguard"; side = "right"; break;
-
-// let def, blood, dmg
-// let colorRed = '\x1b[31m%s\x1b[0m';
-// let colorGreen = '\x1b[32m%s\x1b[0m';
-
-
-// function check(def, blood, dmg){
-//     if((def - blood) <= dmg){
-//         let lead = dmg - ((def - blood) - 1)
-//         let vic = dmg - lead
-//         console.log(`def ${def} blood ${blood} dmg ${dmg}  |||   vic ${vic} lead ${lead} `)
-//         return [vic, lead]
-//     }
-// }
-// for (let def = 0; def < 36; def++) {
-//     for (let blood = 0; blood < def; blood++) {
-//         for (let dmg = 1; dmg < 10; dmg++) {
-//             check(def, blood, dmg)
-//         }
-//     }
-// }
-// process.exit(1)
-
-// assigmentCheck(1,0,1,0,1)
-// assigmentCheck(1,0,1,0,2)
-
-// function assigmentCheck(def, blood, dmg, vic, lead) {
-//     let [res_vic, res_lead] = check(def, blood, dmg)
-//     if((res_vic === vic)&&(res_lead === lead)){
-//         console.log(colorGreen, `def ${def} blood ${blood} dmg ${dmg}  |||   vic ${vic} lead ${lead} `)
-//     } else {
-//         console.log(colorRed, `def ${def} blood ${blood} dmg ${dmg}  |||   vic ${vic} lead ${lead} `)
-//     }
-// }
-
 
 let testerA = "playerA"
 let testerB = "playerB"
@@ -96,9 +59,22 @@ function prepa(test_num){
 
     proxy.players.push(new Player(userA.getId(), userA));
     proxy.players.push(new Player(userB.getId(), userB));
+    
     proxy.preparation()
-
-    sresult = proxy.hireLeader(userA.getId(), -1)
+    /*
+        proxy.preparation(true)
+        let teA = game.getUserByUserId(userA.userId);
+        [17,8,7,6,5].forEach( (item) => {
+            teA.board.pushCurrentCardsFromDeckToHand(item)   
+        })
+        let teB = game.getUserByUserId(userB.userId);
+        [17,2,3,4,5].forEach( (item) => {
+            teB.board.pushCurrentCardsFromDeckToHand(item)   
+        })
+        sresult = proxy.hireLeader(userA.getId(), 17) 
+        sresult = proxy.hireLeader(userB.getId(), 17)
+    */
+    sresult = proxy.hireLeader(userA.getId(), -1) // -1 random
     sresult = proxy.hireLeader(userB.getId(), -1)
 
     game.players[0].action_atk = 0
@@ -107,29 +83,13 @@ function prepa(test_num){
     game.players[1].action_atk = 0
     game.players[1].action_remove_body = 0
     game.players[1].useless_attacks = 0
+    
+    game.players[0].remove_body = 1
+    game.players[1].remove_body = 1
+
 }
 
-// const arrCards = Array(25).fill().map((e, i) => i + 1)
-// let playerField = { 7: "", 8: "", 9: "", 4: "", 5: "", 6: "", 1: "", 2: "", 3: "", }
-
-
-
-
-// game.preparation(true)
-
-// let teA = game.getUserByUserId(userA.userId);
-// [9,8,7,6,5].forEach( (item) => {
-//     teA.board.pushCurrentCardsFromDeckToHand(item)   
-// })
-// let teB = game.getUserByUserId(userB.userId);
-// [1,2,3,4,5].forEach( (item) => {
-//     teB.board.pushCurrentCardsFromDeckToHand(item)   
-// })
-
-
-let sresult = "" // server answer
-//ready for random test
-
+let sresult = "" 
 
 function promiseThis(action){
     return new Promise( (resolve, reject) => {
@@ -180,8 +140,7 @@ function fillGameTable(cons_log = false){
                     console.log(colorParam, `r${game.round} w${game.wave} t${game.turn} ${playerForWhichTurn.userName} ${action}: ${randomCard} field: ${randomField}`)
                 } 
             }
-        }
-        
+        }      
 
         iters++
         moves++
@@ -190,14 +149,13 @@ function fillGameTable(cons_log = false){
             process.exit(1)
         }
     }
-    // console.log(`r${game.round} w${game.wave} t${game.turn}`)
     return 1
 }
 
 function playersAction(cons_log = false){
-    let simpleAtk = 2000
+    let simpleAtk = 20000
     let iters = 0
-    let useless_attacks = 0
+    // let useless_attacks = 0
     let startTable = game.showGameTableToConsole()
     while(simpleAtk !== 0 ){
         if(iters > 20000){
@@ -219,19 +177,27 @@ function playersAction(cons_log = false){
         let colorParam = (playerForWhichTurn.userName === "playerA") ? '\x1b[32m%s\x1b[0m' : '\x1b[33m%s\x1b[0m'    
         
         // attack or remove body
-        let bodies = playerForWhichTurn.board.getBodiesArray()
-        if(bodies.length){
-            let r = Math.floor(Math.random() * bodies.length)
-            let cardId = bodies[r].card.id
-            sresult = proxy.bodyRemove(playerForWhichTurn.userId, cardId)
-            if(cons_log){
-                console.log(colorParam, `r${game.round} w${game.wave} t${game.turn} ${playerForWhichTurn.userName} remove corps, ${cardId}`)
+        if(playerForWhichTurn.remove_body){
+            let bodies = playerForWhichTurn.board.getBodiesArray()
+            if(bodies.length){
+                let r = Math.floor(Math.random() * bodies.length)
+                let cardId = bodies[r].card.id
+                sresult = proxy.bodyRemove(playerForWhichTurn.userId, cardId)
+                if(sresult.status === 'failure'){
+                    if(sresult.data.msgText.match(/prohibits removing bodies/g)){
+                        playerForWhichTurn.remove_body = 0
+                    }
+                }
+                if(cons_log){
+                    console.log(colorParam, `r${game.round} w${game.wave} t${game.turn} ${playerForWhichTurn.userName} remove corps, ${cardId}`)
+                }
+                playerForWhichTurn.useless_attacks = 0
+                iters++
+                moves++
+                continue
             }
-            playerForWhichTurn.useless_attacks = 0
-            iters++
-            moves++
-            continue
         }
+        
 
 
         if(playerForWhichTurn.useless_attacks < 5){
@@ -265,7 +231,6 @@ function playersAction(cons_log = false){
                 rndVictimCard = getRndCardFromTable(anotherUser) 
             } else {
                 rndVictimCard = getRndVictimCardFromWave(anotherUser) 
-                // rndVictimCard = getRndCardFromWave(anotherUser) 
             }
             if(rndVictimCard === -1){
                 if(cons_log){
@@ -277,8 +242,7 @@ function playersAction(cons_log = false){
                 moves++
                 continue
             }
-           
-            
+                
             let sresult = proxy.heroAttack(playerForWhichTurn.userId, rndAttackCard, rndVictimCard)
             if(sresult.status === "success"){
                 simpleAtk--
@@ -335,14 +299,11 @@ function playersAction(cons_log = false){
 
 for(let i = 0;i<1000;i++){
     moves = 0;
-    // console.log(`TEST # ${i}`)
     prepa(i)
     fillGameTable()
     let test_result = playersAction()    
     console.log(`TEST #${i} ${test_result}`)
     game_logs = [];
-    // console.log(game_logs)
-    // console.log('test successful')
 }
 console.log('all random test successful')
 
@@ -418,29 +379,3 @@ function getRndCardFromTable(player){
     let r = Math.floor(Math.random() * possibleAtkCards.length)
     return possibleAtkCards[r]
 }
-// function shuffle(array) {
-//     var m = array.length, t, i;
-//     while (m) {
-//       i = Math.floor(Math.random() * m--);
-//       t = array[m];
-//       array[m] = array[i];
-//       array[i] = t;
-//     }
-//     return array;
-// }
-
-
-
-
-  /*
-  trash
-
-     t = { 7: 0, 8: 0, 9: 0, 4: 0, 5: 0, 6: 0, 1: 0, 2: 0, 3: 0, }
-        for(let i = 0; i < 100 ; i++){
-            r = Math.floor(Math.random()*playerForWhichTurn.board.fields.length)
-            t[r]++
-        }
-        console.log(t)
-
-
-        */

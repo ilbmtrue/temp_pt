@@ -1,5 +1,5 @@
 const Board = require("./board")
-const Cards = require('../card_revisions/cards_data_2012.js');
+const Cards = require("../card_revisions/cards_data_2012.js");
 
 Cards.forEach(c => {
     c["blood"] = 0;

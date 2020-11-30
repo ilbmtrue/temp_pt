@@ -15,7 +15,12 @@ function Board(userName, Cards) {
     this.deck = [...Cards],
     this.discard = [],
     this.hand = [],
+    this.banEnemyRemovingBodies = false,
     this.deadBodiesCanAttack = false,
+    this.instantKill = false,
+    this.freeRecrut = false,
+    this.freeClearCorpse = false,
+    this.freeHeroMove = false,
     this.showFirstCardOnDeck = false,
     this.fields = [
         new Field(1, "rear", "left"),
@@ -134,10 +139,7 @@ Board.prototype = {
         return false;
     },
     canRangeAtk(field){
-        // if (field.buffs.length > 0) {
-            return field.buffs.some(buff => buff[1] === "ranged");
-        // }
-        // return false
+        return field.buffs.some(buff => buff[1] === "ranged");
     },
     removeCardFromHandById: function (cardId) {
         this.hand.splice(this.hand.findIndex(card => card.id === cardId), 1);
@@ -177,11 +179,7 @@ Board.prototype = {
                 case "#doppelganger":
                     return { gameEvent: "mirrorLeader", perk: { user: this.owner, cardId: c.id, action: lineAbil } }
                 case "#berserk":
-                    // this.fields.forEach(field => {
-                    //     if (field.num !== 5) {
-                    //         field.buffs.push([c.id, "revenge"]);
-                    //     }
-                    // });
+                    // >>>>??????????
                     break
                 case "#vampire":
                     this.fields.forEach(field => {
@@ -190,6 +188,55 @@ Board.prototype = {
                     break
                 case "#witch":
                     this.deadBodiesCanAttack = true
+                    break
+                case "#assassin":
+                    this.instantKill = true
+                    break
+                case "#dragonmage":
+                    this.banEnemyRemovingBodies = true
+                    break
+                case "#illusionist":
+                    // >>>>??????????'Когда противник использует ближнюю атаку, Вы решаете, какую цель он достигнет. Цель должна быть доступна для ближней атаки.'
+                    break
+                case "#templar":
+                    // >>>>??????????'Герои в этом отряде получают +5 к силе в том случае, если получили повреждения в течение этой фазы.'
+                    break
+                case "#mascot":
+                    // >>>>??????????'При найме героя в этом отряде, этот герой может сразу же атаковать, не затрачивая действия в этой фазе. Данная способность не работает в первом раунде.'
+                    break
+                case "#oracle":
+                    // >>>>??????????'Противник играет с открытыми картами.'
+                    break
+                case "#mystic":
+                    // >>>>??????????'Первые 2 приказа в каждой фазе не затрачивают действие.'
+                    break
+                case "#paladin":
+                    this.freeClearCorpse = true
+                    this.freeHeroMove = true
+                    break
+                case "#pyromancer":
+                    this.fields.forEach(field => {
+                        if (field.num !== 5) {  
+                            field.buffs.push([c.id, "pyromancer_buff"]);
+                        } else {
+                            field.buffs.push([c.id, 'range']);
+                        }
+                    });
+                    
+
+                    break
+                case "#summoner":
+                    this.freeRecrut = true
+                    break
+                case "#gunner":
+                    // 'Атака этого лидера дальняя. при использовании приказа нанесите 3 повреждения любому герою.'
+                    this.fields[4].buffs.push([c.id, 'range']);
+                    // add trigger on play order
+                    break
+                case "#knight":
+                    this.fields.forEach(field => {
+                        field.buffs.push([c.id, "lessDmg:2"]);
+                    });
                     break
                 case "#homunculus":
                     this.fields.forEach(field => {
@@ -202,21 +249,7 @@ Board.prototype = {
                     this.fields[4].buffs.push([c.id, lineAbil]);
                     break;
             }
-            // if (lineAbil === "#alchemist" || lineAbil === "#healer") {
-            //     return { gameEvent: "perksBeforeCheckloss", perk: { user: this.owner, cardId: c.id, action: lineAbil } }
-            // } else if (lineAbil === "#planestalker") {
-            //     this.fields.forEach(field => {
-            //         if (field.num === 5) {
-            //             this.fields[4].buffs.push([c.id, "ranged"]);
-            //         } else {
-            //             field.buffs.push([c.id, "intercept"]);
-            //         }
-            //     });
-            // } else if(lineAbil === "#scientist"){
-            //     return { gameEvent: "addActionPoint" }
-            // } else {
-            //     this.fields[4].buffs.push([c.id, lineAbil]);
-            // }
+            
         } else {
             lineAbil.forEach(abil => {
                 if (abil.type === "spell") {
