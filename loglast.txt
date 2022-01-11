@@ -1,7 +1,16 @@
-23:25:54 0 uc8JF5AYF0RV_xLNAAAA  joined to room  {"userName":"12345","room":"e3417c73e"} 
-23:25:55 1 TgoHECY9ASKrcpTKAAAB  joined to room  {"userName":"qwerty","room":"e3417c73e"} 
-23:25:55 2 uc8JF5AYF0RV_xLNAAAA  ready new game   
-23:25:56 3 TgoHECY9ASKrcpTKAAAB  ready new game   
-23:26:00 4 TgoHECY9ASKrcpTKAAAB  chosen leader  "21" 
-23:26:02 5 uc8JF5AYF0RV_xLNAAAA  chosen leader  "8" 
+21:56:18 0 CtvUo4XxqVj-MT6oAAAB  joined to room  {"userName":"qwerty","room":"e3417c73e"} 
+21:56:19 1 sH8gimKZU4F7oLwRAAAC  joined to room  {"userName":"12345","room":"e3417c73e"} 
+21:56:19 2 sH8gimKZU4F7oLwRAAAC  ready new game   
+21:56:20 3 CtvUo4XxqVj-MT6oAAAB  ready new game   
+22:24:24 4 CtvUo4XxqVj-MT6oAAAB  chosen leader  "18" 
+22:24:26 5 sH8gimKZU4F7oLwRAAAC  chosen leader  "9" 
+22:32:41 6 W-psjtRnnDIdvYrUAAAD  joined to room  {"userName":"12345","room":"e3417c73e"} 
+22:32:42 7 L2eM1zZW6V_7liJNAAAE  joined to room  {"userName":"qwerty","room":"e3417c73e"} 
+22:32:42 8 W-psjtRnnDIdvYrUAAAD  ready new game   
+22:32:44 9 L2eM1zZW6V_7liJNAAAE  ready new game   
+22:35:04 10 ilEvuMIGjSUhB4_-AAAF  joined to room  {"userName":"12345","room":"e3417c73e"} 
+22:35:05 11 RP7AlNy_boAiIMX9AAAG  joined to room  {"userName":"qwerty","room":"e3417c73e"} 
+22:35:05 12 RP7AlNy_boAiIMX9AAAG  ready new game   
+22:35:06 13 ilEvuMIGjSUhB4_-AAAF  ready new game   
+22:35:11 14 RP7AlNy_boAiIMX9AAAG  chosen leader  "2" 
 

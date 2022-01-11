@@ -17,7 +17,7 @@ module.exports = [
                 {    type: "spell", spell: "spell_1_r"},
             ],
         },
-        order: "do 1 damage to hero repeat 7",
+        order: "spell_1_o",
         leader_perk: "#alchemist",
         
         vanguard: "Перехват. Получает на 2 повреждения меньше от ближних и дальних атак.",

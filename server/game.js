@@ -151,7 +151,6 @@ Game.prototype = {
     },
     checkLoss: function () {
         for (let u of this.players) {
-
             for (let c of u.board.fields.values()) {
                 if (c.card) {
                     c.card.isAlive = (c.card.blood >= c.card.def) ? 0 : 1;
@@ -171,9 +170,7 @@ Game.prototype = {
                 this.lose = u.userName;
                 this.finish = true;                
             }
-        }
-
-        
+        }   
     },
     isPlayerTurnOver: function (user) {
         if (user.actionPoint === 0) {
@@ -670,6 +667,20 @@ Game.prototype = {
         }
         return {status: "success", data: ans }
         
+    },
+    heroOrder: function (playerId, card_id){
+        let player = this.getUserBySocketId(playerId);
+        let card = player.board.hand.forEach( c => c.id === card_id);
+        
+        switch (card.order) {
+            case "spell_1_r":break; 
+            case "spell_1_o":break;
+            
+            default:
+                break;
+        }
+
+
     },
     requestCard: function (playerId) {
         let player = this.getUserBySocketId(playerId);

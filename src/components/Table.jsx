@@ -42,11 +42,15 @@ export default class Table extends Component{
                             </div>
                         </div>
                     </div>
-                    <div className="game-flow-info">
-                        <span className="game-round">round: 1</span>
-                        <span className="game-wave">wave: 1</span>
-                        <span className="game-turn">turn: 0</span>
+                    <div className="infos">
+                        <div className="game-flow-info">
+                            <span className="game-round">round: 1</span>
+                            <span className="game-wave">wave: 1</span>
+                            <span className="game-turn">turn: 0</span>
+                        </div>
+                        <div id="messageBoard" className="flash--active"></div>
                     </div>
+                    
                     <div id="enemy-player" className="player">
                         <div className="user-name"></div>
                         <div className="user-field">

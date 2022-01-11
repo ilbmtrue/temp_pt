@@ -203,6 +203,9 @@ function handleSocket(socket) {
   socket.on('Draw a Card', function () {
     sendAnswer(game.requestCard(socket.id));
   });
+  socket.on('Cast Order', function (data) {
+    sendAnswer(game.heroOrder(socket.id, data.cardId));
+  });
   socket.on('Character Attack', function (data) {
     sendAnswer(game.heroAttack(socket.id, data.cardId, data.victim));
   });

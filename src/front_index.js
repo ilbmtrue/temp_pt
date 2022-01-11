@@ -2,13 +2,19 @@ const  Cards  = require("../card_revisions/cards_data_2012");
 
 let imageFormat = '.webp';
 const cardsCollection = [...Cards];
-const controlPanel = document.getElementById("control-panel");
-const playerHand = document.querySelector('.player-panel__self').querySelector('.hand');
-const enemyHand = document.querySelector('.player-panel__enemy').querySelector('.hand');
-const messageBoard =  document.getElementById('messageBoard');  
+let controlPanel = null
+let playerHand = null
+let enemyHand = null
+let messageBoard = null
+let gameTable = null
 let infoBoard = null  
 let logWindow = null;
-const gameTable = document.getElementById('gameTable'); 
+
+let fieldPlayer = null
+let fieldPlayerName = null
+let enemyFieldPlayer = null
+let enemyFieldPlayerName = null
+    
 
 
 let gameRoundEl = null;
@@ -171,76 +177,62 @@ class ActionController
 let actionController = new ActionController();
 
 
-class PanelAction {
-    constructor(elem) {
-      this._elem = elem;
-      elem.onclick = this.onClick.bind(this); // (*)
-    }
-    pickCard(){
-        if(playerTurn){
-            socket.emit('Draw a Card');
-        } else {
-            messageBoard.innerText = 'Not your turn!';
-            messageBoardAnimation();
-        }     
-    }
-    // attack() {console.log('attack');}
-    pass() {
-        if(playerTurn){
-            socket.emit('Pass');
-        } else {
-            messageBoard.innerText = 'Not your turn!';
-            messageBoardAnimation();
-        }
-    }
-    special() {console.log('special');}
-    order() {console.log('order');}
-    move() {console.log('move');}
-    castling() {console.log('castling');}
+// class PanelAction {
+//     constructor(elem) {
+//       this._elem = elem;
+//       elem.onclick = this.onClick.bind(this); // (*)
+//     }
+//     pickCard(){
+//         if(playerTurn){
+//             socket.emit('Draw a Card');
+//         } else {
+//             messageBoard.innerText = 'Not your turn!';
+//             messageBoardAnimation();
+//         }     
+//     }
 
-    onClick(event) {
-      let action = event.target.dataset.action;
-      if (action) {
-        this[action]();
-      }
-    };
-}
+//     pass() {
+//         if(playerTurn){
+//             socket.emit('Pass');
+//         } else {
+//             messageBoard.innerText = 'Not your turn!';
+//             messageBoardAnimation();
+//         }
+//     }
+//     // special() {console.log('special');}
+//     // order() {console.log('order');}
+//     // move() {console.log('move');}
+//     // castling() {console.log('castling');}
 
-
-
-
-
-
+//     onClick(event) {
+//       let action = event.target.dataset.action;
+//       if (action) {
+//         this[action]();
+//       }
+//     };
+// }
 
 let modalShow = false;
-// let chosenCard = 0;
-// let chosenCardDOM = {};
-// let chosenField = "";
+
 
 let cardInfoBlock = false;
 let cardsImage = [];
-
-// random user name
-// let userName = Math.random().toString(36).substring(7); //
 let userName = localStorage.getItem('user') ? localStorage.getItem('user') : 'anon' ;
 let enemyName = "";
 let playerTurn = false;
 
 var joinroom;
 let table = { vanguard: {l: '', m: '', r: ''},flank: {l: '', m: '', r: ''},rear: {l: '', m: '', r: ''}}
-// let enemy_table = Object.assign({}, table);
-// let player_table = Object.assign({}, table);
+
 var players = [];
-// var pickLeader = null;
+
 const socket = io({
     autoConnect: true,
     reconnectionAttempts: 20
 
 });
 let gameWaveDic = new Map([[1, 'vanguard'], [2, 'flank'], [3, 'rear']]);
-// let gameFieldDic = new Map([[1, "vanguard__l"], [2, "vanguard__m"], [3, "vanguard__r"], 
-//                             [4, "flank__l"], [5, "flank__m"], [6, "flank__r"], 
-//                             [7, "rear__l"], [8, "rear__m"], [9, "rear__r"]]);
+
 let battle = 0;
 let gameRound = 1;
 let gameTurn = 1;
@@ -374,8 +366,8 @@ socket.on("reconnect", function(data){
     players.push(data.self.name, data.enemy.name);
     let r = document.querySelector('.ready-window')
     r.style.display = 'none';
-    controlPanel.style.visibility = "visible";
-    new PanelAction(controlPanel);
+    // controlPanel.style.visibility = "visible";
+    // new PanelAction(controlPanel);
     document.querySelectorAll('.action').forEach(e => {
         if(!e.classList.contains('action__hireLeader')){
             e.classList.toggle('--show')
@@ -412,8 +404,8 @@ socket.on("update", function(data){
     messageBoardAnimation();
     
     if(data.msg === 'battle begin'){
-        controlPanel.style.visibility = "visible";
-        new PanelAction(controlPanel);
+        // controlPanel.style.visibility = "visible";
+        // new PanelAction(controlPanel);
         document.querySelectorAll('.action').forEach(e => {
             if(!e.classList.contains('action__hireLeader')){
                 e.classList.toggle('--show')
@@ -448,7 +440,8 @@ function updateHand(userHand, hand){
         for (let i = 0; i < hand; i++) {
             let new_card = document.createElement('div');
             new_card.className = 'hand-card';
-            new_card.style['background-image'] = 'url(./img/shirt-3.jpg)';
+            new_card.style['background-image'] = 'url(\'./img/shirt-3(2).jpg\')';
+            
             userHand.append(new_card);
         }
     } else {
@@ -507,7 +500,7 @@ function updateTable(user, table){
                     cardElem.classList.add('corps')
                 }
              
-                cardElem.style['background-image'] = 'url(\'./img/shirt-3.jpg\')';
+                cardElem.style['background-image'] = 'url(\'./img/shirt-3(2).jpg\')';
                 if(user === userName){
                     cardElem.querySelector('.attack').style.display = 'none';
                     cardElem.querySelector('.move').style.display = 'none';
@@ -532,8 +525,8 @@ function updateTable(user, table){
     console.log('updateSelf');
 }
 function updateEnemy(data){
-    let enemyDeck = document.querySelector('.player-panel__enemy').querySelector('.deck')
-    let enemyDiscard = document.querySelector('.player-panel__enemy').querySelector('.discard')
+    let enemyDeck = document.querySelector('.player-panel__enemy').querySelector('.deck-info')
+    let enemyDiscard = document.querySelector('.player-panel__enemy').querySelector('.discard-info')
     updateHand(enemyHand, data.hand)
     enemyDeck.innerText = `deck: ${data.deck}`
     enemyDiscard.innerText = `discard: ${data.discard}`
@@ -544,11 +537,11 @@ function updateSelf(data){
     updateHand(playerHand, data.hand)
     
     // discard
-    let playerDiscardEl = document.querySelector('.player-panel__self').querySelector('.discard');
+    let playerDiscardEl = document.querySelector('.player-panel__self').querySelector('.discard-info');
     playerDiscardEl.innerText = 'discard ' + data.discard;
     
     // deck
-    let playerDeckEl = document.querySelector('.player-panel__self').querySelector('.deck');
+    let playerDeckEl = document.querySelector('.player-panel__self').querySelector('.deck-info');
     playerDeckEl.innerText = 'deck ' +  data.deck;
     
     //table
@@ -565,10 +558,10 @@ socket.on("END game", function(data){
 
 })
 socket.on("player join room", function(data){
-    let fieldPlayer = document.querySelector('#player');
-    let fieldPlayerName = fieldPlayer.querySelector(".user-name");
-    let enemyFieldPlayer = document.querySelector('#enemy-player');
-    let enemyFieldPlayerName = enemyFieldPlayer.querySelector(".user-name");
+    // fieldPlayer = document.querySelector('#player');
+    // fieldPlayerName = fieldPlayer.querySelector(".player-name");
+    // enemyFieldPlayer = document.querySelector('#enemy-player');
+    // enemyFieldPlayerName = enemyFieldPlayer.querySelector(".player-name-enemy");
     
     data.players.forEach( player => {
         if(player === userName){
@@ -588,11 +581,24 @@ socket.on("player join room", function(data){
 
 function init(){
     joinroom = window.location.pathname.slice(1);
+
+    // controlPanel = document.getElementById("control-panel");
+    playerHand = document.querySelector('.player-panel__self').querySelector('.hand');
+    enemyHand = document.querySelector('.player-panel__enemy').querySelector('.hand');
+    messageBoard =  document.getElementById('messageBoard');  
+    gameTable = document.getElementById('gameTable');
+
     infoBoard = document.querySelector('#infoBoard');  
     logWindow = document.querySelector('.window-game-log');
     gameRoundEl = document.querySelector('.game-round');
     gameWaveEl = document.querySelector('.game-wave');
     gameTurnEl = document.querySelector('.game-turn');
+
+    fieldPlayer = document.querySelector('#player');
+    fieldPlayerName = fieldPlayer.querySelector(".player-name");
+    enemyFieldPlayer = document.querySelector('#enemy-player');
+    enemyFieldPlayerName = enemyFieldPlayer.querySelector(".player-name-enemy");
+    
 }
 
 
@@ -623,8 +629,6 @@ $(document).ready(function () {
     document.addEventListener('mousedown', function(event){
         if(event.button == 0){        
             let elem = event.target;
-
-
             if(elem.classList.contains("game-log-btn")){
                 if (logWindow.classList.contains("--show")) {
                     logWindow.classList.remove("--show")
@@ -648,6 +652,16 @@ $(document).ready(function () {
                 return
             }
             if(playerTurn){
+               
+                if(elem.classList.contains("action-pass")){
+                    socket.emit('Pass');
+                    return
+                }
+                if(elem.classList.contains("action-pick-card")){
+                    socket.emit('Draw a Card');
+                    return
+                }
+
                 if(actionController.chosen){
                     if(actionController.playerAction === 'attack'){
                         if(elem.closest('#enemy-player')){

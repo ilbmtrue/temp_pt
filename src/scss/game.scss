@@ -3,11 +3,39 @@
     width: 500px;
     height: 400px;
 } */
-body{
-    min-width: 640px;
-    padding-top: 100px;
+
+html, body {
+    height: 100%;
 }
 
+body{
+    min-width: 640px;
+    // padding-top: 100px;
+}
+.ico-pass{
+    width: 100px;
+    height: 60px;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: contain;
+    position: relative;
+    cursor: pointer;
+    &:hover{
+        transform: scale(1.1);
+        &::before{
+            content: attr(data-title);
+            left: 50px;
+            width: 75px;
+            text-align: center;
+            z-index: 1;
+            background: rgba(255,255,230,0.9);
+            font-family: Arial, sans-serif;
+            font-size: 11px;
+            padding: 2px 2px;
+            border: 1px solid #333;
+        }
+    }
+}
 .ico{
     background-position: center;
     background-repeat: no-repeat;
@@ -35,7 +63,7 @@ body{
     font-size: 11px;
     padding: 2px 2px;
     border: 1px solid #333;
-   }
+}
    
 //    client\img\icon\attack.jpg
 $imgpath: '../img/icon';
@@ -45,6 +73,7 @@ $imgpath: '../img/icon';
 .ico__body-remove{background-image: url($imgpath + "/remove-body.jpg");}
 .ico__spell{background-image: url($imgpath + "/spell.jpg");}
 .ico__special{background-image: url($imgpath + "/special.jpg");}
+.ico__pass{background-image: url($imgpath + "/special.jpg");}
 .ico__order{background-image: url($imgpath + "/order.jpg");}
 .ico__remove-body{background-image: url($imgpath + "/remove-body.jpg");}
 .ico__move{background-image: url($imgpath + "/move.jpg");}
@@ -64,12 +93,14 @@ $imgpath: '../img/icon';
     border: 1px solid purple;
     cursor: pointer;
 }
-// .card.attack{
-
-// }
-// .card.move{
-
-// }
+#gameTable{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 400px;
+    height: calc(100% - 300px);
+}
 .body-remove{
     display: none;
 }
@@ -82,19 +113,22 @@ $imgpath: '../img/icon';
 .secondplayer{
     background-image: url('../img/secondplayer.jpg');
 }
-
-.player-panel__self{
-    bottom: 0;
-    position: fixed; 
+.player-panel{
+    // padding: 20px 0;
     width: 100%;
     background-color: #e2f7f0;
+    // height: 100px;
 }
-.player-panel__enemy{
-    top: 0;
-    position: fixed; 
-    width: 100%;
-    background-color: #e2f7f0;
-}
+// .player-panel__self{
+//     padding: 20px 0;
+//     width: 100%;
+//     background-color: #e2f7f0;
+// }
+// .player-panel__enemy{
+//     padding: 20px 0;
+//     width: 100%;
+//     background-color: #e2f7f0;
+// }
 .player__actions{
     width: 100%;
 }
@@ -107,19 +141,43 @@ $imgpath: '../img/icon';
 .hand-cards{
     max-width: 550px;
     width: 100%;
+    border: 1px solid;
 }
 .other-cards{
     display: flex;
+    border: 1px solid;
+}
+.player-actions{
+    height: 120px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid;
 }
 .deck{
     width: 70px;
+    height: 100px;
     margin: 0 10px;
-    background-color: red;
+    background-image: url("../img/shirt-3(2).jpg");
+    background-size: contain;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+.deck-info{
+    text-align: center;
+}
+.discard-info{
+    text-align: center;
 }
 .discard{
     width: 70px;
+    height: 100px;
     margin: 0 10px;
-    background-color: red;
+    background-image: url("../img/shirt-3(2).jpg");
+    background-size: contain;
+    background-position: center;
+    background-repeat: no-repeat;
+    filter: grayscale(100%);
 }
 #control-panel{
     visibility: hidden;
@@ -147,7 +205,7 @@ $imgpath: '../img/icon';
     transition-duration: .2s;
     &:hover{
         opacity: 1;
-        bottom: 10px;
+        // bottom: 10px;
         cursor: pointer;
     }
 }
@@ -155,12 +213,12 @@ $imgpath: '../img/icon';
 #player{
     flex-direction: column;
     display: flex;
-    margin: 0 50px;
+    // margin: 0 50px;
 }
 #enemy-player{
     flex-direction: column;
     display: flex;
-    margin: 0 50px;
+    // margin: 0 50px;
 }
 .user-field{
     display: flex;
@@ -281,6 +339,8 @@ $imgpath: '../img/icon';
 .game-flow-info{
     display: flex;
     flex-direction: column;
+    width: 200px;
+    align-items: center;
 }
 // .rear__l, .rear__m, .rear__r, 
 // .flank__l, .flank__r,
@@ -320,13 +380,11 @@ $imgpath: '../img/icon';
 }
 
 #messageBoard{
-    height: 100px;
     display: flex;
     justify-content: center;
     align-items: center;
     text-align: center;
-    width: 400px;
-    margin: 0 auto;
+    max-width: 200px;
 }
 .flash--active{
     animation: flashMsg-1 0.4s linear;
